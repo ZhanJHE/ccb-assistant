@@ -1,0 +1,776 @@
+"""The local-first protocol — L1 and L2 joined.
+
+This module is where the tool's reason for existing actually happens:
+
+    get(identifier)
+        hit = library.resolve(identifier)      # local, zero network
+        if hit is complete:  return it         # nothing is re-fetched, re-parsed
+        else:                fetch only what is missing, then return
+
+The important consequence is that asking about the same paper a second time costs
+nothing: no search, no download, no extraction, no re-reading. And asking about a
+*related* paper reuses everything already known, because channel fan-out is
+deduplicated into the same library as it goes.
+
+Every operation here is idempotent. Re-running `get` on a complete record is a no-op
+by design, because an agent that repeats a step must not corrupt the corpus.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any, Iterable
+
+from .channels.base import CAP_LOOKUP, CAP_PDF, Channel, ChannelResult
+from .channels.registry import Registry
+from .library import Library
+from .model import ChannelRecord, Manifestation, WorkRecord
+
+# How many channels must succeed before we stop fanning out on a lookup. Stopping as
+# soon as a *definitive* identifier is in hand (DOI / OpenReview id) is the meaningful
+# signal; a bare title match is not, so it does not end the fan-out.
+STOP_AFTER_LOOKUP_SUCCESS = 2
+
+
+def _has_definitive_identifier(records: list[ChannelRecord]) -> bool:
+    for rec in records:
+        if rec.doi or rec.openreview_id or rec.pmlr or rec.acl_id:
+            return True
+    return False
+
+
+@dataclass
+class AcquireResult:
+    """Outcome of `get`: what was found, and precisely what had to be done."""
+
+    work_id: str
+    source: str  # "local" | "channels" | "local+channels" | "none"
+    work: WorkRecord | None = None
+    actions: list[str] = field(default_factory=list)
+    errors: dict[str, str] = field(default_factory=dict)
+    warnings: list[str] = field(default_factory=list)
+    message: str = ""
+
+    @property
+    def ok(self) -> bool:
+        return self.work is not None
+
+    def as_dict(self, *, full: bool = False) -> dict[str, Any]:
+        out: dict[str, Any] = {
+            "work_id": self.work_id,
+            "source": self.source,
+            "ok": self.ok,
+            "actions": self.actions,
+        }
+        if self.errors:
+            out["errors"] = self.errors
+        if self.warnings:
+            out["warnings"] = self.warnings
+        if self.message:
+            out["message"] = self.message
+        if self.work is not None:
+            out["record"] = self.work.summary() if not full else self.work.as_dict()
+        return out
+
+
+@dataclass
+class FindResult:
+    """Outcome of `find`: local hits first, then channel hits, already deduplicated."""
+
+    query: str
+    local_hits: list[dict[str, Any]] = field(default_factory=list)
+    fetched: list[dict[str, Any]] = field(default_factory=list)
+    channels_queried: list[str] = field(default_factory=list)
+    errors: dict[str, str] = field(default_factory=dict)
+    warnings: list[str] = field(default_factory=list)
+    ingested: int = 0
+    merge_candidates: list[dict[str, Any]] = field(default_factory=list)
+    local_answered: bool = False
+    message: str = ""
+
+    def as_dict(self) -> dict[str, Any]:
+        out: dict[str, Any] = {
+            "query": self.query,
+            "local_answered": self.local_answered,
+            "local_hits": self.local_hits,
+            "fetched": self.fetched,
+            "channels_queried": self.channels_queried,
+            "ingested": self.ingested,
+        }
+        if self.errors:
+            out["errors"] = self.errors
+        if self.warnings:
+            out["warnings"] = self.warnings
+        if self.merge_candidates:
+            out["merge_candidates"] = self.merge_candidates
+        if self.message:
+            out["message"] = self.message
+        return out
+
+
+class Resolver:
+    """Ties the registry (L1) to the library (L2) and enforces local-first."""
+
+    def __init__(self, library: Library, registry: Registry, *, offline: bool = False,
+                 verbose: bool = False):
+        self.library = library
+        self.registry = registry
+        self.offline = offline
+        self.verbose = verbose
+
+    # ------------------------------------------------------------------ #
+    # get
+    # ------------------------------------------------------------------ #
+
+    def get(
+        self,
+        identifier: str,
+        *,
+        with_pdf: bool = False,
+        refresh: bool = False,
+        channels: str = "",
+        extract: bool = False,
+    ) -> AcquireResult:
+        """Resolve an identifier, using the network only for what is actually missing.
+
+        `refresh` forces a re-query even on a local hit — used by `check`, not by
+        normal reads, because the whole point is to avoid re-querying.
+
+        `extract` stores the full text of any PDF that is present but unextracted. The
+        CLI turns this on when a PDF was just downloaded: paying for the bytes and then
+        not making them readable would leave the corpus useless offline.
+        """
+        local = None if refresh else self.library.resolve(identifier)
+        errors: dict[str, str] = {}
+        warnings: list[str] = []
+        actions: list[str] = []
+
+        if local is None and self.offline:
+            return AcquireResult(
+                work_id="",
+                source="none",
+                errors={"offline": "not in the local library, and --offline forbids the network"},
+                message=(
+                    "Nothing to fetch: this identifier is not in the local library and "
+                    "offline mode is on."
+                ),
+            )
+
+        # Decide whether metadata actually needs to come from the network. A local
+        # record that already holds a title plus a stable identifier is complete; the
+        # only remaining gap can be the full text, which is handled separately below.
+        # Getting this wrong is what makes a "local-first" tool quietly re-query every
+        # time, so it is expressed as an explicit predicate rather than a list of
+        # conditions that `--with-pdf` can accidentally override.
+        needs_metadata = local is None or refresh or not _metadata_is_complete(local)
+
+        fetched_any = False
+        if needs_metadata:
+            fan = self._fan_out_lookup(identifier, channels=channels)
+            errors.update(fan["errors"])
+            warnings.extend(fan["warnings"])
+            if fan["records"]:
+                fetched_any = True
+                for rec in fan["records"]:
+                    upsert = self.library.upsert_record(rec)
+                    if upsert.merge_candidates:
+                        warnings.append(
+                            f"{rec.channel}: {len(upsert.merge_candidates)} possible duplicate(s) "
+                            "recorded for review (not merged)"
+                        )
+                    local = self.library.load(upsert.work_id) or local
+                    actions.append(f"metadata from {rec.channel}")
+
+        if local is None:
+            return AcquireResult(
+                work_id="",
+                source="none",
+                errors=errors,
+                warnings=warnings,
+                message=(
+                    "Could not resolve this identifier through any available channel. "
+                    "See errors for which channels were tried and why they failed."
+                ),
+            )
+
+        source = "local+channels" if fetched_any else "local"
+
+        # Full text is fetched only when it is wanted and genuinely absent.
+        if with_pdf and not local.has_pdf():
+            dl = self._fetch_pdf(local)
+            errors.update(dl["errors"])
+            warnings.extend(dl["warnings"])
+            if dl["actions"]:
+                actions.extend(dl["actions"])
+                # Store the text immediately: downloading a PDF and leaving it
+                # unextracted means `open` cannot answer offline, which defeats the
+                # point of having downloaded it.
+                extract = True
+
+        if extract and not local.has_fulltext():
+            ex = self._extract_text(local)
+            if ex.get("chars"):
+                actions.append(f"full text extracted ({ex['chars']} chars via {ex.get('engine')})")
+            elif ex.get("error"):
+                warnings.append(f"text extraction: {ex['error']}")
+            local = self.library.load(local.work_id) or local
+
+        if local is not None and (with_pdf or extract):
+            source = "local+channels" if fetched_any else "local"
+
+        message = _acquire_message(local, actions, errors, fetched_any)
+        return AcquireResult(
+            work_id=local.work_id,
+            source=source,
+            work=local,
+            actions=actions,
+            errors=errors,
+            warnings=warnings,
+            message=message,
+        )
+
+    def _fan_out_lookup(self, identifier: str, *, channels: str) -> dict[str, Any]:
+        if self.offline:
+            return {"records": [], "errors": {"offline": "network access disabled"}, "warnings": []}
+        from .ids import parse_identifier
+
+        parsed = parse_identifier(identifier)
+        scheme = parsed.scheme if parsed is not None else ""
+        usable = [
+            c for c in self.registry.usable(CAP_LOOKUP)
+            if not channels or c.name.casefold() in {
+                s.strip().casefold() for s in channels.split(",") if s.strip()
+            }
+        ]
+        unknown = self.registry.unknown_names(channels)
+        warnings: list[str] = []
+        if unknown:
+            warnings.append(f"unknown channel name(s) ignored: {', '.join(unknown)}")
+        # Skip channels that cannot act on this identifier scheme: sending an arXiv id
+        # to a DOI-only resolver costs a request and can only ever return an error.
+        inapplicable = [c.name for c in usable if not c.supports_identifier(scheme)]
+        usable = [c for c in usable if c.supports_identifier(scheme)]
+        if inapplicable:
+            warnings.append(
+                f"skipped (cannot resolve a {scheme or 'bare'} identifier): "
+                f"{', '.join(inapplicable)}"
+            )
+        # CS authorities first, so a stable conference identity is learned before an
+        # aggregator's weaker record lands.
+        usable.sort(key=lambda c: (0 if c.spec.cs_authority else 1, c.spec.name))
+        records: list[ChannelRecord] = []
+        errors: dict[str, str] = {}
+        successes = 0
+        for chan in usable:
+            try:
+                res = chan.lookup(identifier)
+            except Exception as exc:
+                errors[chan.name] = f"{type(exc).__name__}: {exc}"
+                continue
+            if res.error:
+                errors[chan.name] = res.error
+            # Central guard: never let a record into the library that does not actually
+            # carry the identifier we asked about.
+            records_before = len(res.records)
+            kept, rejected = chan.verify_identifier(identifier, res.records)
+            if rejected:
+                res.records = kept
+                warnings.extend(f"{chan.name}: {r}" for r in rejected)
+                if records_before and not kept:
+                    errors.setdefault(
+                        chan.name,
+                        "returned a record for the wrong paper; discarded rather than "
+                        "stored (the source's identifier index disagrees with its own "
+                        "record)",
+                    )
+            warnings.extend(f"{chan.name}: {w}" for w in res.warnings)
+            if res.records:
+                records.extend(res.records)
+                successes += 1
+            if records and (
+                _has_definitive_identifier(records) or successes >= STOP_AFTER_LOOKUP_SUCCESS
+            ):
+                break
+        # Channels that could not run at all are reported, not silently skipped.
+        tried = {c.name for c in usable}
+        for chan in self.registry.all():
+            if chan.name in tried:
+                continue
+            ok, reason = chan.available()
+            if not ok and chan.has(CAP_LOOKUP) and chan.supports_identifier(scheme):
+                errors.setdefault(chan.name, reason)
+        return {"records": records, "errors": errors, "warnings": warnings}
+
+    def _extract_text(self, work: WorkRecord) -> dict[str, Any]:
+        """Extract and store full text for a work that already has a local PDF."""
+        from .extract import extract_text
+        from .passages import chunk_text
+
+        best = work.best_pdf()
+        if best is None or not best.pdf_path:
+            return {"error": "no local PDF to extract"}
+        result = extract_text(self.library.file_abs(best.pdf_path))
+        out = result.as_dict()
+        if result.text:
+            rel, chars = self.library.store_fulltext(work.work_id, result.text)
+            self.library.attach_fulltext(work.work_id, rel_path=rel, chars=chars, mid=best.mid)
+            out["stored_path"] = rel
+            out["chars"] = chars
+            # Build the passage index now, while the text is already in memory, and bind
+            # it to this text's digest so a later re-extraction invalidates it instead of
+            # leaving searches pointed at text that is no longer on disk.
+            from .util import sha256_text
+
+            passages = chunk_text(result.text, work_id=work.work_id)
+            if passages:
+                _, n = self.library.store_passages(
+                    work.work_id, passages, source_sha256=sha256_text(result.text)
+                )
+                out["passages"] = n
+                out["pages_indexed"] = max((p.page for p in passages), default=0)
+        return out
+
+    # ------------------------------------------------------------------ #
+    # L4: grounded retrieval over the local corpus
+    # ------------------------------------------------------------------ #
+
+    def ask(
+        self,
+        query: str,
+        *,
+        limit: int = 5,
+        work_ids: Iterable[str] | None = None,
+        max_per_work: int = 2,
+        passages_around: int = 0,
+    ) -> dict[str, Any]:
+        """Retrieve the passages that answer a query, with checkable citations.
+
+        Returns evidence, not prose: ranked passages anchored to `work_id` and page
+        number, so any claim built on them can be verified. Works entirely offline, and
+        the ranking is deterministic, so the same question yields the same citations.
+        """
+        from .passages import PassageIndex
+
+        works: list[WorkRecord] = []
+        if work_ids:
+            for wid in work_ids:
+                w = self.library.resolve(wid)
+                if w is not None:
+                    works.append(w)
+        else:
+            # Deliberately the *whole* corpus, not just the indexed part. Filtering to
+            # works that already have text would make "this paper has no stored full
+            # text" indistinguishable from "nothing matched", and an agent cannot act on
+            # an ambiguity like that. Works lacking text are reported under `skipped`.
+            works = list(self.library.iter_works())
+
+        texts: dict[str, str] = {}
+        all_passages: list[Any] = []
+        skipped: list[dict[str, str]] = []
+        for w in works:
+            ps = self.library.read_passages(w)
+            if not ps:
+                skipped.append(
+                    {"work_id": w.work_id, "reason": "no stored full text to search"}
+                )
+                continue
+            all_passages.extend(ps)
+
+        index = PassageIndex(all_passages)
+        for w in works:
+            index.set_metadata(w.work_id, title=w.title(), year=w.year())
+
+        hits = index.search(
+            query,
+            limit=limit,
+            work_ids=[w.work_id for w in works] if work_ids else None,
+            max_per_work=max_per_work,
+        )
+        result: dict[str, Any] = {
+            "query": query,
+            "grounded": bool(hits),
+            "corpus": index.stats(),
+            "hits": [h.as_dict() for h in hits],
+            "note": (
+                "These are retrieved passages with page anchors, not generated prose. "
+                "Compose the answer from them and cite the cited work_id + page. If "
+                "grounded is false, say the corpus does not cover the question rather "
+                "than answering from memory."
+            ),
+        }
+        if skipped:
+            result["skipped"] = skipped
+        if not hits:
+            result["message"] = (
+                "No stored passage matches this query. Either add papers to the corpus "
+                "(`lit find` then `lit get --with-pdf`) or rephrase using terms that "
+                "appear in the source text."
+            )
+        return result
+
+    def _fetch_pdf(self, work: WorkRecord) -> dict[str, Any]:
+        """Try every channel that can serve a PDF for this work, legally."""
+        actions: list[str] = []
+        errors: dict[str, str] = {}
+        warnings: list[str] = []
+        if self.offline:
+            return {"actions": actions, "errors": {"offline": "network access disabled"},
+                    "warnings": warnings}
+
+        # Build candidate (channel, record) pairs. The work's existing manifestations
+        # are the best source of a pdf_url, but a freshly created work may have none
+        # with a URL while the record itself does — so every PDF-capable channel also
+        # gets a chance to propose a URL from the identifiers we hold.
+        candidates: list[tuple[Channel, ChannelRecord]] = []
+        seen_channels: set[str] = set()
+        for m in work.manifestations:
+            chan = self.registry.get(m.channel)
+            if chan is None:
+                continue
+            rec = _record_from_manifestation(work, m)
+            if not rec.pdf_url:
+                continue
+            candidates.append((chan, rec))
+            seen_channels.add(chan.name)
+        for chan in self.registry.usable(CAP_PDF):
+            if chan.name in seen_channels:
+                continue
+            rec = _record_from_work(work, chan.name)
+            if rec.pdf_url:
+                candidates.append((chan, rec))
+        # An arXiv id is itself a durable open-access locator: derive the canonical PDF
+        # URL rather than relying on whichever record happened to carry one.
+        arxiv_id = work.ids.get("arxiv", "")
+        if arxiv_id:
+            arxiv_chan = self.registry.get("arxiv")
+            if arxiv_chan is not None and arxiv_chan.available()[0]:
+                from .model import ChannelRecord as _CR
+
+                candidates.append(
+                    (
+                        arxiv_chan,
+                        _CR(
+                            channel="arxiv",
+                            title=work.title(),
+                            authors=work.authors(),
+                            year=work.year(),
+                            arxiv_id=arxiv_id,
+                            pdf_url=f"https://arxiv.org/pdf/{arxiv_id}",
+                            kind="preprint",
+                        ),
+                    )
+                )
+
+        for chan, rec in candidates:
+            try:
+                data, final_url, err = chan.download_pdf(rec)
+            except Exception as exc:
+                errors[chan.name] = f"{type(exc).__name__}: {exc}"
+                continue
+            if err or not data:
+                errors[chan.name] = err or "no data"
+                continue
+            from .net import looks_like_pdf
+
+            if not looks_like_pdf(data):
+                errors[chan.name] = "downloaded payload is not a PDF"
+                continue
+            digest, rel, size = self.library.store_file(data, ext="pdf")
+            self.library.attach_file(
+                work.work_id,
+                channel=chan.name,
+                sha256=digest,
+                rel_path=rel,
+                size=size,
+                external_id=rec.extras.get("native_id", "") or _external_id_of(rec),
+                pdf_url=final_url or rec.pdf_url,
+                license=rec.license,
+                kind=rec.kind,
+            )
+            actions.append(f"pdf via {chan.name} ({size} bytes)")
+            break
+        else:
+            if not candidates:
+                warnings.append(
+                    "no channel offered an open-access PDF for this work; the record is "
+                    "stored without full text (no paywall circumvention is attempted)"
+                )
+        return {"actions": actions, "errors": errors, "warnings": warnings}
+
+    # ------------------------------------------------------------------ #
+    # find
+    # ------------------------------------------------------------------ #
+
+    def find(
+        self,
+        query: str,
+        *,
+        limit: int = 10,
+        channels: str = "",
+        year_from: int | None = None,
+        year_to: int | None = None,
+        local_first: bool = True,
+        ingest: bool = True,
+        min_local: int = 0,
+    ) -> FindResult:
+        """Search locally first; only go to the network when the local corpus is thin."""
+        result = FindResult(query=query)
+        local_hits = self.library.search(
+            query, limit=max(limit, min_local or 0), year_from=year_from, year_to=year_to
+        )
+        result.local_hits = local_hits
+
+        if local_first and len(local_hits) >= max(limit, min_local):
+            result.local_answered = True
+            result.message = (
+                f"Answered from the local library ({len(local_hits)} hits); no channel was "
+                "queried, so nothing was re-downloaded or re-parsed."
+            )
+            return result
+
+        if self.offline:
+            result.local_answered = True
+            result.message = (
+                f"Offline mode: returned {len(local_hits)} local hit(s) without querying "
+                "channels."
+            )
+            result.channels_queried = []
+            return result
+
+        usable = self.registry.search_channels(channels)
+        unknown = self.registry.unknown_names(channels)
+        if unknown:
+            result.warnings.append(f"unknown channel name(s) ignored: {', '.join(unknown)}")
+        result.channels_queried = [c.name for c in usable]
+        if not usable:
+            result.warnings.append(
+                "no search-capable channel is currently available; see `lit channels`"
+            )
+
+        seen_keys: set[str] = set(k["work_id"] for k in local_hits)
+        for chan in usable:
+            try:
+                res: ChannelResult = chan.search(
+                    query, limit=limit, year_from=year_from, year_to=year_to
+                )
+            except Exception as exc:
+                result.errors[chan.name] = f"{type(exc).__name__}: {exc}"
+                continue
+            if res.error:
+                result.errors[chan.name] = res.error
+            result.warnings.extend(f"{chan.name}: {w}" for w in res.warnings)
+            for rec in res.records:
+                if not ingest:
+                    result.fetched.append(_unattached(rec))
+                    continue
+                upsert = self.library.upsert_record(rec)
+                for cand in upsert.merge_candidates:
+                    result.merge_candidates.append({"work_id": upsert.work_id, **cand})
+                result.ingested += 1
+                if upsert.work_id in seen_keys:
+                    continue
+                seen_keys.add(upsert.work_id)
+                w = self.library.load(upsert.work_id)
+                if w is not None:
+                    entry = w.summary()
+                    entry["found_via"] = rec.channel
+                    result.fetched.append(entry)
+        if not result.fetched and not local_hits:
+            result.message = (
+                "No results. Check the per-channel errors: a keyed or gated channel may "
+                "have failed rather than genuinely having nothing."
+            )
+        return result
+
+    # ------------------------------------------------------------------ #
+    # verification (incremental re-check)
+    # ------------------------------------------------------------------ #
+
+    def check(self, work_ids: Iterable[str] | None = None, *, limit: int = 0) -> dict[str, Any]:
+        """Re-verify stored records against the decisive endpoints.
+
+        Only *identifiers* are re-sent, never whole searches, so this is cheap enough
+        to run over a library. The honest output is three-valued: a change was found,
+        nothing was found, or the check could not be performed — absence of a
+        retraction notice is reported as "not found in the sources checked", because
+        claiming "not retracted" from a miss would be a fabrication.
+        """
+        targets = list(work_ids) if work_ids else [w.work_id for w in self.library.iter_works()]
+        if limit:
+            targets = targets[:limit]
+        report: dict[str, Any] = {
+            "checked": 0,
+            "changed": [],
+            "unchanged": [],
+            "unverifiable": [],
+            "errors": {},
+        }
+        for wid in targets:
+            work = self.library.load(wid)
+            if work is None:
+                report["errors"][wid] = "not in the local library"
+                continue
+            report["checked"] += 1
+            outcome = self._check_one(work)
+            if outcome["status"] == "changed":
+                report["changed"].append({"work_id": wid, **outcome})
+            elif outcome["status"] == "unverifiable":
+                report["unverifiable"].append({"work_id": wid, **outcome})
+            else:
+                report["unchanged"].append({"work_id": wid, **outcome})
+        return report
+
+    def _check_one(self, work: WorkRecord) -> dict[str, Any]:
+        keys = [k for k in work.keys if k.split(":", 1)[0] in
+                ("doi", "arxiv", "openreview", "pmid", "dblp", "acl", "pmlr")]
+        if not keys:
+            return {"status": "unverifiable", "reason": "record has no resolvable identifier"}
+        before = work.summary()
+        fan = self._fan_out_lookup(keys[0], channels="")
+        # Only compare fields that should be stable across sources.
+        fresh_fields: dict[str, Any] = {}
+        for rec in fan["records"]:
+            for fname in ("title", "year", "venue", "doi"):
+                val = getattr(rec, fname, None)
+                if val not in (None, "", []):
+                    fresh_fields.setdefault(fname, val)
+        if not fresh_fields:
+            return {
+                "status": "unverifiable",
+                "reason": "no channel returned a record for this identifier",
+                "errors": fan["errors"],
+            }
+        for rec in fan["records"]:
+            self.library.upsert_record(rec)
+        after_work = self.library.load(work.work_id) or work
+        after_work.checked_at = _now()
+        changed_fields = []
+        for fname, val in fresh_fields.items():
+            if fname == "year":
+                old = before.get("year")
+            elif fname == "title":
+                old = before.get("title")
+            elif fname == "venue":
+                old = before.get("venue")
+            else:
+                old = before.get("doi")
+            if old and str(old).strip().casefold() != str(val).strip().casefold():
+                changed_fields.append({"field": fname, "was": old, "now": val})
+        after_work.check_status = "changed" if changed_fields else "ok"
+        after_work.check_notes = (
+            f"{len(changed_fields)} field difference(s) vs {', '.join(fan['errors'].keys()) or 'channels'}"
+            if changed_fields
+            else "consistent with the sources checked"
+        )
+        self.library.save(after_work, log_event="checked")
+        if changed_fields:
+            self.library.log("check_changed", {"work_id": after_work.work_id,
+                                               "changes": changed_fields})
+            return {"status": "changed", "changes": changed_fields, "errors": fan["errors"]}
+        return {"status": "unchanged", "note": "no differences found in the sources checked"}
+
+
+# --------------------------------------------------------------------------- #
+# helpers
+# --------------------------------------------------------------------------- #
+
+
+def _now() -> str:
+    from .util import utc_now
+
+    return utc_now()
+
+
+def _metadata_is_complete(work: WorkRecord | None) -> bool:
+    """A record worth answering from without re-querying the network.
+
+    Requires a title and at least one stable identifier. Abstract, venue and page
+    details are *not* required: they can be absent for legitimate reasons (a venue
+    paper with no DOI), and treating their absence as "incomplete" would send the tool
+    back to the network forever on records that will never improve.
+    """
+    if work is None:
+        return False
+    if not work.title():
+        return False
+    stable = ("doi", "arxiv", "openreview", "acl", "pmlr", "dblp", "pmid", "openalex")
+    return any(work.ids.get(k) for k in stable)
+
+
+def _external_id_of(rec: ChannelRecord) -> str:
+    return (
+        rec.doi or rec.arxiv_id or rec.openreview_id or rec.dblp_key
+        or rec.acl_id or rec.pmlr or rec.pmid or ""
+    )
+
+
+def _record_from_manifestation(work: WorkRecord, m: Manifestation) -> ChannelRecord:
+    return ChannelRecord(
+        channel=m.channel,
+        title=work.title(),
+        authors=work.authors(),
+        year=m.year or work.year(),
+        venue=m.venue or work.venue(),
+        doi=work.ids.get("doi", ""),
+        arxiv_id=work.ids.get("arxiv", ""),
+        openreview_id=work.ids.get("openreview", ""),
+        url=m.url,
+        pdf_url=m.pdf_url,
+        license=m.license,
+        kind=m.kind,
+        version=m.version,
+        extras={"native_id": m.external_id},
+    )
+
+
+def _record_from_work(work: WorkRecord, channel: str) -> ChannelRecord:
+    best = work.best_pdf()
+    return ChannelRecord(
+        channel=channel,
+        title=work.title(),
+        authors=work.authors(),
+        year=work.year(),
+        venue=work.venue(),
+        doi=work.ids.get("doi", ""),
+        arxiv_id=work.ids.get("arxiv", ""),
+        openreview_id=work.ids.get("openreview", ""),
+        pdf_url=best.pdf_url if best else "",
+        kind=best.kind if best else "record",
+        extras={},
+    )
+
+
+def _unattached(rec: ChannelRecord) -> dict[str, Any]:
+    return {
+        "channel": rec.channel,
+        "title": rec.title,
+        "authors": rec.authors,
+        "year": rec.year,
+        "venue": rec.venue,
+        "doi": rec.doi,
+        "arxiv_id": rec.arxiv_id,
+        "openreview_id": rec.openreview_id,
+        "url": rec.url,
+        "pdf_url": rec.pdf_url,
+        "ingested": False,
+    }
+
+
+def _acquire_message(
+    work: WorkRecord, actions: list[str], errors: dict[str, str], fetched: bool
+) -> str:
+    if not actions:
+        return (
+            f"Answered from the local library: {work.title()[:90]!r}. No network call was "
+            "needed."
+        )
+    bits = [f"Stored/updated {work.work_id}."]
+    if fetched:
+        bits.append("Metadata came from channels: " + "; ".join(actions) + ".")
+    if errors:
+        bits.append(
+            "Unavailable or failing channels: "
+            + "; ".join(f"{k}: {v}" for k, v in errors.items())
+            + "."
+        )
+    return " ".join(bits)

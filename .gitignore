@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+
+# Test / tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local paper libraries — these are user data, never source.
+# A library can be committed deliberately to share a curated corpus; the default
+# here is to keep it out so a stray `.lit/` does not bloat the repository.
+.lit/
+.lit-*/
+*.lit/
+
+# Scratch directories used while developing parsers
+.probe/
+.research/
+*.sample
+
+# Editor / OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini

@@ -1,0 +1,21 @@
+channels:
+  probe_mcp:
+    kind: mcp
+    title: "Probe MCP source (test fixture)"
+    command: ["python", "tools/probe_mcp_source.py"]
+    caps: [search, lookup]
+    auth: none
+    license: "n/a (test fixture)"
+    search_tool: search_papers
+    query_arg: query
+    limit_arg: limit
+    map:
+      items: papers
+      title: title
+      authors: authors
+      year: year
+      venue: venue
+      abstract: abstract
+      doi: doi
+      url: url
+      pdf_url: pdf_url

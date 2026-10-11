@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lit-paper"
+version = "0.1.0"
+description = "Source-agnostic paper search/download aggregation plus a durable local paper library, built for AI harnesses"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+# No required third-party dependencies, by design: urllib/json/sqlite3/hashlib only,
+# so the tool drops into any harness without a dependency-resolution step.
+dependencies = []
+
+[project.optional-dependencies]
+# Extraction engines, in preference order. The tool works without them and says so.
+pdf = ["pdfplumber>=0.11", "pypdf>=4.0"]
+# Only needed for YAML channel declaration files.
+yaml = ["PyYAML>=6.0"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+lit = "lit.cli:main"
+lit-mcp = "lit.mcp_server:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]

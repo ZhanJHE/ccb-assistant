@@ -1,0 +1,39 @@
+# Normalize line endings in the repository to LF, and keep them LF in the working
+# tree. Without this, Git on Windows checks text files out as CRLF, so a fresh clone
+# rewrites every file the moment anything touches it, and diffs fill with noise.
+#
+# It also matters substantively here: SKILL.md has a hard character budget (the harness
+# trims rendered skills above 8192 characters), and CRLF silently inflates every line.
+* text=auto eol=lf
+
+# Windows launchers must keep CRLF to run reliably under cmd.exe.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Binary assets must never be line-ending converted.
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.zip binary
+*.gz binary
+
+# Generated or downloaded artefacts that are not part of the source.
+*.sqlite binary
+*.sqlite-wal binary
+*.sqlite-shm binary
+
+# Keep diffs readable for the data files this tool produces and consumes.
+*.json text eol=lf
+*.jsonl text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
+*.py text eol=lf
+
+# Explicitly collapse diffs for lockfiles and vendored trees if they ever appear.
+package-lock.json -diff
+pnpm-lock.yaml -diff
