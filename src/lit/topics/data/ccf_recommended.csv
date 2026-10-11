@@ -1,0 +1,160 @@
+abbr,aliases,name,kind,field,rank
+AAAI,,AAAI Conference on Artificial Intelligence,conference,Artificial Intelligence,A
+NeurIPS,NIPS,Conference on Neural Information Processing Systems,conference,Artificial Intelligence,A
+ICML,,International Conference on Machine Learning,conference,Artificial Intelligence,A
+IJCAI,,International Joint Conference on Artificial Intelligence,conference,Artificial Intelligence,A
+CVPR,,IEEE Conference on Computer Vision and Pattern Recognition,conference,Artificial Intelligence,A
+ICCV,,International Conference on Computer Vision,conference,Artificial Intelligence,A
+ECCV,,European Conference on Computer Vision,conference,Artificial Intelligence,B
+COLT,,Conference on Learning Theory,conference,Artificial Intelligence,B
+UAI,,Conference on Uncertainty in Artificial Intelligence,conference,Artificial Intelligence,B
+ICRA,,IEEE International Conference on Robotics and Automation,conference,Artificial Intelligence,B
+ICAPS,,International Conference on Automated Planning and Scheduling,conference,Artificial Intelligence,B
+AAMAS,,International Conference on Autonomous Agents and Multiagent Systems,conference,Artificial Intelligence,B
+IJCNN,,International Joint Conference on Neural Networks,conference,Artificial Intelligence,C
+ICANN,,International Conference on Artificial Neural Networks,conference,Artificial Intelligence,C
+PRICAI,,Pacific Rim International Conference on Artificial Intelligence,conference,Artificial Intelligence,C
+ACCV,,Asian Conference on Computer Vision,conference,Artificial Intelligence,C
+BMVC,,British Machine Vision Conference,conference,Artificial Intelligence,C
+AI,,Artificial Intelligence,journal,Artificial Intelligence,A
+TPAMI,,IEEE Transactions on Pattern Analysis and Machine Intelligence,journal,Artificial Intelligence,A
+IJCV,,International Journal of Computer Vision,journal,Artificial Intelligence,A
+JMLR,,Journal of Machine Learning Research,journal,Artificial Intelligence,A
+Machine Learning,,Machine Learning,journal,Artificial Intelligence,B
+CVIU,,Computer Vision and Image Understanding,journal,Artificial Intelligence,B
+PR,,Pattern Recognition,journal,Artificial Intelligence,B
+JAIR,,Journal of Artificial Intelligence Research,journal,Artificial Intelligence,B
+TNNLS,,IEEE Transactions on Neural Networks and Learning Systems,journal,Artificial Intelligence,B
+Neurocomputing,,Neurocomputing,journal,Artificial Intelligence,C
+PRL,,Pattern Recognition Letters,journal,Artificial Intelligence,C
+IVC,,Image and Vision Computing,journal,Artificial Intelligence,C
+ICSE,,International Conference on Software Engineering,conference,Software Engineering,A
+FSE,ESEC/FSE,ACM International Conference on the Foundations of Software Engineering,conference,Software Engineering,A
+ASE,,IEEE/ACM International Conference on Automated Software Engineering,conference,Software Engineering,A
+ISSTA,,International Symposium on Software Testing and Analysis,conference,Software Engineering,A
+OOPSLA,,ACM SIGPLAN Conference on Object-Oriented Programming Systems Languages and Applications,conference,Software Engineering,A
+PLDI,,ACM SIGPLAN Conference on Programming Language Design and Implementation,conference,Software Engineering,A
+POPL,,ACM SIGACT-SIGPLAN Symposium on Principles of Programming Languages,conference,Software Engineering,A
+ICSME,,International Conference on Software Maintenance and Evolution,conference,Software Engineering,B
+SANER,,International Conference on Software Analysis Evolution and Reengineering,conference,Software Engineering,B
+MSR,,International Conference on Mining Software Repositories,conference,Software Engineering,B
+ICPC,,International Conference on Program Comprehension,conference,Software Engineering,B
+FASE,,International Conference on Fundamental Approaches to Software Engineering,conference,Software Engineering,B
+ECOOP,,European Conference on Object-Oriented Programming,conference,Software Engineering,B
+APSEC,,Asia-Pacific Software Engineering Conference,conference,Software Engineering,C
+TSE,,IEEE Transactions on Software Engineering,journal,Software Engineering,A
+TOSEM,,ACM Transactions on Software Engineering and Methodology,journal,Software Engineering,A
+ESE,,Empirical Software Engineering,journal,Software Engineering,B
+JSS,,Journal of Systems and Software,journal,Software Engineering,B
+IST,,Information and Software Technology,journal,Software Engineering,B
+SPE,,Software Practice and Experience,journal,Software Engineering,C
+SIGMOD,,ACM SIGMOD International Conference on Management of Data,conference,Database,A
+VLDB,,International Conference on Very Large Data Bases,conference,Database,A
+ICDE,,IEEE International Conference on Data Engineering,conference,Database,A
+KDD,,ACM SIGKDD Conference on Knowledge Discovery and Data Mining,conference,Database,A
+SIGIR,,ACM SIGIR Conference on Research and Development in Information Retrieval,conference,Database,A
+WWW,,International World Wide Web Conference,conference,Database,A
+EDBT,,International Conference on Extending Database Technology,conference,Database,B
+ICDM,,IEEE International Conference on Data Mining,conference,Database,B
+CIKM,,ACM International Conference on Information and Knowledge Management,conference,Database,B
+WSDM,,ACM International Conference on Web Search and Data Mining,conference,Database,B
+SDM,,SIAM International Conference on Data Mining,conference,Database,B
+DASFAA,,International Conference on Database Systems for Advanced Applications,conference,Database,B
+ECML-PKDD,ECML PKDD,European Conference on Machine Learning and Principles and Practice of Knowledge Discovery in Databases,conference,Database,B
+PAKDD,,Pacific-Asia Conference on Knowledge Discovery and Data Mining,conference,Database,C
+DEXA,,International Conference on Database and Expert Systems Applications,conference,Database,C
+TKDE,,IEEE Transactions on Knowledge and Data Engineering,journal,Database,A
+TOIS,,ACM Transactions on Information Systems,journal,Database,A
+VLDBJ,,The VLDB Journal,journal,Database,A
+TKDD,,ACM Transactions on Knowledge Discovery from Data,journal,Database,B
+DKE,,Data and Knowledge Engineering,journal,Database,B
+IS,,Information Systems,journal,Database,B
+JASIST,,Journal of the Association for Information Science and Technology,journal,Database,C
+SIGCOMM,,ACM SIGCOMM Conference,conference,Networking,A
+MobiCom,,ACM International Conference on Mobile Computing and Networking,conference,Networking,A
+INFOCOM,,IEEE International Conference on Computer Communications,conference,Networking,A
+NSDI,,USENIX Symposium on Networked Systems Design and Implementation,conference,Networking,A
+ICNP,,IEEE International Conference on Network Protocols,conference,Networking,B
+IMC,,ACM Internet Measurement Conference,conference,Networking,B
+CoNEXT,,ACM International Conference on Emerging Networking Experiments and Technologies,conference,Networking,B
+IWQoS,,IEEE/ACM International Symposium on Quality of Service,conference,Networking,C
+ICC,,IEEE International Conference on Communications,conference,Networking,C
+GLOBECOM,,IEEE Global Communications Conference,conference,Networking,C
+ToN,,IEEE/ACM Transactions on Networking,journal,Networking,A
+JSAC,,IEEE Journal on Selected Areas in Communications,journal,Networking,A
+TMC,,IEEE Transactions on Mobile Computing,journal,Networking,A
+Computer Networks,,Computer Networks,journal,Networking,B
+TCOM,,IEEE Transactions on Communications,journal,Networking,B
+CCS,,ACM Conference on Computer and Communications Security,conference,Security,A
+S&P,Oakland;IEEE S&P,IEEE Symposium on Security and Privacy,conference,Security,A
+USENIX Security,,USENIX Security Symposium,conference,Security,A
+NDSS,,Network and Distributed System Security Symposium,conference,Security,C
+ACSAC,,Annual Computer Security Applications Conference,conference,Security,B
+ESORICS,,European Symposium on Research in Computer Security,conference,Security,B
+RAID,,International Symposium on Research in Attacks Intrusions and Defenses,conference,Security,B
+AsiaCCS,,ACM Asia Conference on Computer and Communications Security,conference,Security,C
+TIFS,,IEEE Transactions on Information Forensics and Security,journal,Security,A
+TDSC,,IEEE Transactions on Dependable and Secure Computing,journal,Security,A
+Computers & Security,COSE,Computers and Security,journal,Security,B
+SOSP,,ACM Symposium on Operating Systems Principles,conference,Systems,A
+OSDI,,USENIX Symposium on Operating Systems Design and Implementation,conference,Systems,A
+ASPLOS,,International Conference on Architectural Support for Programming Languages and Operating Systems,conference,Systems,A
+ISCA,,International Symposium on Computer Architecture,conference,Systems,A
+MICRO,,IEEE/ACM International Symposium on Microarchitecture,conference,Systems,A
+SC,,International Conference for High Performance Computing Networking Storage and Analysis,conference,Systems,A
+HPCA,,IEEE International Symposium on High-Performance Computer Architecture,conference,Systems,A
+USENIX ATC,ATC,USENIX Annual Technical Conference,conference,Systems,B
+EuroSys,,European Conference on Computer Systems,conference,Systems,B
+ICS,,International Conference on Supercomputing,conference,Systems,B
+IPDPS,,IEEE International Parallel and Distributed Processing Symposium,conference,Systems,B
+CLUSTER,,IEEE International Conference on Cluster Computing,conference,Systems,C
+TOCS,,ACM Transactions on Computer Systems,journal,Systems,A
+TC,,IEEE Transactions on Computers,journal,Systems,A
+TPDS,,IEEE Transactions on Parallel and Distributed Systems,journal,Systems,A
+JPDC,,Journal of Parallel and Distributed Computing,journal,Systems,B
+TACO,,ACM Transactions on Architecture and Code Optimization,journal,Systems,B
+STOC,,ACM Symposium on Theory of Computing,conference,Theory,A
+FOCS,,IEEE Symposium on Foundations of Computer Science,conference,Theory,A
+SODA,,ACM-SIAM Symposium on Discrete Algorithms,conference,Theory,A
+ICALP,,International Colloquium on Automata Languages and Programming,conference,Theory,B
+SPAA,,ACM Symposium on Parallelism in Algorithms and Architectures,conference,Theory,B
+PODC,,ACM Symposium on Principles of Distributed Computing,conference,Theory,B
+STACS,,International Symposium on Theoretical Aspects of Computer Science,conference,Theory,B
+ISAAC,,International Symposium on Algorithms and Computation,conference,Theory,C
+COCOON,,International Computing and Combinatorics Conference,conference,Theory,C
+SICOMP,,SIAM Journal on Computing,journal,Theory,A
+JACM,,Journal of the ACM,journal,Theory,A
+TIT,,IEEE Transactions on Information Theory,journal,Theory,A
+Algorithmica,,Algorithmica,journal,Theory,B
+TCS,,Theoretical Computer Science,journal,Theory,B
+ACL,,Annual Meeting of the Association for Computational Linguistics,conference,Natural Language Processing,A
+EMNLP,,Conference on Empirical Methods in Natural Language Processing,conference,Natural Language Processing,B
+NAACL,,Conference of the North American Chapter of the Association for Computational Linguistics,conference,Natural Language Processing,B
+COLING,,International Conference on Computational Linguistics,conference,Natural Language Processing,B
+IJCNLP,,International Joint Conference on Natural Language Processing,conference,Natural Language Processing,C
+CCL,,China National Conference on Computational Linguistics,conference,Natural Language Processing,C
+NLPCC,,CCF Conference on Natural Language Processing and Chinese Computing,conference,Natural Language Processing,C
+TACL,,Transactions of the Association for Computational Linguistics,journal,Natural Language Processing,B
+CL,,Computational Linguistics,journal,Natural Language Processing,B
+TASLP,,IEEE/ACM Transactions on Audio Speech and Language Processing,journal,Natural Language Processing,B
+SIGGRAPH,,ACM SIGGRAPH Annual Conference,conference,Graphics and Multimedia,A
+SIGGRAPH Asia,,ACM SIGGRAPH Conference on Computer Graphics and Interactive Techniques in Asia,conference,Graphics and Multimedia,B
+Eurographics,,Eurographics Annual Conference,conference,Graphics and Multimedia,B
+SCA,,ACM SIGGRAPH/Eurographics Symposium on Computer Animation,conference,Graphics and Multimedia,B
+PG,,Pacific Conference on Computer Graphics and Applications,conference,Graphics and Multimedia,C
+ACM MM,MM;ACM Multimedia,ACM International Conference on Multimedia,conference,Graphics and Multimedia,A
+ICME,,IEEE International Conference on Multimedia and Expo,conference,Graphics and Multimedia,B
+ICIP,,IEEE International Conference on Image Processing,conference,Graphics and Multimedia,B
+TOG,,ACM Transactions on Graphics,journal,Graphics and Multimedia,A
+TVCG,,IEEE Transactions on Visualization and Computer Graphics,journal,Graphics and Multimedia,A
+CGF,,Computer Graphics Forum,journal,Graphics and Multimedia,B
+TMM,,IEEE Transactions on Multimedia,journal,Graphics and Multimedia,A
+TOMM,,ACM Transactions on Multimedia Computing Communications and Applications,journal,Graphics and Multimedia,B
+CHI,,ACM Conference on Human Factors in Computing Systems,conference,Human-Computer Interaction,A
+UIST,,ACM Symposium on User Interface Software and Technology,conference,Human-Computer Interaction,A
+CSCW,,ACM Conference on Computer-Supported Cooperative Work and Social Computing,conference,Human-Computer Interaction,A
+IUI,,International Conference on Intelligent User Interfaces,conference,Human-Computer Interaction,B
+MobileHCI,,International Conference on Human-Computer Interaction with Mobile Devices and Services,conference,Human-Computer Interaction,B
+INTERACT,,IFIP TC13 Conference on Human-Computer Interaction,conference,Human-Computer Interaction,C
+TOCHI,,ACM Transactions on Computer-Human Interaction,journal,Human-Computer Interaction,A
+IJHCS,,International Journal of Human-Computer Studies,journal,Human-Computer Interaction,B

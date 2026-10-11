@@ -30,15 +30,16 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, Callable
 
 from . import __version__
-from .channels import Registry
-from .cite import export as cite_export
-from .cite import to_bibtex, to_csl_json, to_ris
 from .contract import contract
 from .library import Library, default_library_root
-from .resolver import Resolver
+from .library.cite import export as cite_export
+from .library.cite import to_bibtex, to_csl_json, to_ris
+from .search import Registry, Resolver
+from .topics import commands as topics_commands
 
 PROTOCOL_VERSION = "2024-11-05"
 SERVER_NAME = "lit"
@@ -203,6 +204,124 @@ def tool_definitions() -> list[dict[str, Any]]:
             ),
             "inputSchema": {"type": "object", "properties": {}, "required": []},
         },
+        {
+            "name": "lit_topics_survey",
+            "description": (
+                "Step 1 of topic generation. Map what the local corpus holds for a "
+                "direction: works, years, venues with CCF ranks, terms. Tops the direction "
+                "up from the channels when it is too thin to mine, and reports what it "
+                "added. Returns sufficient=false when there is still too little evidence."
+            ),
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "The direction to mine."},
+                    "min_works": {"type": "integer", "default": 20},
+                    "min_fulltext": {"type": "integer", "default": 5},
+                    "year_from": {"type": "integer"},
+                    "year_to": {"type": "integer"},
+                    "limit": {"type": "integer", "default": 200},
+                    "top_terms": {"type": "integer", "default": 40},
+                    "max_n": {"type": "integer", "default": 2, "description": "Longest term phrase (1-3)."},
+                    "offline": {
+                        "type": "boolean",
+                        "default": False,
+                        "description": "Do not top the direction up from channels.",
+                    },
+                },
+                "required": ["query"],
+            },
+        },
+        {
+            "name": "lit_topics_gaps",
+            "description": (
+                "Step 2. The gap evidence for a survey: sentences where authors state "
+                "limitations or future work (with work_id and page), sparse term pairs, "
+                "and a tally by gap kind. This is evidence to read, not a conclusion."
+            ),
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "survey_id": {"type": "string"},
+                    "limit": {"type": "integer", "default": 60},
+                    "max_per_work": {"type": "integer", "default": 3},
+                },
+                "required": ["survey_id"],
+            },
+        },
+        {
+            "name": "lit_topics_candidates",
+            "description": (
+                "Step 3. Ranked (evidence x novelty operator) topic candidates, with a "
+                "score whose four parts are reported, and the local works that share each "
+                "candidate's terms. Combinations already committed are excluded, which is "
+                "what makes repeated mining non-repetitive."
+            ),
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "survey_id": {"type": "string"},
+                    "limit": {"type": "integer", "default": 25},
+                    "per_kind": {"type": "integer", "default": 15},
+                    "include_mined": {"type": "boolean", "default": False},
+                    "no_self_check": {"type": "boolean", "default": False},
+                },
+                "required": ["survey_id"],
+            },
+        },
+        {
+            "name": "lit_topics_draft",
+            "description": (
+                "Step 4. Commit to ONE candidate. Returns the section skeleton a paper of "
+                "this kind needs — background, the four-step gap derivation, research "
+                "questions, contributions, approach, expected experiments and datasets, "
+                "anticipated criticism, references — with every claim's anchor attached. "
+                "The tool does not write prose; compose each section from its anchors."
+            ),
+            "inputSchema": {
+                "type": "object",
+                "properties": {"candidate_id": {"type": "string"}},
+                "required": ["candidate_id"],
+            },
+        },
+        {
+            "name": "lit_topics_rate",
+            "description": (
+                "Step 5. The CCF estimate for a topic: upper bound, band, confidence, and "
+                "the basis for every movement with its reason. A rule-based estimate from "
+                "the recorded evidence, not an acceptance prediction. Name a target venue "
+                "to check the estimate against that venue's own catalogue rank."
+            ),
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "topic_id": {"type": "string"},
+                    "venue": {"type": "string", "description": "Optional target venue."},
+                },
+                "required": ["topic_id"],
+            },
+        },
+        {
+            "name": "lit_topics_save",
+            "description": (
+                "Step 6. Commit a topic: export the Markdown draft and retire its "
+                "de-duplication keys so the same combination is never proposed again."
+            ),
+            "inputSchema": {
+                "type": "object",
+                "properties": {"topic_id": {"type": "string"}},
+                "required": ["topic_id"],
+            },
+        },
+        {
+            "name": "lit_topics_list",
+            "description": "Topics already mined, newest first, with what each consumed.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {"limit": {"type": "integer", "default": 0}},
+                "required": [],
+            },
+        },
     ]
 
 
@@ -307,7 +426,7 @@ class McpServer:
         elif fmt in ("csl", "json"):
             rendered = json.dumps(to_csl_json(work), ensure_ascii=False, indent=2)
         else:
-            from .cite import _plain
+            from .library.cite import _plain
 
             rendered = _plain(work)
         return {
@@ -351,6 +470,91 @@ class McpServer:
         stats = self.library.stats()
         stats["pending_merges"] = self.library.unresolved_merges()
         return stats
+
+    # ---------------- module three: topic generation ---------------- #
+    #
+    # Topic generation is a long process with judgement in the middle, so it is exposed
+    # as several steps rather than one tool: the agent has to be able to read the gap
+    # evidence before choosing, and to pick a single candidate before drafting.
+
+    def _tool_topics_survey(self, args: dict[str, Any]) -> dict[str, Any]:
+        return topics_commands.run(
+            "survey",
+            self.library,
+            None if args.get("offline") else self.resolver,
+            SimpleNamespace(
+                query=_require_str(args, "query"),
+                min_works=_opt_int(args.get("min_works")),
+                min_fulltext=_opt_int(args.get("min_fulltext")),
+                year_from=_opt_int(args.get("year_from")),
+                year_to=_opt_int(args.get("year_to")),
+                limit=_opt_int(args.get("limit")),
+                top_terms=_opt_int(args.get("top_terms")),
+                max_n=_opt_int(args.get("max_n")),
+                offline=bool(args.get("offline")),
+            ),
+        )
+
+    def _tool_topics_gaps(self, args: dict[str, Any]) -> dict[str, Any]:
+        return topics_commands.run(
+            "gaps",
+            self.library,
+            self.resolver,
+            SimpleNamespace(
+                survey_id=_require_str(args, "survey_id"),
+                limit=_opt_int(args.get("limit")),
+                max_per_work=_opt_int(args.get("max_per_work")),
+            ),
+        )
+
+    def _tool_topics_candidates(self, args: dict[str, Any]) -> dict[str, Any]:
+        return topics_commands.run(
+            "candidates",
+            self.library,
+            self.resolver,
+            SimpleNamespace(
+                survey_id=_require_str(args, "survey_id"),
+                limit=_opt_int(args.get("limit")),
+                per_kind=_opt_int(args.get("per_kind")),
+                include_mined=bool(args.get("include_mined")),
+                no_self_check=bool(args.get("no_self_check")),
+            ),
+        )
+
+    def _tool_topics_draft(self, args: dict[str, Any]) -> dict[str, Any]:
+        return topics_commands.run(
+            "draft",
+            self.library,
+            self.resolver,
+            SimpleNamespace(candidate_id=_require_str(args, "candidate_id")),
+        )
+
+    def _tool_topics_rate(self, args: dict[str, Any]) -> dict[str, Any]:
+        return topics_commands.run(
+            "rate",
+            self.library,
+            self.resolver,
+            SimpleNamespace(
+                topic_id=_require_str(args, "topic_id"),
+                venue=str(args.get("venue") or ""),
+            ),
+        )
+
+    def _tool_topics_save(self, args: dict[str, Any]) -> dict[str, Any]:
+        return topics_commands.run(
+            "save",
+            self.library,
+            self.resolver,
+            SimpleNamespace(topic_id=_require_str(args, "topic_id")),
+        )
+
+    def _tool_topics_list(self, args: dict[str, Any]) -> dict[str, Any]:
+        return topics_commands.run(
+            "list",
+            self.library,
+            self.resolver,
+            SimpleNamespace(limit=_opt_int(args.get("limit"))),
+        )
 
     def call_tool(self, name: str, args: dict[str, Any] | None) -> dict[str, Any]:
         handler: Callable[[dict[str, Any]], dict[str, Any]] | None = getattr(

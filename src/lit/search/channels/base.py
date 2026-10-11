@@ -1,4 +1,4 @@
-"""The channel abstraction — L1's single front door.
+"""The channel abstraction — the search module's single front door.
 
 A *channel* is any source of paper records or files: a free HTTP API, a keyed
 commercial API, an MCP server, a local CLI tool, or a human dropping in a PDF.
@@ -24,10 +24,10 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Iterable
 
-from ..evidence import EvidenceStore
-from ..model import ChannelRecord
+from ...library.evidence import EvidenceStore
+from ...core.model import ChannelRecord
 from ..net import Http, Response, credential, mailto
-from ..util import utc_now, write_json_atomic
+from ...core.util import utc_now, write_json_atomic
 
 # Capability flags.
 CAP_SEARCH = "search"
@@ -202,7 +202,7 @@ class Channel:
         through untouched, and the reason for any rejection is returned so the caller
         can report it rather than wonder why a lookup came back empty.
         """
-        from ..ids import parse_identifier
+        from ...core.ids import parse_identifier
 
         parsed = parse_identifier(identifier)
         if parsed is None or parsed.scheme in ("title", "url", ""):
@@ -223,26 +223,26 @@ class Channel:
     def _record_carries(
         self, scheme: str, value: str, rec: ChannelRecord
     ) -> tuple[bool, str]:
-        from ..util import normalize_acl_id, normalize_doi, normalize_pmlr
+        from ...core.util import normalize_acl_id, normalize_doi, normalize_pmlr
 
         if scheme == "doi":
             got = normalize_doi(rec.doi)
             if got == normalize_doi(value):
                 return True, ""
             # An arXiv preprint is legitimately reachable by its registered arXiv DOI.
-            from ..util import arxiv_doi
+            from ...core.util import arxiv_doi
 
             if rec.arxiv_id and arxiv_doi(rec.arxiv_id) == normalize_doi(value):
                 return True, ""
             return False, f"record DOI is {got or 'absent'}"
         if scheme == "arxiv":
-            from ..util import normalize_arxiv_id
+            from ...core.util import normalize_arxiv_id
 
             got = normalize_arxiv_id(rec.arxiv_id)
             if got and got == normalize_arxiv_id(value):
                 return True, ""
             # A published version may carry the arXiv DOI instead of the id field.
-            from ..util import arxiv_doi
+            from ...core.util import arxiv_doi
 
             if normalize_doi(rec.doi) == arxiv_doi(value):
                 return True, ""

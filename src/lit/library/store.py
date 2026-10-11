@@ -1,4 +1,4 @@
-"""L2 — the persistent paper library.
+"""The persistent paper library.
 
 This is the piece the landscape survey found missing: a durable, deduplicated local
 corpus with stable identities and auditable provenance, rather than a pile of PDFs
@@ -28,8 +28,8 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from .evidence import EvidenceStore
-from .ids import compute_work_id, work_id_from_keys, work_path_shard
-from .model import (
+from ..core.ids import compute_work_id, work_id_from_keys, work_path_shard
+from ..core.model import (
     ChannelRecord,
     Manifestation,
     WorkRecord,
@@ -38,8 +38,8 @@ from .model import (
     key_priority,
     merge_identifiers,
 )
-from .workindex import WORK_FILE_GLOB, WorkIndex
-from .util import (
+from .index import WORK_FILE_GLOB, WorkIndex
+from ..core.util import (
     append_jsonl,
     jaccard,
     json_dumps,
@@ -308,7 +308,7 @@ class Library:
         # scheme-less: a URL contains a colon ("http://...") and so does an explicit
         # prefix ("arXiv:Xv5"), and guarding on ":" made both of those skip parsing
         # entirely and fail to resolve.
-        from .ids import parse_identifier
+        from ..core.ids import parse_identifier
 
         parsed = parse_identifier(needle)
         candidates = [needle]
@@ -515,7 +515,7 @@ class Library:
                 target = m
                 break
         if target is None:
-            from .ids import compute_manifestation_id
+            from ..core.ids import compute_manifestation_id
 
             target = work.add_manifestation(
                 Manifestation(

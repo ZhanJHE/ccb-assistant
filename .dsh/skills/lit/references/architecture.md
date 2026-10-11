@@ -14,25 +14,36 @@ extremely well (several mature 20+ source aggregators) but all discard the ident
 map after each query, which means the same paper re-discovered next week is a new
 record. This tool exists to break that cycle.
 
-## Four layers plus one protocol
+## Three modules over one shared floor
 
 ```
-L4  citations   BibTeX / RIS / CSL-JSON / plain text
-L3  extraction  PDF → stored text (reuses pdfplumber/pypdf; does not reimplement)
-L2  library     durable local corpus: stable ids, dedup, provenance, evidence
-L1  channels    one interface over free APIs, keyed APIs, MCP servers, local CLIs
-──────────────────────────────────────────────────────────────────────────
-★   local-first protocol: every request consults L2 before L1
+topics    mine the corpus for one research topic, with its evidence
+   │
+search    find and obtain a paper from any source, by legal routes only
+   │
+library   the durable local corpus: stable ids, dedup, provenance, evidence
+   │
+core      records, identities, normalisation, PDF extraction
+──────────┴──────────────────────────────────────────────────────────────
+★   local-first: every request consults the library before the network
 ```
 
-The local-first protocol is the load-bearing part:
+A module may import only what is listed beneath it. `core` imports none of ours;
+`library` never reaches for the network; `search` is the only writer to the corpus;
+`topics` reads all three and writes only its own artefacts. `tests/test_modules.py`
+parses the real import graph and fails when a boundary is crossed, because a boundary
+that is not tested is a boundary that erodes. The split also removed two genuine
+cycles: the channel layer no longer reaches into library storage, and the library no
+longer depends on citation export.
+
+The local-first protocol lives in `search`, and is still the load-bearing part:
 
 ```
 get(identifier):
     hit = library.resolve(identifier)          # local, zero network
     if hit is complete:      return hit        # nothing re-fetched, re-parsed
     if hit lacks full text:  fetch only that   # metadata is not re-queried
-    else:                    L1 → store → return
+    else:                    channels → store → return
 ```
 
 Measured on a real paper (arXiv 1706.03762, a 2.2 MB PDF):
@@ -56,6 +67,9 @@ library/
   library.jsonl                # append-only event ledger
   index.sqlite                 # derived query index — deletable, always rebuildable
   channels.yaml                # optional: declare extra channels without code
+  topics/                      # module three's artefacts (see references/topics.md)
+    index.json                 #   mined-topic history and retired de-dup keys
+    surveys/ candidates/ records/ drafts/
 ```
 
 **Why plain text is the truth source rather than SQLite directly:** the corpus stays
@@ -116,12 +130,13 @@ signals). Everything in the plausible band becomes an auditable `merge_candidate
 an explicit `lit merge`. A wrong automatic merge would silently corrupt every citation
 downstream, which is a far worse outcome than one extra candidate to review.
 
-## L4: why retrieval is bounded this way
+## Why retrieval is bounded this way
 
 Having a PDF on disk is not the same as being able to answer from it. Without a
 retrieval layer, an agent either reads whole papers into context or, worse, answers
-from memory. So `ask` does the deterministic half of retrieval-augmented answering and
-stops there:
+from memory. So `ask` — which lives in `library`, since it is a read of the corpus and
+never touches the network — does the deterministic half of retrieval-augmented
+answering and stops there:
 
 - **chunk** stored full text into ~1200-character overlapping passages, remembering the
   page each came from;
@@ -161,17 +176,19 @@ where no strategy managed clean spacing, and the result is reported rather than 
 ## Three faces, one core
 
 ```
-                    ┌─────────────────────────┐
-   CLI (JSON)  ────►│                         │
-   Agent Skill ────►│   Library + Resolver    │
-   MCP server  ────►│   (the only behaviour)  │
-                    └─────────────────────────┘
+                    ┌──────────────────────────────────┐
+   CLI (JSON)  ────►│  search  ·  library  ·  topics   │
+   Agent Skill ────►│  (the only place behaviour lives)│
+   MCP server  ────►│                                  │
+                    └──────────────────────────────────┘
 ```
 
-Each face is a thin adapter. There is no CLI-specific or MCP-specific logic, which is
-why they cannot disagree about identity, deduplication policy, or what counts as a
-legal source. The test suite pins this: `tests/test_mcp.py` asserts that the same `ask`
-and the same `stats` produce the same answers through both faces.
+Each face is a thin adapter that calls the command layer. There is no CLI-specific or
+MCP-specific logic, which is why they cannot disagree about identity, deduplication
+policy, or what counts as a legal source — and why a topic generated over MCP is the
+same record the CLI would produce. The test suite pins this: `tests/test_mcp.py`
+asserts CLI/MCP parity for `ask` and `stats`, and `tests/test_topics.py` drives the
+whole topics sequence through the MCP face.
 
 ## Why the index self-heals
 

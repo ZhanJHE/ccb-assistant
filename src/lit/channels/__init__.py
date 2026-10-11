@@ -1,37 +1,36 @@
-"""Channel implementations and the registry that routes between them."""
+"""Transitional alias: ``lit.channels`` is ``lit.search.channels``.
+
+The channel layer moved into the ``search`` package when lit was split into three
+business modules. This alias registers the identical module object under the old
+name — including every submodule, so ``lit.channels.base`` and
+``lit.search.channels.base`` resolve to the *same* module rather than two independent
+copies. New code should import ``lit.search.channels``; delete this package once
+callers have moved.
+"""
 
 from __future__ import annotations
 
-from .base import (
-    CAP_BIBTEX,
-    CAP_CITATIONS,
-    CAP_FULLTEXT,
-    CAP_LOOKUP,
-    CAP_OA_RESOLVE,
-    CAP_PDF,
-    CAP_SEARCH,
-    CAP_VENUE,
-    Channel,
-    ChannelResult,
-    ChannelSpec,
-    ManualChannel,
-)
-from .registry import BUILTIN_CHANNELS, KNOWN_HEALTH, Registry
+import importlib
+import sys
 
-__all__ = [
-    "BUILTIN_CHANNELS",
-    "CAP_BIBTEX",
-    "CAP_CITATIONS",
-    "CAP_FULLTEXT",
-    "CAP_LOOKUP",
-    "CAP_OA_RESOLVE",
-    "CAP_PDF",
-    "CAP_SEARCH",
-    "CAP_VENUE",
-    "Channel",
-    "ChannelResult",
-    "ChannelSpec",
-    "KNOWN_HEALTH",
-    "ManualChannel",
-    "Registry",
-]
+from ..search import channels as _target
+
+_SUBMODULES = (
+    "arxiv",
+    "base",
+    "crossref",
+    "dblp",
+    "europepmc",
+    "generic",
+    "openalex",
+    "openreview",
+    "paper_search",
+    "registry",
+)
+
+for _sub in _SUBMODULES:
+    sys.modules[f"{__name__}.{_sub}"] = importlib.import_module(
+        f"lit.search.channels.{_sub}"
+    )
+
+sys.modules[__name__] = _target

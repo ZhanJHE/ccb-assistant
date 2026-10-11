@@ -1,19 +1,45 @@
-# lit — one entry point for every paper channel, plus a durable local library
+# lit — search, library, topics: three modules over one shared floor
 
-`lit` answers two questions that most literature tooling answers separately and badly:
+`lit` answers three questions that most literature tooling answers separately and badly:
 
 1. **How do I get this paper from any of the sources I have access to?** Free APIs,
    keyed APIs, MCP servers, local CLI tools and hand-supplied PDFs all sit behind one
    interface. Which channel was used, and whether it needed a key, is not your problem.
 2. **Why am I downloading and parsing this paper again?** Because nothing was kept.
    `lit` keeps it.
+3. **What should I work on next?** The corpus already documents what the field cannot
+   do. `lit topics` mines that, one topic at a time, with the evidence attached.
 
-The second question is the point. Existing tools cover *finding* papers extremely well
-— several mature aggregators span 20+ sources — but they all discard the identity map
-after each query, so the same paper rediscovered next week is a new record and the same
-PDF is fetched and parsed again.
+The second question is why the library exists; the third is why it is worth keeping.
+Existing tools cover *finding* papers extremely well — several mature aggregators span
+20+ sources — but they all discard the identity map after each query, so the same paper
+rediscovered next week is a new record and the same PDF is fetched and parsed again.
 
-## What it does differently
+## The three modules
+
+```
+topics    mine the corpus for one research topic, with its evidence
+   │
+search    find and obtain a paper from any legal source
+   │
+library   the durable local corpus: stable ids, dedup, provenance, evidence
+   │
+core      records, identities, normalisation, PDF extraction
+```
+
+| Module | Package | Owns |
+|---|---|---|
+| **search** | `lit.search` | the channel registry (http / cli / mcp / manual), rate limiting and credential transparency, the local-first acquisition protocol |
+| **library** | `lit.library` | work records, raw evidence snapshots, the disposable query index, grounded passage retrieval, citation export |
+| **topics** | `lit.topics` | domain survey, gap mining, novelty operators, candidate ranking, the draft skeleton, the CCF estimate |
+| **core** | `lit.core` | the record models, the `work_id` key chain, text normalisation, PDF extraction |
+
+A module may import only what is listed beneath it. `tests/test_modules.py` parses the
+real import graph and fails when a boundary is crossed — and the split paid for itself
+immediately by removing two genuine cycles: the channel layer no longer reached into
+library storage, and the library no longer depended on citation export.
+
+## What the library does differently
 
 ```
 GET  arXiv 1706.03762, 2.2 MB PDF
@@ -66,6 +92,7 @@ Optional API keys **only raise rate limits**; nothing breaks without them:
 | `LIT_HOME` | Library location (default `./.lit`) |
 | `LIT_REPO` | Checkout root, for the Agent Skill launcher |
 | `LIT_CHANNELS` | Extra channel declaration files |
+| `LIT_CCF_CATALOG` | Replace the bundled CCF venue catalogue with your own CSV |
 
 ## Use
 
@@ -103,11 +130,62 @@ its least-bad passage, and the skill instructs the agent not to answer from memo
 Ranking is BM25 over a pure-standard-library index: no model download, no API key, no
 network, and deterministic — the same question yields the same citations.
 
+## Generating a research topic
+
+`lit topics` mines the library for **one topic at a time**, and returns evidence rather
+than prose. Every claim it produces is anchored to a stored work and a page.
+
+```bash
+lit topics survey "graph neural networks for molecular property prediction"   # 1
+lit topics gaps <survey_id>                  # 2  author-stated gaps + sparse term pairs
+lit topics candidates <survey_id>            # 3  ranked (evidence × novelty operator)
+lit topics draft <candidate_id>              # 4  commit to ONE; the section skeleton
+#    ... the agent writes each section from the anchors attached to it ...
+lit topics rate <topic_id> [--venue NeurIPS] # 5  CCF estimate: bound, band, basis, risks
+lit topics save <topic_id>                   # 6  commit, export Markdown, retire the key
+lit topics list                              # what has already been mined
+lit topics venues --verify                   # the CCF catalogue
+lit topics operators                         # the eleven novelty operators
+```
+
+What each step actually returns:
+
+- **survey** — works, years, venues *with their CCF rank*, ranked terms, and whether the
+  direction is thick enough to mine. Below threshold it tops the corpus up from the
+  channels and reports what it added; `sufficient: false` (exit 4) means say so and
+  stop rather than mining anyway.
+- **gaps** — the strongest signal there is: sentences where an author states a
+  limitation, an assumption, a cost, an absence or future work, each with `work_id` and
+  `page`. Plus **sparse term pairs**: two concepts the direction uses heavily but rarely
+  together, with the arithmetic (`together` vs `expected`) shown so it can be checked.
+  That is the computable form of the "A + B" recombination move.
+- **candidates** — each (evidence × operator) pair scored on four reported parts:
+  how directly the evidence states a gap, how much of the corpus supports it, how
+  ambitious the operator is, and how covered the combination already is locally. Ties
+  break deterministically. **A score orders a reading list; it is not a prediction.**
+- **draft** — the sections a paper of this kind needs (background, the four-step gap
+  derivation, research questions, contributions, approach, expected experiments and
+  datasets, anticipated criticism, references, evidence appendix), with the anchors each
+  section may cite. Datasets and baselines are harvested from neighbouring work as
+  *observed mentions with counts* — not recommendations.
+- **rate** — an upper bound, a band, a confidence, and **every movement with its
+  reason**: operator ceiling, declared vs inferred, corpus support, local coverage,
+  operator difficulty. Name a target venue and it checks the estimate against that
+  venue's own catalogue rank, warning when the operator cannot reach that band.
+- **save** — exports the Markdown draft and retires the topic's de-duplication key, so
+  the same combination is never proposed again.
+
+**What it will not do:** write the topic for you, invent a citation, or guess a CCF rank
+for a venue that is not in the catalogue. The eleven novelty operators are encoded moves
+from the literature on finding an innovation point — recombination, cross-domain
+transfer, relaxing an assumption, removing a scaling wall, sharpening a boundary
+condition, chasing a paradox — each with the difficulty and realistic ceiling attached.
+
 ## Three faces, one core
 
 ```
 CLI (JSON)  ─┐
-Agent Skill ─┼─►  Library + Resolver   ← the only place behaviour lives
+Agent Skill ─┼─►  search · library · topics   ← the only place behaviour lives
 MCP server  ─┘
 ```
 
@@ -116,12 +194,12 @@ lit-mcp.py --library ./papers        # MCP over stdio, no SDK, no extra dependen
 lit-mcp.py --list-tools
 ```
 
-Nine tools (`lit_contract`, `lit_channels`, `lit_find`, `lit_get`, `lit_ask`,
-`lit_open`, `lit_cite`, `lit_export`, `lit_stats`). Because each face is a thin adapter,
-they cannot disagree about identity, dedup policy, or what counts as a legal source —
-and `tests/test_mcp.py` asserts that the same call through MCP and through the CLI
-produces the same answer.
-
+Sixteen tools. Search and library: `lit_contract`, `lit_channels`, `lit_find`,
+`lit_get`, `lit_ask`, `lit_open`, `lit_cite`, `lit_export`, `lit_stats`. Topic
+generation: the seven `lit_topics_*` tools, one per step. Because each face is a thin
+adapter, they cannot disagree about identity, dedup policy, or what counts as a legal
+source — and `tests/test_mcp.py` asserts CLI/MCP parity while `tests/test_topics.py`
+drives the whole topics sequence through the MCP face.
 
 ## Agent Skill
 
@@ -133,7 +211,8 @@ format, so an agent can drive it without you explaining it:
   SKILL.md                  # what it is, the rules, the canonical step order
   lit.py                    # launcher (finds the checkout; no copy to drift)
   references/
-    architecture.md         # layers, on-disk layout, why local-first works
+    topics.md               # the operators, the scoring, the CCF estimate
+    architecture.md         # the three modules, on-disk layout, why local-first works
     channels.md             # per-source contracts, measured behaviour, known traps
     commands.md             # every flag with examples
 ```
@@ -143,8 +222,9 @@ deep), and `SKILL.md` is kept under the 8192-character render budget with the de
 `references/`. To use it from any project, copy or symlink `.dsh/skills/lit` into
 `~/.dsh/skills/`.
 
-`lit contract` returns the same operating rules as machine-readable JSON, so the
-contract lives in code rather than in prose that drifts.
+`lit contract` returns the same operating rules as machine-readable JSON — including the
+three modules and the canonical topic-generation sequence — so the contract lives in
+code rather than in prose that drifts.
 
 ## Channels
 
@@ -179,11 +259,13 @@ names the reason rather than returning an empty result.
 - **No Google Scholar.** Scraping violates its terms and the anti-bot is unsolved; the
   major `scholarly` library has been unmaintained since 2023.
 - **No invented metadata.** A missing volume or page range is omitted, never guessed.
+- **No invented ranks or topics.** A venue absent from the CCF catalogue is reported as
+  unmatched; a topic claim with no anchor is not emitted at all.
 
 ## Development
 
 ```bash
-python -m unittest discover -s tests -v     # 142 tests, no network, no dependencies
+python -m unittest discover -s tests -v     # 203 tests, no network, no dependencies
 python tools/probe_arxiv.py                 # reproduce a channel's live behaviour
 python tools/probe_mcp_source.py            # minimal MCP server used as a test fixture
 ```
@@ -191,10 +273,12 @@ python tools/probe_mcp_source.py            # minimal MCP server used as a test 
 The suite covers identity derivation and normalization, claim/provenance semantics,
 dedup thresholds, citation rendering, credential redaction, passage chunking and BM25
 ranking, extraction-quality scoring, MCP protocol framing and CLI/MCP parity, all four
-channel kinds (http / cli / mcp / manual), and library integrity — including the
-self-healing paths (a deleted index, a corrupted work file, a merge that must keep the
-absorbed identifier resolvable, a re-extraction that must invalidate a stale passage
-index).
+channel kinds (http / cli / mcp / manual), library integrity — including the self-healing
+paths (a deleted index, a corrupted work file, a merge that must keep the absorbed
+identifier resolvable, a re-extraction that must invalidate a stale passage index) — the
+module dependency DAG, CCF catalogue matching, term extraction, gap mining, operator
+selection, candidate scoring and determinism, the draft anchor invariant, and rating
+recomputability.
 
 `notes/` records the landscape survey that shaped the design, including which
 capabilities were already well covered and which were empty.

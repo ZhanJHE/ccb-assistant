@@ -20,18 +20,18 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from lit.channels.base import ChannelSpec  # noqa: E402
-from lit.channels.generic import (  # noqa: E402
+from lit.search.channels.base import ChannelSpec  # noqa: E402
+from lit.search.channels.generic import (  # noqa: E402
     GenericCliChannel,
     GenericHttpChannel,
     GenericMcpChannel,
     _dig,
     _unwrap_mcp_content,
 )
-from lit.channels.registry import Registry  # noqa: E402
-from lit.evidence import EvidenceStore  # noqa: E402
+from lit.search.channels.registry import Registry  # noqa: E402
+from lit.library.evidence import EvidenceStore  # noqa: E402
 from lit.library import Library  # noqa: E402
-from lit.resolver import Resolver  # noqa: E402
+from lit.search.acquire import Resolver  # noqa: E402
 
 PROBE_MCP = ROOT / "tools" / "probe_mcp_source.py"
 
@@ -131,7 +131,7 @@ class TestDeclarativeChannels(unittest.TestCase):
             }
         }
         res = type("R", (), {})()
-        from lit.channels.base import ChannelResult
+        from lit.search.channels.base import ChannelResult
 
         res = ChannelResult("declared")
         chan._extract = None  # guard: http channel must use its own mapper
@@ -148,7 +148,7 @@ class TestDeclarativeChannels(unittest.TestCase):
     def test_cli_channel_normalises_the_documented_envelope(self):
         decl = {"kind": "cli", "command": "definitely-not-installed", "caps": ["search"]}
         chan = GenericCliChannel("local", decl, evidence=self.ev)
-        from lit.channels.base import ChannelResult
+        from lit.search.channels.base import ChannelResult
 
         res = ChannelResult("local")
         chan._extract(
@@ -174,7 +174,7 @@ class TestDeclarativeChannels(unittest.TestCase):
 
     def test_cli_channel_accepts_a_bare_list(self):
         chan = GenericCliChannel("local", {"kind": "cli", "command": "x"}, evidence=self.ev)
-        from lit.channels.base import ChannelResult
+        from lit.search.channels.base import ChannelResult
 
         res = ChannelResult("local")
         chan._extract([{"title": "Bare"}], res, limit=5, mapping={})
@@ -182,7 +182,7 @@ class TestDeclarativeChannels(unittest.TestCase):
 
     def test_cli_channel_reports_a_non_list_payload_instead_of_crashing(self):
         chan = GenericCliChannel("local", {"kind": "cli", "command": "x"}, evidence=self.ev)
-        from lit.channels.base import ChannelResult
+        from lit.search.channels.base import ChannelResult
 
         # An unrecognised envelope must be an error, not an empty result: "this source
         # has nothing" and "I could not read this source" are different facts.
@@ -203,7 +203,7 @@ class TestDeclarativeChannels(unittest.TestCase):
 
     def test_empty_but_valid_envelope_is_not_an_error(self):
         chan = GenericCliChannel("local", {"kind": "cli", "command": "x"}, evidence=self.ev)
-        from lit.channels.base import ChannelResult
+        from lit.search.channels.base import ChannelResult
 
         res = ChannelResult("local")
         chan._extract({"papers": []}, res, limit=5, mapping={})
@@ -337,7 +337,7 @@ class TestAllFourKindsThroughOneInterface(unittest.TestCase):
 
     def _protocol_only_records(self):
         """Call each generic channel's normaliser directly on a representative payload."""
-        from lit.channels.base import ChannelResult
+        from lit.search.channels.base import ChannelResult
 
         out = {}
         http_map = {"items": "results", "title": "title", "year": "year"}
@@ -383,7 +383,7 @@ class TestAllFourKindsThroughOneInterface(unittest.TestCase):
             self.assertIsNotNone(self.lib.resolve(wid))
 
     def test_manual_kind_enters_the_same_pipeline(self):
-        from lit.model import ChannelRecord
+        from lit.core.model import ChannelRecord
 
         rec = ChannelRecord(channel="manual", title="Hand-Supplied Paper",
                             authors=["D Four"], year=2023)

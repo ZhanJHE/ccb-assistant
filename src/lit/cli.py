@@ -24,12 +24,12 @@ from pathlib import Path
 from typing import Any, Sequence
 
 from . import __version__
-from .channels import Registry
 from .contract import contract, contract_text
-from .extract import available_engines, extract_text
+from .core.extract import available_engines, extract_text
+from .core.util import read_json, utc_now
 from .library import Library, default_library_root
-from .resolver import Resolver
-from .util import read_json, utc_now
+from .search import Registry, Resolver
+from .topics import commands as topics_commands
 
 EXIT_OK = 0
 EXIT_USAGE = 2
@@ -224,7 +224,7 @@ def cmd_index(ctx: Context) -> int:
     `get --with-pdf` already indexes on extraction; this exists for a corpus that was
     populated before the index did, or after a full-text file was replaced.
     """
-    from .passages import chunk_text
+    from .library.passages import chunk_text
 
     args = ctx.args
     targets: list[str]
@@ -266,7 +266,7 @@ def cmd_cite(ctx: Context) -> int:
     *why* a field has the value it does — and notice when a field is missing because no
     source supplied it, rather than because the tool dropped it.
     """
-    from .cite import to_bibtex, to_csl_json, to_ris
+    from .library.cite import to_bibtex, to_csl_json, to_ris
 
     args = ctx.args
     work = ctx.library.resolve(args.identifier)
@@ -284,7 +284,7 @@ def cmd_cite(ctx: Context) -> int:
     elif fmt in ("csl", "csl-json", "json"):
         rendered = json.dumps(to_csl_json(work), ensure_ascii=False, indent=2)
     elif fmt in ("text", "plain"):
-        from .cite import _plain
+        from .library.cite import _plain
 
         rendered = _plain(work)
     else:
@@ -426,7 +426,7 @@ def cmd_check(ctx: Context) -> int:
 
 def cmd_check_files(ctx: Context) -> int:
     """Verify stored files: hash on disk must match the recorded hash."""
-    from .util import sha256_bytes
+    from .core.util import sha256_bytes
 
     args = ctx.args
     report: dict[str, Any] = {"checked": 0, "ok": 0, "mismatch": [], "missing": [], "orphans": []}
@@ -460,7 +460,7 @@ def cmd_check_files(ctx: Context) -> int:
 
 
 def cmd_export(ctx: Context) -> int:
-    from .cite import export
+    from .library.cite import export
 
     args = ctx.args
     if args.ids:
@@ -511,7 +511,7 @@ def cmd_add_file(ctx: Context) -> int:
             EXIT_USAGE,
         )
     title = args.title or src.stem
-    from .model import ChannelRecord
+    from .core.model import ChannelRecord
 
     rec = ChannelRecord(
         channel="manual",
@@ -574,8 +574,8 @@ def _extract_into(library: Library, work_id: str, *, engine: str = "") -> dict[s
     left `lit ask` searching stale passages. Delegating to the resolver keeps a single
     path, and the resolver applies the same invalidation rule as `get --with-pdf`.
     """
-    from .channels import Registry
-    from .resolver import Resolver
+    from .search import Registry
+    from .search import Resolver
 
     resolver = Resolver(library, Registry(evidence=library.evidence), offline=True)
     if engine:
@@ -586,8 +586,8 @@ def _extract_into(library: Library, work_id: str, *, engine: str = "") -> dict[s
 
 def _extract_with_engine(library: Library, work_id: str, *, engine: str) -> dict[str, Any]:
     """Extract with one named engine, then store text and passages together."""
-    from .passages import chunk_text
-    from .util import sha256_text
+    from .library.passages import chunk_text
+    from .core.util import sha256_text
 
     work = library.load(work_id)
     if work is None:
@@ -642,6 +642,33 @@ def cmd_reindex(ctx: Context) -> int:
 # --------------------------------------------------------------------------- #
 # Parser
 # --------------------------------------------------------------------------- #
+
+
+def cmd_topics(ctx: Context) -> int:
+    """Mine the corpus for one research topic worth doing.
+
+    Exit codes carry the distinction an agent needs to branch on: 4 when the survey
+    ran but the corpus is too thin to mine, 3 when there is nothing to return, 0
+    otherwise. A thin corpus is a real answer, not a failure.
+    """
+    args = ctx.args
+    action = str(getattr(args, "topics_action", ""))
+    payload = topics_commands.run(action, ctx.library, ctx.resolver, args)
+    error = payload.get("error")
+    if error:
+        code = (
+            EXIT_NOT_FOUND
+            if error in ("unknown_survey", "unknown_topic", "unknown_candidate")
+            else EXIT_FAILED
+        )
+        return ctx.emit(payload, code)
+    if action == "survey" and not payload.get("sufficient", True):
+        return ctx.emit(payload, EXIT_PARTIAL)
+    if action == "gaps" and not payload.get("usable", True):
+        return ctx.emit(payload, EXIT_NOT_FOUND)
+    if action == "candidates" and not payload.get("candidates"):
+        return ctx.emit(payload, EXIT_NOT_FOUND)
+    return ctx.emit(payload)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -808,6 +835,81 @@ def build_parser() -> argparse.ArgumentParser:
 
     sri = sub.add_parser("reindex", help="rebuild the derived index (rarely needed)")
     sri.set_defaults(func=cmd_reindex)
+
+    # --- module three: topic generation ---------------------------------- #
+    stp = sub.add_parser(
+        "topics",
+        help="mine the corpus for one research topic worth doing (module three)",
+        description=(
+            "Survey a direction in the local corpus, extract the gaps it documents, "
+            "apply novelty operators to that evidence, and build one topic at a time. "
+            "The tool returns anchored evidence and a section skeleton; the agent "
+            "writes the prose."
+        ),
+    )
+    tsub = stp.add_subparsers(dest="topics_action", required=True)
+
+    tt = tsub.add_parser("survey", help="map the corpus for a direction, topping it up if thin")
+    tt.add_argument("query", help="the direction, e.g. \"graph neural networks for molecules\"")
+    tt.add_argument("--min-works", type=int, default=20, dest="min_works",
+                    help="top up from channels below this many works (default 20)")
+    tt.add_argument("--min-fulltext", type=int, default=5, dest="min_fulltext",
+                    help="aim for this many works with stored full text (default 5)")
+    tt.add_argument("--year-from", type=int, dest="year_from")
+    tt.add_argument("--year-to", type=int, dest="year_to")
+    tt.add_argument("-n", "--limit", type=int, default=200, help="max works to include")
+    tt.add_argument("--top-terms", type=int, default=40, dest="top_terms")
+    tt.add_argument("--max-n", type=int, default=2, dest="max_n",
+                    help="longest term phrase to extract (1-3)")
+    tt.set_defaults(func=cmd_topics)
+
+    tg = tsub.add_parser("gaps", help="gap evidence for a survey: quotes, statistics, kinds")
+    tg.add_argument("survey_id")
+    tg.add_argument("-n", "--limit", type=int, default=60, help="max declared gaps")
+    tg.add_argument("--max-per-work", type=int, default=3, dest="max_per_work")
+    tg.set_defaults(func=cmd_topics)
+
+    tc = tsub.add_parser("candidates", help="ranked (evidence x operator) topic candidates")
+    tc.add_argument("survey_id")
+    tc.add_argument("-n", "--limit", type=int, default=25)
+    tc.add_argument("--per-kind", type=int, default=15, dest="per_kind",
+                    help="how many pieces of each evidence kind to consider")
+    tc.add_argument("--include-mined", action="store_true", dest="include_mined",
+                    help="also show combinations already committed")
+    tc.add_argument("--no-self-check", action="store_true", dest="no_self_check",
+                    help="skip the local novelty coverage check")
+    tc.set_defaults(func=cmd_topics)
+
+    td = tsub.add_parser("draft", help="commit to one candidate; returns the section skeleton")
+    td.add_argument("candidate_id")
+    td.set_defaults(func=cmd_topics)
+
+    tr = tsub.add_parser("rate", help="CCF estimate: upper bound, band, basis, risks")
+    tr.add_argument("topic_id")
+    tr.add_argument("--venue", help="target venue to check the estimate against")
+    tr.set_defaults(func=cmd_topics)
+
+    tsv = tsub.add_parser("save", help="commit a topic and export its Markdown draft")
+    tsv.add_argument("topic_id")
+    tsv.set_defaults(func=cmd_topics)
+
+    tl = tsub.add_parser("list", help="topics already mined, and what they consumed")
+    tl.add_argument("-n", "--limit", type=int, default=0)
+    tl.set_defaults(func=cmd_topics)
+
+    tsh = tsub.add_parser("show", help="one stored topic, with its anchors and references")
+    tsh.add_argument("topic_id")
+    tsh.add_argument("--markdown", action="store_true", help="emit the rendered Markdown")
+    tsh.set_defaults(func=cmd_topics)
+
+    tv = tsub.add_parser("venues", help="the CCF catalogue: look a venue up, or verify it")
+    tv.add_argument("query", nargs="?", default="", help="substring to search for")
+    tv.add_argument("-n", "--limit", type=int, default=20)
+    tv.add_argument("--verify", action="store_true", help="self-check the loaded catalogue")
+    tv.set_defaults(func=cmd_topics)
+
+    to = tsub.add_parser("operators", help="the novelty operators and their difficulty scale")
+    to.set_defaults(func=cmd_topics)
 
     return p
 

@@ -18,15 +18,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from lit.channels.openalex import uninvert  # noqa: E402
-from lit.channels.crossref import clean_jats  # noqa: E402
-from lit.cite import export, to_bibtex, to_ris  # noqa: E402
-from lit.evidence import redact_url  # noqa: E402
-from lit.ids import compute_dedup_keys, compute_work_id, parse_identifier  # noqa: E402
-from lit.library import Library  # noqa: E402
-from lit.model import ChannelRecord, add_claim, resolve_field  # noqa: E402
-from lit.net import is_bot_challenge, looks_like_pdf  # noqa: E402
-from lit.util import (  # noqa: E402
+from lit.search.channels.openalex import uninvert  # noqa: E402
+from lit.search.channels.crossref import clean_jats  # noqa: E402
+from lit.core.ids import compute_dedup_keys, compute_work_id, parse_identifier  # noqa: E402
+from lit.core.model import ChannelRecord, add_claim, resolve_field  # noqa: E402
+from lit.core.util import (  # noqa: E402
     arxiv_doi,
     normalize_arxiv_id,
     normalize_doi,
@@ -35,6 +31,10 @@ from lit.util import (  # noqa: E402
     strip_latex,
     title_tokens,
 )
+from lit.library import Library  # noqa: E402
+from lit.library.cite import export, to_bibtex, to_ris  # noqa: E402
+from lit.library.evidence import redact_url  # noqa: E402
+from lit.search.net import is_bot_challenge, looks_like_pdf  # noqa: E402
 
 
 class TestIdentifierParsing(unittest.TestCase):
@@ -167,7 +167,7 @@ class TestProvenance(unittest.TestCase):
         self.assertEqual(resolve_field(claims, "venue"), "NeurIPS")
 
     def test_conflict_is_detectable(self):
-        from lit.model import field_conflict
+        from lit.core.model import field_conflict
 
         claims: dict = {}
         add_claim(claims, "year", 2020, src="a")

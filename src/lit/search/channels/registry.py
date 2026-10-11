@@ -16,7 +16,7 @@ import importlib
 from pathlib import Path
 from typing import Any, Iterable
 
-from ..evidence import EvidenceStore
+from ...library.evidence import EvidenceStore
 from ..net import Http, credential
 from .base import Channel, ChannelResult, ChannelSpec
 

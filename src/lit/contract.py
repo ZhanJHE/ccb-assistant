@@ -81,7 +81,95 @@ INVARIANTS: list[dict[str, str]] = [
                 "with a reason; never silently return an empty result.",
         "why": "'No results' and 'could not look' are different facts with different responses.",
     },
+    {
+        "id": "evidence-anchored-topics",
+        "rule": "A topic claim is emitted only with an anchor into the corpus: a work_id, "
+                "a page and the source sentence. The tool never writes prose.",
+        "why": "A research idea whose support cannot be re-read is indistinguishable from "
+               "one that was invented; the anchor is what makes an idea auditable.",
+    },
+    {
+        "id": "one-topic-at-a-time",
+        "rule": "`topics candidates` proposes; `topics draft` commits to exactly one and "
+                "records its (gap evidence x novelty operator) key. That combination is "
+                "never proposed again.",
+        "why": "Mining the same gap repeatedly yields the same idea in new words, and a "
+               "corpus of near-duplicate topics is worse than an empty one.",
+    },
+    {
+        "id": "rating-is-estimate",
+        "rule": "A CCF rating is reported as an upper bound, a band, its per-rule basis and "
+                "a confidence — never as a promise. Every input to it must be recomputable.",
+        "why": "A fabricated acceptance prediction is exactly the kind of invented fact this "
+               "tool refuses to produce everywhere else.",
+    },
 ]
+
+# The three business modules, and the one shared floor beneath them. Declared here
+# rather than in prose because the boundary is what the whole split is for: a module
+# may import only what `depends_on` names.
+MODULES: list[dict[str, Any]] = [
+    {
+        "name": "search",
+        "package": "lit.search",
+        "role": "Find and obtain a paper from any source, by legal routes only.",
+        "owns": [
+            "the channel registry and every channel implementation (http/cli/mcp/manual)",
+            "HTTP transport: rate limiting, retries, credential transparency",
+            "the local-first acquisition protocol (get / find / re-check)",
+        ],
+        "depends_on": ["core", "library"],
+        "cli": ["channels", "find", "get", "check", "check-files"],
+        "mcp": ["lit_channels", "lit_find", "lit_get"],
+    },
+    {
+        "name": "library",
+        "package": "lit.library",
+        "role": "Keep a durable local corpus that cannot rot.",
+        "owns": [
+            "work records, raw evidence snapshots and the disposable query index",
+            "grounded passage retrieval (ask) and citation export",
+            "the single write path through which every mutation passes",
+        ],
+        "depends_on": ["core"],
+        "cli": [
+            "ask", "index", "cite", "open", "show", "search-local", "library",
+            "doctor", "repair", "export", "add-file", "extract", "merge",
+            "evidence", "ledger", "reindex",
+        ],
+        "mcp": ["lit_ask", "lit_open", "lit_cite", "lit_export", "lit_stats"],
+    },
+    {
+        "name": "topics",
+        "package": "lit.topics",
+        "role": "Mine the corpus for one research topic worth doing, with its evidence.",
+        "owns": [
+            "domain survey and gap-evidence extraction from stored full text",
+            "novelty operators, novelty self-check and candidate ranking",
+            "the CCF rating estimate and the draft skeleton",
+        ],
+        "depends_on": ["core", "library", "search"],
+        "cli": ["topics"],
+        "mcp": [
+            "lit_topics_survey", "lit_topics_gaps", "lit_topics_candidates",
+            "lit_topics_draft", "lit_topics_rate", "lit_topics_save", "lit_topics_list",
+        ],
+    },
+]
+
+CORE: dict[str, Any] = {
+    "name": "core",
+    "package": "lit.core",
+    "role": "The shared floor: records, identities, normalisation, PDF extraction.",
+    "owns": [
+        "the canonical record models and the work_id key chain",
+        "text normalisation and deterministic hashing",
+        "PDF-to-text extraction (no library state, no network)",
+    ],
+    "depends_on": [],
+    "cli": [],
+    "mcp": [],
+}
 
 # The canonical sequences. Each step names the command so the agent does not choose.
 WORKFLOWS: dict[str, dict[str, Any]] = {
@@ -156,6 +244,40 @@ WORKFLOWS: dict[str, dict[str, Any]] = {
         ],
         "notes": ["Repair never deletes or rewrites works/*.json; the worst case is a rebuild."],
     },
+    "generate-a-research-topic": {
+        "when": "The user names a direction and wants one topic worth doing, with evidence.",
+        "steps": [
+            {"n": 1, "cmd": "lit topics survey \"<direction>\"",
+             "why": "Maps the corpus for that direction, and tops it up from channels when "
+                    "it is too thin to mine. Reports what it added."},
+            {"n": 2, "cmd": "lit topics gaps <survey_id>",
+             "why": "Returns gap evidence with work_id + page anchors: self-declared "
+                    "limitations, future-work sentences, and empty cells in the "
+                    "method x task x dataset grid. Never prose."},
+            {"n": 3, "cmd": "lit topics candidates <survey_id>",
+             "why": "Applies the novelty operators to that evidence, runs the novelty "
+                    "self-check, and ranks what survives."},
+            {"n": 4, "cmd": "lit topics draft <candidate_id>",
+             "why": "Commits to exactly one topic and returns a section skeleton in which "
+                    "every claim carries its anchor. This is where one-at-a-time binds."},
+            {"n": 5, "cmd": "compose the topic text from the returned anchors",
+             "why": "The tool does not write prose; you do. Cite work_id + page per claim, "
+                    "exactly as `ask` requires."},
+            {"n": 6, "cmd": "lit topics rate <topic_id>",
+             "why": "CCF upper bound, band, per-rule basis and confidence — each input "
+                    "recomputable, so the estimate can be argued with."},
+            {"n": 7, "cmd": "lit topics save <topic_id>",
+             "why": "Stores the structured record and exports the Markdown draft."},
+        ],
+        "notes": [
+            "Never invent a citation. Every reference in the draft must come from the "
+            "corpus, and `topics draft` names exactly which works are eligible.",
+            "If `gaps` reports insufficient evidence, say so and stop. Do not lower the "
+            "bar in order to produce something.",
+            "The rating is an estimate with stated reasoning; present it as one.",
+            "One topic per call. `topics list` shows what has already been mined.",
+        ],
+    },
 }
 
 # Where the agent should look first. Ordering is the recommendation, not a menu.
@@ -168,6 +290,9 @@ ROUTING_HINTS: dict[str, str] = {
                              "full-text source only, because its relevance ranking is loose",
     "biomedicine": "europepmc, then pubmed",
     "anything_needing_a_doi": "crossref",
+    "mine_a_research_topic": "the topics module reads the local corpus only; run "
+                             "`lit topics survey` first so the direction has enough stored "
+                             "full text to mine, then follow its step order",
 }
 
 OUTPUT_CONVENTIONS: list[str] = [
@@ -184,10 +309,14 @@ def contract() -> dict[str, Any]:
     return {
         "tool": "lit",
         "purpose": (
-            "Aggregate every paper search/download channel behind one entry point, and keep "
-            "a durable local library so the same paper is never searched, downloaded and "
-            "parsed twice."
+            "Three modules over one shared floor. `search` obtains a paper from any legal "
+            "source; `library` keeps it in a durable local corpus so nothing is ever "
+            "searched, downloaded or parsed twice; `topics` mines that corpus for one "
+            "research topic worth doing, with its evidence. Every face — CLI, MCP and "
+            "Agent Skill — is a thin adapter over the same core, so they cannot disagree "
+            "about identity, dedup policy, or what counts as a legal source."
         ),
+        "modules": [CORE, *MODULES],
         "invariants": INVARIANTS,
         "workflows": WORKFLOWS,
         "routing": ROUTING_HINTS,
@@ -200,8 +329,18 @@ def contract_text() -> str:
     lines = [
         "lit — operating contract",
         "",
-        "INVARIANTS (the program enforces these; do not work around them)",
+        "MODULES (one shared floor; a module may import only what it depends on)",
     ]
+    for mod in [CORE, *MODULES]:
+        deps = ", ".join(mod["depends_on"]) or "nothing"
+        lines.append(f"  {mod['name']} ({mod['package']}) — {mod['role']}")
+        lines.append(f"      depends on: {deps}")
+        for owned in mod["owns"]:
+            lines.append(f"      owns: {owned}")
+        if mod["cli"]:
+            lines.append(f"      cli: {', '.join(mod['cli'])}")
+        lines.append("")
+    lines.append("INVARIANTS (the program enforces these; do not work around them)")
     for inv in INVARIANTS:
         lines.append(f"  [{inv['id']}] {inv['rule']}")
         lines.append(f"      why: {inv['why']}")

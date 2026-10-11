@@ -1,18 +1,19 @@
 ---
 name: lit
-description: "Aggregate every paper search/download channel (free APIs, keyed APIs, MCP servers, local CLI tools) behind one entry point, and maintain a durable local paper library so the same paper is never searched, downloaded and parsed twice. Use for: finding papers, downloading open-access PDFs, reading a paper's full text offline, building a reusable literature corpus, re-verifying stored records, and exporting citations. 触发：找论文、搜文献、下载论文、读论文原文、建论文库、整理文献、导出引用、BibTeX、查文献是否撤稿。"
+description: "Aggregate every paper search/download channel (free APIs, keyed APIs, MCP servers, local CLI tools) behind one entry point, and maintain a durable local paper library so the same paper is never searched, downloaded and parsed twice. Use for: finding papers, downloading open-access PDFs, reading a paper's full text offline, building a reusable literature corpus, re-verifying stored records, exporting citations, and mining the corpus for a research topic with its evidence. 触发：找论文、搜文献、下载论文、读论文原文、建论文库、整理文献、导出引用、BibTeX、查文献是否撤稿、挖课题、选题、找创新点、课题生成。"
 license: MIT
-compatibility: "Needs network access for channel queries (not for local reads). Python 3.10+ standard library only; PDF text extraction uses pdfplumber or pypdf when present. No credentials required — keyed channels degrade and say so. Optional keys raise rate limits only."
+compatibility: "Needs network access for channel queries and corpus top-up (not for local reads). Python 3.10+ standard library only; PDF text extraction uses pdfplumber or pypdf when present. No credentials required — keyed channels degrade and say so. Optional keys raise rate limits only."
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
   tool: lit
 allowed-tools: Read Bash Write
 ---
 
-# lit — one entry point for every paper channel, plus a durable local library
+# lit — three modules: search, library, topics
 
-`lit` answers two questions: **"how do I get this paper from any source"** and
-**"why am I downloading it again"**. The second one is the point.
+`lit` answers three questions: **"how do I get this paper"**, **"why am I downloading
+it again"**, and **"what should I work on next"**. The second one is why the library
+exists; the third is why it is worth keeping.
 
 ## The rule that matters
 
@@ -31,8 +32,8 @@ $LIT --library ./papers find "diffusion models for molecule generation" -n 10
 All commands print **JSON on stdout**; prose goes to stderr. Add `--pretty` for humans.
 
 **Exit codes** — branch on these instead of parsing text:
-`0` ok · `2` usage · `3` not found · `4` partial (some channels failed, results exist) ·
-`5` failed.
+`0` ok · `2` usage · `3` not found · `4` partial (some channels failed, or the corpus is
+too thin to mine) · `5` failed.
 
 ## The canonical sequence
 
@@ -74,38 +75,45 @@ All commands print **JSON on stdout**; prose goes to stderr. Add `--pretty` for 
    $LIT export --format bibtex --ids <work_id>,<work_id> -o refs.bib
    ```
 
-## Command reference
+## Generating a research topic
 
-| Command | Purpose |
-|---|---|
-| `channels [name]` | Every channel, whether it is usable, and which env var it is missing |
-| `contract` | The operating rules and step order, machine-readable |
-| `find <query> [-n N] [-s auto\|all\|a,b] [--min-local N]` | Local first, then channels |
-| `get <id> [--with-pdf] [--extract\|--refresh] [-s ...]` | Acquire one paper |
-| `ask "<question>" [-n N] [--ids ...]` | Retrieve page-anchored passages |
-| `open <id> [--head N]` | Read stored full text (never hits the network) |
-| `index [--ids ...]` | Rebuild the passage index for stored full texts |
-| `show <id> [--raw]` | One record incl. **which source supplied each field** |
-| `search-local [query] [--venue V] [--author A] [--with-pdf]` | Query only the corpus |
-| `cite <id> [--format bibtex\|ris\|csl\|text]` | One citation + field provenance |
-| `check <ids>\|--all` | Re-verify: new version, OA change, retraction |
-| `check-files` | Verify stored PDFs against their recorded hashes |
-| `library stats\|report\|list\|merges` | Corpus views and pending duplicate candidates |
-| `export --format bibtex\|ris\|csl\|text [--ids ...] [--query ...]` | Citations |
-| `add-file <pdf> [--title ...]` | Put a PDF you already have into the library |
-| `doctor` / `repair` | Consistency report / rebuild derived artefacts |
-| `merge <keep> <drop>` | Confirm a duplicate that was only flagged |
-| `evidence [--id EVID]` / `ledger` | Raw response snapshots / append-only audit trail |
+`lit topics` mines the corpus for **one topic at a time**. It returns evidence and
+structure, never prose: every claim is anchored to a `work_id` + page.
 
-Useful flags: `--offline` (fail rather than reach the network), `--pretty`,
-`--channel a,b` (allow-list), `--disable-channel dblp`.
+```bash
+$LIT topics survey "<direction>"        # 1. map the corpus; tops it up if too thin
+$LIT topics gaps <survey_id>            # 2. the evidence: author statements + statistics
+$LIT topics candidates <survey_id>      # 3. ranked (evidence × novelty operator)
+$LIT topics draft <candidate_id>        # 4. commit to ONE; returns the section skeleton
+#    ... write each section from the anchors attached to it ...
+$LIT topics rate <topic_id> [--venue X] # 5. CCF estimate: bound, band, basis, risks
+$LIT topics save <topic_id>             # 6. commit, export Markdown, retire the key
+$LIT topics list                        # what is already mined
+$LIT topics venues --verify             # the CCF catalogue
+```
+
+Rules:
+
+- **One topic per `draft`.** Its `dedup_key` is retired, so the same combination is
+  never proposed again. That is what stops repeated mining from producing the same
+  idea in new words.
+- **Compose every section from the anchors attached to it.** If a claim has no anchor,
+  drop the claim. A reference may only come from `references` in the draft — never
+  from memory.
+- **`rate` is a rule-based estimate with its reasoning, not an acceptance prediction.**
+  Report the basis and the risks alongside the band.
+- **If `survey` reports `sufficient: false` (exit 4), say so and stop.** Do not lower
+  the bar in order to produce a topic. A gap claim the corpus cannot support is worse
+  than no topic.
+- Datasets and baselines in the draft are **observed mentions with counts**, not
+  recommendations. Verify availability before committing to one.
 
 ## Also available over MCP
 
-The same core is exposed as an MCP server with tools `lit_contract`, `lit_channels`,
-`lit_find`, `lit_get`, `lit_ask`, `lit_open`, `lit_cite`, `lit_export`, `lit_stats` —
-one core, several faces, identical behaviour to the CLI. See
-`references/commands.md` for how to start and register it.
+The same core is exposed as an MCP server with 16 tools: `lit_contract`, `lit_channels`,
+`lit_find`, `lit_get`, `lit_ask`, `lit_open`, `lit_cite`, `lit_export`, `lit_stats`, and
+the seven `lit_topics_*` tools that mirror the sequence above — one core, several faces,
+identical behaviour to the CLI. See `references/commands.md` for how to register it.
 
 ## Reading results
 
@@ -154,15 +162,12 @@ handle the identifier you gave. Override only for a reason:
 | Broad topic discovery | `openalex`, `crossref` |
 | Biomedicine / clinical ML | `europepmc` |
 
-Notes that save time:
-- **arXiv's relevance ranking is loose** — treat it as an identifier and full-text
-  source, not a ranking engine.
-- **`dblp` is often gated** by an anti-bot challenge; the tool reports this and
-  degrades. Do not treat its silence as "no such paper".
-- **Semantic Scholar 429s** without a key; it is a supplement, not a dependency.
+arXiv ranks loosely (an identifier source, not a ranking engine); `dblp` is often gated
+and says so; Semantic Scholar 429s keyless.
 
 ## Full detail
 
-- `references/architecture.md` — layers, on-disk layout, why local-first works
-- `references/channels.md` — per-source contracts, measured behaviour and known traps
-- `references/commands.md` — every flag with copy-paste examples
+- `references/commands.md` — every command and flag, with examples
+- `references/topics.md` — the operators, the scoring, the CCF estimate
+- `references/architecture.md` — the three modules, on-disk layout, local-first
+- `references/channels.md` — per-source contracts, measured behaviour, known traps

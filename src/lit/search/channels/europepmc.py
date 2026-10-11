@@ -12,8 +12,8 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from ..model import ChannelRecord
-from ..util import normalize_doi, strip_latex
+from ...core.model import ChannelRecord
+from ...core.util import normalize_doi, strip_latex
 from .base import (
     CAP_BIBTEX,
     CAP_FULLTEXT,
@@ -66,7 +66,7 @@ class EuropePmcChannel(Channel):
         return self._fetch(params, label="search")
 
     def lookup(self, identifier: str, **kw: Any) -> ChannelResult:
-        from ..ids import parse_identifier
+        from ...core.ids import parse_identifier
 
         parsed = parse_identifier(identifier)
         if parsed is None:

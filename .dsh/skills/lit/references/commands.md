@@ -134,9 +134,12 @@ python lit-mcp.py --library ./papers      # serve over stdio
 python lit-mcp.py --list-tools            # inspect the exposed tools
 ```
 
-Nine tools: `lit_contract`, `lit_channels`, `lit_find`, `lit_get`, `lit_ask`,
-`lit_open`, `lit_cite`, `lit_export`, `lit_stats`. Newline-delimited JSON-RPC 2.0 over
-stdio, no SDK and no extra dependency. Register it with any MCP client:
+Sixteen tools. Search and library: `lit_contract`, `lit_channels`, `lit_find`,
+`lit_get`, `lit_ask`, `lit_open`, `lit_cite`, `lit_export`, `lit_stats`. Topic
+generation: `lit_topics_survey`, `lit_topics_gaps`, `lit_topics_candidates`,
+`lit_topics_draft`, `lit_topics_rate`, `lit_topics_save`, `lit_topics_list`.
+Newline-delimited JSON-RPC 2.0 over stdio, no SDK and no extra dependency. Register it
+with any MCP client:
 
 ```json
 {"mcpServers": {"lit": {"command": "python", "args": ["/path/to/lit-mcp.py", "--library", "/path/to/papers"]}}}
@@ -148,18 +151,6 @@ obtained over MCP can be reproduced verbatim from a shell.
 
 Tool failures are returned as data (`{"ok": false, "error": "no_fulltext", ...}`)
 rather than as opaque protocol errors, so a caller can read the reason and adapt.
-
-
-
-```bash
-$LIT check --all                    # re-query only the decisive endpoints
-$LIT check <id1>,<id2> -n 5
-$LIT check-files                    # PDFs on disk vs recorded sha256; finds orphans
-```
-
-`check` is three-valued per record: `changed`, `unchanged`, or `unverifiable`. Absence
-of a retraction notice is reported as **"not found in the sources checked"** — never as
-"not retracted", because a miss is not evidence.
 
 ## verify — incremental re-verification
 
@@ -201,7 +192,62 @@ $LIT add-file ./paper.pdf --title "..." --authors "A One;B Two" --year 2024 --ex
 
 `doctor`/`repair` never delete or rewrite `works/*.json`; the worst case is a rebuild.
 
-## Worked example: a topic, end to end
+## topics — mine the corpus for a research topic
+
+Topic generation is a sequence, not a single command, because there is judgement in the
+middle: the agent must read the gap evidence before choosing, and choose before
+drafting. See `references/topics.md` for the method behind each step.
+
+```bash
+# 1. Map the direction. Tops the corpus up from channels when it is too thin.
+$LIT topics survey "graph neural networks for molecular property prediction"
+$LIT topics survey "<direction>" --min-works 30 --min-fulltext 8   # raise the bar
+$LIT topics survey "<direction>" --offline                        # never top up
+$LIT topics survey "<direction>" --year-from 2021                 # restrict the window
+
+# 2. The evidence: author-stated gaps (with page anchors) and sparse term pairs.
+$LIT topics gaps <survey_id>
+$LIT topics gaps <survey_id> -n 120 --max-per-work 5
+
+# 3. Ranked (evidence x novelty operator) candidates.
+$LIT topics candidates <survey_id>
+$LIT topics candidates <survey_id> -n 10 --include-mined   # include what was mined
+
+# 4. Commit to ONE candidate; returns the section skeleton.
+$LIT topics draft <candidate_id>
+
+#    ... write each section from the anchors attached to it ...
+
+# 5. The CCF estimate, with its basis and risks.
+$LIT topics rate <topic_id>
+$LIT topics rate <topic_id> --venue NeurIPS     # check against a target venue
+
+# 6. Commit: export the Markdown draft and retire the de-duplication key.
+$LIT topics save <topic_id>
+
+# Supporting views
+$LIT topics list                       # what has been mined, and what each consumed
+$LIT topics show <topic_id>            # one record, with anchors and references
+$LIT topics show <topic_id> --markdown # the rendered draft
+$LIT topics venues NeurIPS             # look a venue up in the CCF catalogue
+$LIT topics venues --verify            # self-check the loaded catalogue
+$LIT topics operators                  # the eleven novelty operators
+```
+
+**Exit codes here carry meaning:** `4` from `survey` means the corpus is below the
+thresholds (`sufficient: false`) — say so and stop rather than mining anyway. `3` from
+`gaps` means there is no usable evidence. `3` from `candidates` means nothing is left
+that has not already been mined.
+
+**Environment:** `LIT_CCF_CATALOG` points at your own CCF catalogue CSV, replacing the
+bundled subset. `lit topics venues --verify` reports duplicates and malformed rows
+before you trust one.
+
+**What it will not do:** write the topic for you. Every step returns evidence, counts,
+structure and reasoning; the prose is yours, and every claim in it must trace to an
+anchor the draft supplied.
+
+## Worked example: search → read → cite, end to end
 
 ```bash
 # 1. Local first — free if you have already looked at this topic.
@@ -223,3 +269,40 @@ $LIT export --format bibtex --query "speculative decoding" -o related-work.bib
 
 Second time round, step 1 answers from the corpus, step 2 is an instant local read, and
 steps 3–5 never touch the network. That is the entire point of the tool.
+
+## Worked example: one research topic, end to end
+
+With a corpus already populated (12 works on molecular representation learning):
+
+```bash
+$LIT topics survey "molecular" --offline --min-works 5 --min-fulltext 0
+# → survey_id 7d318936ac63d45a, corpus {works: 12}, sufficient: true,
+#   terms: molecular(12), protein(8), transformer(6), interpretability(4)
+#   ccf: {A: 12, unmatched: 0}
+
+$LIT topics gaps 7d318936ac63d45a
+# → usable: true, gap_kinds {absence: 3, future_work: 3, idealization: 3, limitation: 3}
+#   declared_gaps: 12 (each with work_id, page, sentence, marker)
+#   sparse_pairs: ['protein','transformer'] together 2 vs expected 4.0
+
+$LIT topics candidates 7d318936ac63d45a -n 5
+# → generated: 66, returned: 5, each with score + score_basis + local_coverage
+
+$LIT topics draft 2ec7ebddcbbe5494
+# → topic_id 4e77f9a97b32f0bb, 9 sections, 11 references
+#   section 6 observed_datasets: QM9(6), MD17(6)
+#   section 6 observed_baselines: SchNet(3), DimeNet(3)
+
+$LIT topics rate 4e77f9a97b32f0bb
+# → estimated_ccf B, upper_bound A, confidence medium, steps_down 1
+#   basis: operator_ceiling A · evidence_directness declared ·
+#          corpus_support 0.25 (-1 band) · local_coverage 0.25
+
+$LIT topics save 4e77f9a97b32f0bb
+# → committed; draft at <library>/topics/drafts/4e77f9a97b32f0bb.md
+#   1 de-duplication key retired
+```
+
+The saved Markdown is a checklist skeleton with every claim's anchor inline — quotations
+as blockquotes with `[work_id p.N]`, statistics with their counts, references as BibTeX.
+The agent fills it in; the tool never invents a sentence for it.

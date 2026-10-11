@@ -173,7 +173,7 @@ class PaperSearchChannel(Channel):
         shapes are accepted, and the caller is told to use the native channel for the
         corresponding source when precision matters.
         """
-        from ..ids import parse_identifier
+        from ...core.ids import parse_identifier
 
         parsed = parse_identifier(identifier)
         if parsed is None:
@@ -238,8 +238,8 @@ class PaperSearchChannel(Channel):
                 res.records.append(rec)
 
     def _parse_paper(self, item: dict[str, Any], ev_id: str) -> "ChannelRecord | None":
-        from ..model import ChannelRecord
-        from ..util import strip_latex
+        from ...core.model import ChannelRecord
+        from ...core.util import strip_latex
 
         title = strip_latex(str(item.get("title") or "")).strip()
         if not title:

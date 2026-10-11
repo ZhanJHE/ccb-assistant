@@ -29,7 +29,7 @@ from lit.mcp_server import (  # noqa: E402
     serve,
     tool_definitions,
 )
-from lit.model import ChannelRecord  # noqa: E402
+from lit.core.model import ChannelRecord  # noqa: E402
 
 
 def _call(server: McpServer, msg_id: int, name: str, args: dict) -> dict:
@@ -264,8 +264,8 @@ class TestCliMcpParity(unittest.TestCase):
         self.lib.attach_fulltext(upsert.work_id, rel_path=rel, chars=chars)
         self.lib.close()
 
-        from lit.channels import Registry
-        from lit.resolver import Resolver
+        from lit.search.channels import Registry
+        from lit.search.acquire import Resolver
 
         cli_side = Library(self.tmp / "lib")
         try:
@@ -284,7 +284,9 @@ class TestCliMcpParity(unittest.TestCase):
 
     def test_tool_definitions_are_stable(self):
         # The tool list is part of the contract surface; a silent rename would break
-        # every registered client, so the names are pinned.
+        # every registered client, so the names are pinned. Topic generation is
+        # deliberately several tools rather than one: the agent has to read the gap
+        # evidence before choosing, and choose before drafting.
         names = [t["name"] for t in tool_definitions()]
         self.assertEqual(
             names,
@@ -298,8 +300,31 @@ class TestCliMcpParity(unittest.TestCase):
                 "lit_cite",
                 "lit_export",
                 "lit_stats",
+                "lit_topics_survey",
+                "lit_topics_gaps",
+                "lit_topics_candidates",
+                "lit_topics_draft",
+                "lit_topics_rate",
+                "lit_topics_save",
+                "lit_topics_list",
             ],
         )
+
+    def test_every_advertised_tool_has_a_handler(self):
+        """An advertised tool with no implementation is a client-side crash."""
+        from lit.mcp_server import McpServer
+
+        with tempfile.TemporaryDirectory() as tmp:
+            server = McpServer(Path(tmp) / "lib")
+            try:
+                for entry in tool_definitions():
+                    with self.subTest(tool=entry["name"]):
+                        handler = getattr(
+                            server, f"_tool_{entry['name'].removeprefix('lit_')}", None
+                        )
+                        self.assertIsNotNone(handler, f"{entry['name']} has no handler")
+            finally:
+                server.close()
 
 
 if __name__ == "__main__":

@@ -15,8 +15,8 @@ import re
 import xml.etree.ElementTree as ET
 from typing import Any
 
-from ..model import ChannelRecord
-from ..util import normalize_arxiv_id, normalize_doi, strip_latex
+from ...core.model import ChannelRecord
+from ...core.util import normalize_arxiv_id, normalize_doi, strip_latex
 from .base import (
     CAP_FULLTEXT,
     CAP_LOOKUP,

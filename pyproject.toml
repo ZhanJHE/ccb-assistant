@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lit-paper"
-version = "0.1.0"
-description = "Source-agnostic paper search/download aggregation plus a durable local paper library, built for AI harnesses"
+version = "0.2.0"
+description = "Three modules over one shared floor: source-agnostic paper search and download, a durable local paper library, and research-topic mining over that corpus. Built for AI harnesses."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
-# No required third-party dependencies, by design: urllib/json/sqlite3/hashlib only,
+# No required third-party dependencies, by design: urllib/json/sqlite3/hashlib/csv only,
 # so the tool drops into any harness without a dependency-resolution step.
 dependencies = []
 
@@ -29,3 +29,8 @@ package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+# The CCF catalogue is data, not code: it ships as a CSV so it can be replaced without
+# touching Python. Set LIT_CCF_CATALOG to point at your own copy.
+[tool.setuptools.package-data]
+"lit.topics" = ["data/*.csv"]
