@@ -149,7 +149,15 @@ class WorkIndex:
         index_ok = True
         reason = ""
         if not self.index_path.exists():
-            index_ok, reason = False, "index file missing"
+            # A brand-new library has no index and nothing to put in it. The corpus is
+            # local data that starts empty by design, so reporting drift here would
+            # greet every fresh clone with a problem it cannot act on — the index is
+            # built lazily by the first query. With works on disk, a missing index *is*
+            # drift and is repaired below as before.
+            if n_works:
+                index_ok, reason = False, "index file missing"
+            else:
+                report["index_note"] = "empty library; the index is built on first query"
         elif indexed != n_works:
             index_ok, reason = False, f"index holds {indexed} works, disk has {n_works}"
         elif meta.get("works_fingerprint") and meta.get("works_fingerprint") != fingerprint:

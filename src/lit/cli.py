@@ -26,6 +26,7 @@ from typing import Any, Sequence
 from . import __version__
 from .contract import contract, contract_text
 from .core.extract import available_engines, extract_text
+from .core.paths import checkout_root
 from .core.util import read_json, utc_now
 from .library import Library, default_library_root
 from .search import Registry, Resolver
@@ -87,12 +88,39 @@ def _config_paths(library: Library) -> list[Path]:
     if env:
         paths.extend(Path(p) for p in env.split(os.pathsep) if p)
     paths.append(library.root / "channels.yaml")
-    paths.append(Path.cwd() / "lit-channels.yaml")
+    # The checkout is a first-class location now that the library lives inside it:
+    # a channel declaration committed next to the code travels with the clone. The
+    # cwd entry stays for callers that carry a config with them.
+    checkout = checkout_root()
+    cwd = Path.cwd()
+    if checkout is not None and checkout != cwd:
+        paths.append(checkout / "lit-channels.yaml")
+    paths.append(cwd / "lit-channels.yaml")
     return paths
 
 
 def _split(value: str) -> list[str]:
     return [v.strip() for v in (value or "").split(",") if v.strip()]
+
+
+def _not_found(ctx: Context, identifier: str) -> CommandError:
+    """A not-found error that says what to do next.
+
+    An empty library and a missing paper are different facts; a caller that cannot
+    tell them apart retries the wrong thing. A fresh clone starts empty by design —
+    the corpus is local data, never shipped in the repository — so the empty case is
+    the *first* thing a new user hits, not an edge case.
+    """
+    if ctx.library.count() == 0:
+        return CommandError(
+            f"{identifier!r} is not in the library, and the library is empty. Acquire "
+            f'something first: `lit find "<topic>"` then `lit get <id> --with-pdf`',
+            EXIT_NOT_FOUND,
+        )
+    return CommandError(
+        f"{identifier!r} not found in the local library; run `lit find`/`lit get` for it",
+        EXIT_NOT_FOUND,
+    )
 
 
 # --------------------------------------------------------------------------- #
@@ -132,6 +160,41 @@ def cmd_contract(ctx: Context) -> int:
     return ctx.emit(contract())
 
 
+def _legacy_libraries(library: Library) -> list[dict[str, Any]]:
+    """Old ``.lit`` libraries found next to the current root.
+
+    The default moved from a hidden ``.lit`` (resolved against the working directory)
+    to a visible ``papers/`` (resolved against the checkout), so an existing corpus can
+    be left behind by the change. It is *reported*, never moved: silently relocating
+    someone's papers is worse than one extra line of output, and a wrong guess about
+    which directory is authoritative corrupts a library rather than disappointing it.
+    """
+    found: list[dict[str, Any]] = []
+    seen: set[Path] = set()
+    for base in (library.root.parent, Path.cwd(), checkout_root()):
+        if base is None:
+            continue
+        legacy = base / ".lit"
+        try:
+            key = legacy.resolve()
+        except OSError:  # pragma: no cover - unreadable path
+            continue
+        if key in seen or not (legacy / "library.json").is_file():
+            continue
+        seen.add(key)
+        works_dir = legacy / "works"
+        count = sum(1 for _ in works_dir.rglob("*.json")) if works_dir.is_dir() else 0
+        found.append(
+            {
+                "path": str(legacy),
+                "works": count,
+                "note": "an older library; it is untouched and not read from",
+                "hint": f'set LIT_HOME="{legacy}" (or pass --library) to keep using it',
+            }
+        )
+    return found
+
+
 def cmd_doctor(ctx: Context) -> int:
     report = ctx.library.self_check(repair=bool(ctx.args.repair))
     report["library_root"] = str(ctx.library.root)
@@ -140,6 +203,9 @@ def cmd_doctor(ctx: Context) -> int:
     summary = ctx.registry.availability_summary()
     report["channels_usable"] = summary["usable"]
     report["channels_unavailable"] = summary["unavailable"]
+    legacy = _legacy_libraries(ctx.library)
+    if legacy:
+        report["legacy_libraries"] = legacy
     code = EXIT_OK if not report.get("problems") else EXIT_PARTIAL
     return ctx.emit(report, code)
 
@@ -271,11 +337,7 @@ def cmd_cite(ctx: Context) -> int:
     args = ctx.args
     work = ctx.library.resolve(args.identifier)
     if work is None:
-        raise CommandError(
-            f"{args.identifier!r} not found in the local library "
-            "(use `lit get` to acquire it first)",
-            EXIT_NOT_FOUND,
-        )
+        raise _not_found(ctx, args.identifier)
     fmt = (args.format or "bibtex").casefold()
     if fmt in ("bibtex", "bib"):
         rendered = to_bibtex(work, key_style=args.key_style)
@@ -351,7 +413,7 @@ def cmd_show(ctx: Context) -> int:
     args = ctx.args
     work = ctx.library.resolve(args.identifier)
     if work is None:
-        raise CommandError(f"{args.identifier!r} not found in the local library", EXIT_NOT_FOUND)
+        raise _not_found(ctx, args.identifier)
     if args.raw:
         return ctx.emit(work.as_dict())
     payload = work.summary()
@@ -556,10 +618,20 @@ def cmd_extract(ctx: Context) -> int:
     args = ctx.args
     work = ctx.library.resolve(args.identifier)
     if work is None:
-        raise CommandError(f"{args.identifier!r} not found in the local library", EXIT_NOT_FOUND)
+        raise _not_found(ctx, args.identifier)
     if not work.has_pdf():
         raise CommandError(
             f"{work.work_id} has no local PDF; run `lit get {args.identifier} --with-pdf`",
+            EXIT_NOT_FOUND,
+        )
+    # `has_pdf` reads the *record*, not the disk. A PDF that was deleted by hand — or
+    # a `files/` directory that never came along — would otherwise reach the extractor
+    # as a missing path and surface as an engine traceback instead of an instruction.
+    best = work.best_pdf()
+    if best is not None and best.pdf_path and not ctx.library.file_abs(best.pdf_path).exists():
+        raise CommandError(
+            f"{work.work_id} records a PDF at {best.pdf_path}, but the file is not "
+            f"there; run `lit get {args.identifier} --with-pdf` to fetch it again",
             EXIT_NOT_FOUND,
         )
     result = _extract_into(ctx.library, work.work_id, engine=args.engine or "")
@@ -686,7 +758,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     p.add_argument("--version", action="version", version=f"lit {__version__}")
-    p.add_argument("--library", help="library root (default: $LIT_HOME or ./.lit)")
+    p.add_argument("--library", help="library root (default: $LIT_HOME, else <checkout>/papers)")
     p.add_argument("--pretty", action="store_true", help="human-readable output instead of JSON")
     p.add_argument("--offline", action="store_true", help="never touch the network")
     p.add_argument("--verbose", action="store_true")

@@ -722,7 +722,7 @@ def main(argv: list[str] | None = None) -> int:
         prog="lit-mcp",
         description="MCP server for lit (stdio, newline-delimited JSON-RPC).",
     )
-    parser.add_argument("--library", help="library root (default: $LIT_HOME or ./.lit)")
+    parser.add_argument("--library", help="library root (default: $LIT_HOME, else <checkout>/papers)")
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument(
         "--list-tools", action="store_true", help="print the tool list and exit"

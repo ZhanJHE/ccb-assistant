@@ -29,6 +29,7 @@ from typing import Any, Iterable
 
 from .evidence import EvidenceStore
 from ..core.ids import compute_work_id, work_id_from_keys, work_path_shard
+from ..core.paths import checkout_root
 from ..core.model import (
     ChannelRecord,
     Manifestation,
@@ -64,7 +65,7 @@ LIBRARY_SCHEMA = 1
 AUTO_MERGE_JACCARD = 0.92
 MERGE_CANDIDATE_JACCARD = 0.60
 
-DEFAULT_LIBRARY_DIRNAME = ".lit"
+DEFAULT_LIBRARY_DIRNAME = "papers"
 
 @dataclass
 class UpsertResult:
@@ -105,10 +106,29 @@ class DedupCandidate:
 
 
 def default_library_root(cwd: Path | None = None) -> Path:
-    """Resolve the library root: ``$LIT_HOME`` wins, then ``<cwd>/.lit``."""
+    """Resolve the library root.
+
+    ``$LIT_HOME`` wins outright, then ``$LIT_REPO``, then the checkout the running
+    code lives in, and only then a directory relative to ``cwd`` (which the last two
+    cases need, and which only ``cwd`` itself supplies).
+
+    The order is the point. A harness invokes the tool from the user's project, so a
+    cwd-relative default scattered libraries across unrelated folders and left the
+    clone — the one directory the user actually looks at — empty. Anchoring to the
+    checkout makes "clone it and use it" true: the corpus lands inside the clone.
+
+    An installed package has no checkout to anchor to; there the cwd fallback is the
+    honest answer rather than a silent write into ``site-packages``.
+    """
     env = os.environ.get("LIT_HOME")
     if env:
         return Path(env).expanduser()
+    repo = os.environ.get("LIT_REPO", "").strip()
+    if repo:
+        return Path(repo).expanduser() / DEFAULT_LIBRARY_DIRNAME
+    checkout = checkout_root()
+    if checkout is not None:
+        return checkout / DEFAULT_LIBRARY_DIRNAME
     base = Path(cwd) if cwd else Path.cwd()
     return base / DEFAULT_LIBRARY_DIRNAME
 

@@ -15,9 +15,20 @@ venv/
 .coverage
 htmlcov/
 
-# Local paper libraries — these are user data, never source.
-# A library can be committed deliberately to share a curated corpus; the default
-# here is to keep it out so a stray `.lit/` does not bloat the repository.
+# The user's literature workspace. Everything in it — corpus, ledger, raw response
+# snapshots, extracted full text, PDFs — is produced by *using* the tool, and data
+# produced by using the tool is local data, not source. Git tracks development
+# artefacts only: code, tests, dev docs, the skill.
+#
+# The library lives inside the clone on purpose (see `default_library_root`), so the
+# user's papers sit in the directory they cloned rather than in whatever directory
+# the caller happened to be in.
+#
+# ⚠ Consequence: because this directory is ignored *wholesale*, `git clean -Xdf`
+#   deletes the entire corpus. Back up by copying the directory, not through Git.
+papers/
+
+# Legacy library name, kept so an older `.lit/` never gets committed by accident.
 .lit/
 .lit-*/
 *.lit/

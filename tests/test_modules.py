@@ -179,15 +179,18 @@ class TestCanonicalApi(unittest.TestCase):
         import lit.search  # noqa: F401
 
     def test_core_exposes_the_shared_floor(self):
-        from lit.core import model, util
+        from lit.core import model, paths, util
         from lit.core.ids import compute_work_id, parse_identifier  # noqa: F401
         from lit.core.model import ChannelRecord, Manifestation, WorkRecord  # noqa: F401
+        from lit.core.paths import checkout_root  # noqa: F401
         from lit.core.util import normalize_doi, utc_now  # noqa: F401
 
         self.assertTrue(callable(compute_work_id))
         self.assertTrue(callable(parse_identifier))
         self.assertTrue(callable(utc_now))
+        self.assertTrue(callable(checkout_root))
         self.assertTrue(hasattr(model, "WorkRecord"))
+        self.assertTrue(hasattr(paths, "checkout_root"))
         self.assertTrue(hasattr(util, "normalize_doi"))
 
     def test_library_exposes_the_corpus_and_retrieval(self):
