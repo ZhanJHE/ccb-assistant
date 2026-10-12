@@ -57,13 +57,19 @@ Measured on a real paper (arXiv 1706.03762, a 2.2 MB PDF):
 
 ## On-disk layout
 
+The library lives *inside the clone*, at `<checkout>/papers` — visible, next to the code
+that creates it. It is resolved from the checkout rather than the working directory, so
+the corpus stays put no matter where the tool is called from, and `--library` /
+`$LIT_HOME` are the ways to point it somewhere else.
+
 ```
-library/
+papers/                        ← the user's workspace; local data, never committed
   library.json                 # schema, work count, index fingerprint
   works/<2>/<2>/<work_id>.json # authoritative record  ← the source of truth
   evidence/<ev_id>.json        # raw channel response, before parsing
   files/<2>/<sha256>.pdf       # content-addressed: identical bytes stored once
   blobs/<work_id>/fulltext.txt # extracted text
+  blobs/<work_id>/passages.json# passage index — derived, rebuilt on demand
   library.jsonl                # append-only event ledger
   index.sqlite                 # derived query index — deletable, always rebuildable
   channels.yaml                # optional: declare extra channels without code
@@ -73,8 +79,14 @@ library/
 ```
 
 **Why plain text is the truth source rather than SQLite directly:** the corpus stays
-diffable, greppable, hand-inspectable and committable, and a damaged index can never
-destroy data — the worst case is a slow rebuild. `index.sqlite` is a cache.
+diffable, greppable, hand-inspectable and repairable by hand, a damaged index can never
+destroy data, and an agent can read a record without a client library. `index.sqlite` is
+a cache, and every derived file (it, plus `passages.json`) can be rebuilt from the text
+and the records — so the worst case is a slow rebuild, never lost work.
+
+The whole directory is local data: it is produced by *using* the tool, so it is not
+committed and does not travel with the repository. That makes `papers/` the only copy —
+back it up by copying the directory, and note that `git clean -Xdf` will remove it.
 
 ## Identity: two layers, both deterministic
 

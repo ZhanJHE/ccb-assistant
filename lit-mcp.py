@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 """Run the lit MCP server from a checkout, with no install step.
 
-    python lit-mcp.py --library ./papers          # serve over stdio
+    python lit-mcp.py                             # serve over stdio
     python lit-mcp.py --list-tools                # inspect the exposed tools
+    python lit-mcp.py --library ./other-papers    # point at another corpus
 
 Registering it with an MCP client is then just a command entry. For example, a client
 that takes a JSON config:
@@ -11,10 +12,13 @@ that takes a JSON config:
       "mcpServers": {
         "lit": {
           "command": "python",
-          "args": ["V:/MyProject/ccb_assistant/lit-mcp.py", "--library", "V:/papers"]
+          "args": ["C:/path/to/ccb-assistant/lit-mcp.py"]
         }
       }
     }
+
+The library defaults to ``<checkout>/papers``, so omit ``--library`` to use the corpus in
+this directory; pass it (or set ``LIT_HOME``) to point at another one.
 
 The server exposes the same behaviour as the CLI because both are adapters onto one
 core — there is no MCP-specific logic to drift.

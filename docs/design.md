@@ -287,7 +287,7 @@ deficit  = expected - together
 ### 4.9 落盘布局
 
 ```
-library/
+papers/
   topics/
     index.json          已挖历史 + 已退役的去重键
     surveys/<id>.json   领域测绘
@@ -300,30 +300,37 @@ library/
 
 ## 5. 磁盘布局（纯文本为真相源）
 
+**库里在这个仓库里**：默认根是 `<checkout>/papers`，与代码同目录、使用者一眼可见。解析顺序 `--library` > `$LIT_HOME` > `$LIT_REPO` > **checkout 锚定** > `<cwd>` 兜底。
+
+锚在 checkout 而不是 cwd 是刻意的：harness 从使用者的项目目录调用工具，cwd 相对默认值会让语料长在**调用者所在的地方**，而 clone 出来的那个目录——唯一可见且稳定的位置——反而空着。「clone 即用」要求数据落在 clone 里。
+
 ```
-library/
+papers/
   library.json          # 库元信息 + schema 版本
   works/<2>/<2>/<work_id>.json   # 权威记录：身份 + claims + manifestations
   evidence/<ev_id>.json # 原始响应快照
   files/<2>/<sha256>.pdf # 内容寻址：同一文件永不重复存
   blobs/<work_id>/fulltext.txt   # 抽取出的文本
-  ledger.jsonl          # 只追加事件流，审计用
+  blobs/<work_id>/passages.json  # 段落索引：派生，缺了自愈重建
+  library.jsonl         # 只追加事件流，审计用
   index.sqlite          # 从上面重建的查询索引，随时可删
   channels.yaml         # 可选：不写代码声明额外渠道
   topics/               # 模块三的产物（见 4.9）
 ```
 
-**为什么文本为真相源而不是直接上 SQLite**：可 diff、可 grep、可被 agent 直接读、可手工改、可提交进 git。`index.sqlite` 只是加速层，删了能从 works 重建——所以**永不出现「库损坏且无法恢复」**。
+**为什么文本为真相源而不是直接上 SQLite**：可 diff、可 grep、可被 agent 直接读、可手工改，且 `index.sqlite`、`passages.json` 等派生件删了都能从文本与记录重建——所以**永不出现「库损坏且无法恢复」**。
+
+**为什么整目录不进 git**：它是*使用*工具产生的数据，不是源码；Git 只跟踪代码、测试、开发文档与 skill。连带两个后果，文档里必须写明：`papers/` 是语料的**唯一副本**（备份靠整个目录拷贝），且因为它被整体 ignore，`git clean -Xdf` 会连语料一起删。
 
 ---
 
 ## 6. 落地形态与兼容性
 
-同一核心三种形态：
+同一核心三种形态 —— 注意它们是**同一个目录的三个入口**，不是三种分发方式：
 
 ```
-lit CLI (JSON)  ←── 确定层，可测试
-  ├─► Agent Skill（.dsh/skills/lit/）：LLM 负责编排与判断
+lit CLI (JSON)  ←── 确定层，可测试（<checkout>/lit.py，免安装）
+  ├─► Agent Skill（.dsh/skills/lit/）：就住在这个仓库里，agent 在本目录工作即被发现
   └─► MCP server：16 个工具（9 个检索/库 + 7 个课题）
 ```
 

@@ -64,17 +64,47 @@ leaves open:
   drifts. Every mutation goes through one write path, so the record, the index and the
   audit ledger cannot diverge.
 
-## Install
+## Clone it and use it
 
-No required third-party dependencies — standard library only, so there is no
-dependency step to get wrong.
+No required third-party dependencies — standard library only, so there is no dependency
+step to get wrong. **The clone is the workspace**: the code, your papers, the metadata and
+the topic drafts all live in this one directory.
 
 ```bash
-git clone <this repo> && cd ccb_assistant
-python lit.py channels            # works immediately from a checkout
+git clone <this repo> && cd ccb-assistant
+python lit.py channels            # works immediately from a checkout, no install step
+python lit.py find "diffusion models for molecule generation" -n 10
+python lit.py get arxiv:1706.03762 --with-pdf
 ```
 
-Optionally install it, and add PDF text extraction:
+That is the whole setup. The first command creates `papers/`.
+
+### Where your data goes
+
+Everything the tool produces while you use it lands in **`papers/`**, inside this clone:
+
+```
+papers/
+  library.json  library.jsonl   library metadata, and the append-only ledger
+  works/                        one JSON record per paper, with field-level provenance
+  evidence/                     raw channel responses, so nothing is ever re-fetched
+  files/                        the PDFs
+  blobs/                        extracted full text
+  index.sqlite                  derived query index — deletable, always rebuildable
+  topics/                       mined topics: surveys, candidates, records, drafts
+```
+
+The location is resolved from **the clone**, not from your working directory, so calling
+the tool from some other project still writes here — the papers stay in the directory you
+cloned. To keep several corpora apart, use `--library papers-<topic>` or `$LIT_HOME`.
+
+`papers/` is **local data, and is not in version control**: Git tracks code, tests, dev
+docs and the skill only. Two consequences worth knowing:
+
+- It is your **only** copy of the corpus. Back it up by copying the directory.
+- Because the directory is ignored wholesale, **`git clean -Xdf` deletes the whole corpus.**
+
+Optionally install it, and add PDF text extraction (the tool works without either):
 
 ```bash
 pip install -e .                  # provides the `lit` command
@@ -89,12 +119,15 @@ Optional API keys **only raise rate limits**; nothing breaks without them:
 | `OPENALEX_API_KEY`, `OPENALEX_EMAIL` | Higher OpenAlex budget |
 | `S2_API_KEY` | Avoids Semantic Scholar 429s |
 | `CORE_API_KEY`, `DOAJ_API_KEY`, `NCBI_API_KEY` | Higher limits |
-| `LIT_HOME` | Library location (default `./.lit`) |
-| `LIT_REPO` | Checkout root, for the Agent Skill launcher |
+| `LIT_HOME` | Library location (default `<checkout>/papers`) |
+| `LIT_REPO` | Checkout root, for when the skill runs from outside the clone |
 | `LIT_CHANNELS` | Extra channel declaration files |
 | `LIT_CCF_CATALOG` | Replace the bundled CCF venue catalogue with your own CSV |
 
 ## Use
+
+The examples write `lit`; from a bare checkout, use `python lit.py` — `cd` into the clone
+and everything below works without installing anything.
 
 ```bash
 lit channels                                     # what is available, and what is missing
@@ -108,8 +141,9 @@ lit export --format bibtex -o refs.bib            # bibliography
 lit check --all                                   # re-verify: new version, OA, retraction
 ```
 
-All commands print JSON on stdout; add `--pretty` for humans, `--offline` to forbid the
-network. Exit codes: `0` ok, `2` usage, `3` not found, `4` partial, `5` failed.
+All commands print JSON on stdout; add `--pretty` **before** the subcommand for humans
+(`lit --pretty doctor`), `--offline` to forbid the network. Exit codes: `0` ok, `2` usage,
+`3` not found, `4` partial, `5` failed.
 
 ### Answering questions from the corpus
 
@@ -189,21 +223,26 @@ Agent Skill ─┼─►  search · library · topics   ← the only place behav
 MCP server  ─┘
 ```
 
+The three faces are **three entry points into the same directory**, not three ways of
+distributing the tool: the CLI is what you type, the skill is what an agent reads, and the
+MCP server is what a client registers. All three resolve the same library, in the same
+clone, through one core — so they cannot disagree about identity, dedup policy, or what
+counts as a legal source.
+
 ```bash
-lit-mcp.py --library ./papers        # MCP over stdio, no SDK, no extra dependency
-lit-mcp.py --list-tools
+python lit-mcp.py                      # MCP over stdio, no SDK, no extra dependency
+python lit-mcp.py --list-tools
 ```
 
 Sixteen tools. Search and library: `lit_contract`, `lit_channels`, `lit_find`,
 `lit_get`, `lit_ask`, `lit_open`, `lit_cite`, `lit_export`, `lit_stats`. Topic
-generation: the seven `lit_topics_*` tools, one per step. Because each face is a thin
-adapter, they cannot disagree about identity, dedup policy, or what counts as a legal
-source — and `tests/test_mcp.py` asserts CLI/MCP parity while `tests/test_topics.py`
-drives the whole topics sequence through the MCP face.
+generation: the seven `lit_topics_*` tools, one per step. `tests/test_mcp.py` asserts
+CLI/MCP parity, and `tests/test_topics.py` drives the whole topics sequence through the
+MCP face.
 
 ## Agent Skill
 
-The tool ships as a skill that works with the [Agent Skills](https://agentskills.io/specification)
+The tool ships with a skill in the [Agent Skills](https://agentskills.io/specification)
 format, so an agent can drive it without you explaining it:
 
 ```
@@ -219,8 +258,9 @@ format, so an agent can drive it without you explaining it:
 
 It is discovered from `<project>/.dsh/skills` and `~/.dsh/skills` (both scan one level
 deep), and `SKILL.md` is kept under the 8192-character render budget with the detail in
-`references/`. To use it from any project, copy or symlink `.dsh/skills/lit` into
-`~/.dsh/skills/`.
+`references/`. Because the skill sits inside the clone, an agent working **in this
+directory** finds it with no setup at all. To use it from other projects too, copy or
+symlink `.dsh/skills/lit` into `~/.dsh/skills/` — a convenience, not a requirement.
 
 `lit contract` returns the same operating rules as machine-readable JSON — including the
 three modules and the canonical topic-generation sequence — so the contract lives in
@@ -265,7 +305,7 @@ names the reason rather than returning an empty result.
 ## Development
 
 ```bash
-python -m unittest discover -s tests -v     # 203 tests, no network, no dependencies
+python -m unittest discover -s tests -v     # 218 tests, no network, no dependencies
 python tools/probe_arxiv.py                 # reproduce a channel's live behaviour
 python tools/probe_mcp_source.py            # minimal MCP server used as a test fixture
 ```

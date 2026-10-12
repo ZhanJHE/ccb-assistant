@@ -7,6 +7,11 @@
 Keeping this at the repository root means the tool is usable immediately after a
 clone, which matters when an agent needs to call it from a harness that has not
 installed anything.
+
+The library lives at ``<checkout>/papers``, next to this file: it is resolved from the
+checkout rather than the working directory, so the papers land in the directory you
+cloned no matter where the command is run from. ``--library`` or ``$LIT_HOME`` override
+it. That directory is local data and is not version controlled.
 """
 
 from __future__ import annotations

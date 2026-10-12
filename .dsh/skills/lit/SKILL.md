@@ -23,13 +23,19 @@ and the audit ledger together. Ask the library first; only go to the network on 
 
 ## Call it like this
 
+The tool and the corpus it builds live in the **same directory** — you clone the repo
+and work in it:
+
 ```bash
-LIT="python /path/to/tools/lit-skill.py"   # or just `lit` if installed
-$LIT --library ./papers find "diffusion models for molecule generation" -n 10
+LIT="python /path/to/ccb-assistant/lit.py"   # the checkout's own entry point
+$LIT find "diffusion models for molecule generation" -n 10
 ```
 
-`--library <dir>` (or `$LIT_HOME`) chooses the corpus; default is `./.lit`.
-All commands print **JSON on stdout**; prose goes to stderr. Add `--pretty` for humans.
+The library defaults to **`<checkout>/papers`**: inside the clone, and unaffected by
+the working directory you call from. `--library <dir>` or `$LIT_HOME` override it —
+use one of those to keep several corpora apart.
+All commands print **JSON on stdout**; prose goes to stderr. Add `--pretty` **before**
+the subcommand for humans (`$LIT --pretty doctor`).
 
 **Exit codes** — branch on these instead of parsing text:
 `0` ok · `2` usage · `3` not found · `4` partial (some channels failed, or the corpus is

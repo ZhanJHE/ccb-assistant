@@ -9,13 +9,18 @@ Exit codes: `0` ok · `2` usage · `3` not found · `4` partial · `5` failed.
 ## Setup
 
 ```bash
-LIT="python /path/to/tools/lit-skill.py"     # from a checkout
+LIT="python /path/to/ccb-assistant/lit.py"   # the checkout's own entry point
 # or: lit                                   # if pip install -e . was run
 
-export LIT_HOME=/path/to/papers        # optional; default is ./.lit
 $LIT channels                          # what is available, and what key is missing
-$LIT contract --pretty                 # the operating rules, for humans
+$LIT --pretty contract                 # the operating rules, for humans
 ```
+
+The library defaults to `<checkout>/papers` — inside the clone, wherever you call from.
+`--library <dir>` or `$LIT_HOME` override it.
+
+`--pretty` is a **global** flag: it goes *before* the subcommand (`$LIT --pretty doctor`,
+not `$LIT doctor --pretty`). Same for `--library`, `--offline`, `--verbose`.
 
 ## find — search local first, then channels
 
@@ -130,8 +135,9 @@ entry is a fact about the metadata, not a tool failure — nothing is ever guess
 ## MCP server
 
 ```bash
-python lit-mcp.py --library ./papers      # serve over stdio
+python lit-mcp.py                         # serve over stdio, using <checkout>/papers
 python lit-mcp.py --list-tools            # inspect the exposed tools
+python lit-mcp.py --library ./other        # or point it at another corpus
 ```
 
 Sixteen tools. Search and library: `lit_contract`, `lit_channels`, `lit_find`,
@@ -142,7 +148,7 @@ Newline-delimited JSON-RPC 2.0 over stdio, no SDK and no extra dependency. Regis
 with any MCP client:
 
 ```json
-{"mcpServers": {"lit": {"command": "python", "args": ["/path/to/lit-mcp.py", "--library", "/path/to/papers"]}}}
+{"mcpServers": {"lit": {"command": "python", "args": ["/path/to/ccb-assistant/lit-mcp.py"]}}}
 ```
 
 Because the CLI and the MCP server are both thin adapters over one core, they cannot
