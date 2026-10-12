@@ -164,7 +164,7 @@
     <a href="#f-skill">Agent Skill</a>
     <a href="#f-io">输出与退出码约定</a>
     <a href="#f-routing">路由表</a>
-    <a href="#f-channels">渠道注册表（实测）</a>
+    <a href="#f-channels">渠道状态</a>
   </div>
 
   <div class="group" id="g4">
@@ -590,20 +590,29 @@ python lit-mcp.py --list-tools    <span class="c"># 打印工具清单</span>
   <tr><td>挖课题</td><td>只读本地语料；先 <code>topics survey</code> 备够全文</td></tr>
 </table>
 
-<h2 class="sec" id="f-channels">渠道注册表（本机实测）</h2>
+<h2 class="sec" id="f-channels">渠道状态：注册 ≠ 可达</h2>
+
+<p><code>channels_usable</code> 只回答"凭据与配置是否齐全"，<b>不代表线上可达</b>。可达性只能由第一次真实调用回答，且失败会被点名报出（<code>errors</code>），不会静默返回空结果。</p>
 
 <table>
-  <tr><th>渠道</th><th>kind</th><th>状态</th><th>caps</th></tr>
-  <tr><td><code>openalex</code></td><td>http</td><td class="yes">可用</td><td>search, lookup, oa_resolve, citations, venue, bibtex</td></tr>
-  <tr><td><code>crossref</code></td><td>http</td><td class="yes">可用</td><td>search, lookup, citations, venue, bibtex</td></tr>
-  <tr><td><code>arxiv</code></td><td>http</td><td class="yes">可用</td><td>search, lookup, pdf, fulltext, venue</td></tr>
-  <tr><td><code>europepmc</code></td><td>http</td><td class="yes">可用</td><td>search, lookup, fulltext, venue, bibtex</td></tr>
-  <tr><td><code>openreview</code></td><td>http</td><td class="yes">可用</td><td>search, lookup, pdf, venue, bibtex</td></tr>
-  <tr><td><code>dblp</code></td><td>http</td><td class="yes">可用</td><td>search, lookup, venue, bibtex</td></tr>
-  <tr><td><code>paper_search</code></td><td>cli</td><td class="no">不可用</td><td class="dim">本机无该 CLI；设 <code>LIT_PAPER_SEARCH</code> 可启用</td></tr>
+  <tr><th>渠道</th><th>kind</th><th>注册状态</th><th>本机可达性</th><th>caps</th></tr>
+  <tr><td><code>openalex</code></td><td>http</td><td class="yes">可用</td><td class="yes">已验证返回结果</td><td>search, lookup, oa_resolve, citations, venue, bibtex</td></tr>
+  <tr><td><code>crossref</code></td><td>http</td><td class="yes">可用</td><td class="dim">未直探</td><td>search, lookup, citations, venue, bibtex</td></tr>
+  <tr><td><code>arxiv</code></td><td>http</td><td class="yes">可用</td><td class="dim">未直探（限速 3 s/请求）</td><td>search, lookup, pdf, fulltext, venue</td></tr>
+  <tr><td><code>europepmc</code></td><td>http</td><td class="yes">可用</td><td class="dim">未直探</td><td>search, lookup, fulltext, venue, bibtex</td></tr>
+  <tr><td><code>openreview</code></td><td>http</td><td class="yes">可用</td><td class="dim">未直探</td><td>search, lookup, pdf, venue, bibtex</td></tr>
+  <tr><td><code>dblp</code></td><td>http</td><td class="yes">可用</td><td class="no">被 Anubis 反爬挑战挡住</td><td>search, lookup, venue, bibtex</td></tr>
+  <tr><td><code>paper_search</code></td><td>cli</td><td class="no">不可用</td><td>—</td><td class="dim">本机无该 CLI；设 <code>LIT_PAPER_SEARCH</code> 可启用</td></tr>
 </table>
 
-<p class="dim">注：README 的渠道表比默认注册表更宽——<code>unpaywall</code>/<code>doaj</code>/<code>core</code>/<code>semantic_scholar</code> 未随内置注册表出现（它们出现在源信任序与凭据映射里），需在 <code>channels.yaml</code> 声明或由环境变量启用。以 <code>lit doctor</code> 输出为准。</p>
+<div class="box warn">
+  <p>dblp 是 CS 身份脊柱，但它对非交互客户端门禁。工具的处理是<b>点名报因 + 退出码 4</b>，不做对抗：</p>
+  <pre style="margin:8px 0 0">! dblp: source is gated by an Anubis anti-bot challenge; the channel is
+  unavailable to non-interactive clients (use another channel)</pre>
+  <p style="margin-top:8px">CS 方向的兜底组合：<code>openalex</code>（书目 + OA 定位）+ <code>openreview</code>（无 DOI 的会议身份）+ <code>arxiv</code>（预印本与全文）。</p>
+</div>
+
+<p class="dim">注：README 的渠道表比默认注册表更宽——<code>unpaywall</code>/<code>doaj</code>/<code>core</code>/<code>semantic_scholar</code> 未随内置注册表出现（它们出现在源信任序与凭据映射里），需在 <code>channels.yaml</code> 声明或由环境变量启用。注册口径以 <code>lit doctor</code> 的 <code>channels_usable</code> 为准。</p>
 
 <p><b>加渠道不需要写代码</b>：在 <code>&lt;library&gt;/channels.yaml</code> 里声明 <code>http</code>/<code>cli</code>/<code>mcp</code> 三种 kind 之一 + dot-path 字段映射即可。四种 kind（http / cli / mcp / manual）都已验证可落到同一个库，并遵守同一套身份规则。</p>
 
