@@ -34,6 +34,7 @@ from types import SimpleNamespace
 from typing import Any, Callable
 
 from . import __version__
+from . import ops
 from .contract import contract
 from .library import Library, default_library_root
 from .library.cite import export as cite_export
@@ -57,277 +58,49 @@ INTERNAL_ERROR = -32603
 # Tool schemas
 # --------------------------------------------------------------------------- #
 
+def _json_type(kind: str) -> dict[str, Any]:
+    if kind == "csv":
+        return {"type": "array", "items": {"type": "string"}}
+    return dict(_JSON_TYPES.get(kind, {"type": "string"}))
+
+
+_JSON_TYPES: dict[str, dict[str, Any]] = {
+    "str": {"type": "string"},
+    "int": {"type": "integer"},
+    "flag": {"type": "boolean"},
+}
+
+
+def _schema_for(op: ops.Operation) -> dict[str, Any]:
+    """A JSON Schema for one operation, from the same params the CLI uses."""
+    properties: dict[str, Any] = {}
+    required: list[str] = []
+    for param in op.params:
+        if param.cli_only:
+            continue
+        properties[param.name] = _json_type(param.kind)
+        if param.required:
+            required.append(param.name)
+    return {"type": "object", "properties": properties, "required": required}
+
+
 def tool_definitions() -> list[dict[str, Any]]:
-    """The advertised tool list. Descriptions state when to use each one."""
+    """The advertised tool list, derived from ``lit.ops``.
+
+    These schemas used to be hand-written here while dispatch resolved handlers by name
+    convention (``_tool_<name>``) — two lists that had to agree, with nothing checking
+    that they did. Both now come from one table; ``tests/test_ops.py`` holds them to it.
+    """
     return [
         {
-            "name": "lit_contract",
-            "description": (
-                "Return the operating rules, invariants and canonical step order for this "
-                "tool. Call this first if you are unsure how to proceed, or after an "
-                "unexpected result."
-            ),
-            "inputSchema": {"type": "object", "properties": {}, "required": []},
-        },
-        {
-            "name": "lit_channels",
-            "description": (
-                "List every paper source (channel) with its availability, capabilities and "
-                "the name of any credential it is missing. Credential values are never "
-                "returned."
-            ),
-            "inputSchema": {"type": "object", "properties": {}, "required": []},
-        },
-        {
-            "name": "lit_find",
-            "description": (
-                "Find papers on a topic. Queries the local library first and only fans out "
-                "to channels on a miss, storing what it finds so the same paper is never "
-                "searched for twice."
-            ),
-            "inputSchema": {
-                "type": "object",
-                "properties": {
-                    "query": {"type": "string", "description": "Topic or keywords."},
-                    "limit": {"type": "integer", "default": 10},
-                    "sources": {
-                        "type": "string",
-                        "description": "Channel selector: 'auto' (default), 'all', or a comma-separated list.",
-                    },
-                    "year_from": {"type": "integer"},
-                    "year_to": {"type": "integer"},
-                },
-                "required": ["query"],
-            },
-        },
-        {
-            "name": "lit_get",
-            "description": (
-                "Acquire one paper by identifier (DOI, arXiv id, OpenReview id, dblp key, "
-                "PMID, URL or an existing work_id). Resolves locally first; re-running on a "
-                "paper already held costs nothing."
-            ),
-            "inputSchema": {
-                "type": "object",
-                "properties": {
-                    "identifier": {"type": "string"},
-                    "with_pdf": {
-                        "type": "boolean",
-                        "default": False,
-                        "description": "Download the open-access PDF and extract its text.",
-                    },
-                    "refresh": {
-                        "type": "boolean",
-                        "default": False,
-                        "description": "Re-query the channels even if the paper is already local.",
-                    },
-                },
-                "required": ["identifier"],
-            },
-        },
-        {
-            "name": "lit_ask",
-            "description": (
-                "Answer a question from the local corpus. Returns ranked passages with "
-                "work_id and page anchors instead of prose, so any claim can be verified. "
-                "Compose the answer yourself and cite the returned anchors. If 'grounded' is "
-                "false, say the corpus does not cover the question rather than answering "
-                "from memory."
-            ),
-            "inputSchema": {
-                "type": "object",
-                "properties": {
-                    "query": {"type": "string"},
-                    "limit": {"type": "integer", "default": 5},
-                    "work_ids": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "Restrict to these works (default: whole corpus).",
-                    },
-                },
-                "required": ["query"],
-            },
-        },
-        {
-            "name": "lit_open",
-            "description": "Read a paper's stored full text. Never touches the network.",
-            "inputSchema": {
-                "type": "object",
-                "properties": {
-                    "identifier": {"type": "string"},
-                    "head": {
-                        "type": "integer",
-                        "default": 20000,
-                        "description": "Maximum characters to return.",
-                    },
-                },
-                "required": ["identifier"],
-            },
-        },
-        {
-            "name": "lit_cite",
-            "description": (
-                "Citation for one work in BibTeX, RIS, CSL-JSON or plain text, together with "
-                "which source supplied each field and which fields no source provided."
-            ),
-            "inputSchema": {
-                "type": "object",
-                "properties": {
-                    "identifier": {"type": "string"},
-                    "format": {
-                        "type": "string",
-                        "enum": ["bibtex", "ris", "csl", "text"],
-                        "default": "bibtex",
-                    },
-                },
-                "required": ["identifier"],
-            },
-        },
-        {
-            "name": "lit_export",
-            "description": "Bibliography for several works at once.",
-            "inputSchema": {
-                "type": "object",
-                "properties": {
-                    "format": {"type": "string", "default": "bibtex"},
-                    "work_ids": {"type": "array", "items": {"type": "string"}},
-                    "query": {"type": "string", "description": "Substring filter over title/abstract."},
-                },
-                "required": [],
-            },
-        },
-        {
-            "name": "lit_stats",
-            "description": (
-                "Corpus state: how many works, how many with PDFs and full text, evidence "
-                "snapshots, and duplicate candidates awaiting a decision."
-            ),
-            "inputSchema": {"type": "object", "properties": {}, "required": []},
-        },
-        {
-            "name": "lit_topics_survey",
-            "description": (
-                "Step 1 of topic generation. Map what the local corpus holds for a "
-                "direction: works, years, venues with CCF ranks, terms. Tops the direction "
-                "up from the channels when it is too thin to mine, and reports what it "
-                "added. Returns sufficient=false when there is still too little evidence."
-            ),
-            "inputSchema": {
-                "type": "object",
-                "properties": {
-                    "query": {"type": "string", "description": "The direction to mine."},
-                    "min_works": {"type": "integer", "default": 20},
-                    "min_fulltext": {"type": "integer", "default": 5},
-                    "year_from": {"type": "integer"},
-                    "year_to": {"type": "integer"},
-                    "limit": {"type": "integer", "default": 200},
-                    "top_terms": {"type": "integer", "default": 40},
-                    "max_n": {"type": "integer", "default": 2, "description": "Longest term phrase (1-3)."},
-                    "offline": {
-                        "type": "boolean",
-                        "default": False,
-                        "description": "Do not top the direction up from channels.",
-                    },
-                },
-                "required": ["query"],
-            },
-        },
-        {
-            "name": "lit_topics_gaps",
-            "description": (
-                "Step 2. The gap evidence for a survey: sentences where authors state "
-                "limitations or future work (with work_id and page), sparse term pairs, "
-                "and a tally by gap kind. This is evidence to read, not a conclusion."
-            ),
-            "inputSchema": {
-                "type": "object",
-                "properties": {
-                    "survey_id": {"type": "string"},
-                    "limit": {"type": "integer", "default": 60},
-                    "max_per_work": {"type": "integer", "default": 3},
-                },
-                "required": ["survey_id"],
-            },
-        },
-        {
-            "name": "lit_topics_candidates",
-            "description": (
-                "Step 3. Ranked (evidence x novelty operator) topic candidates, with a "
-                "score whose four parts are reported, and the local works that share each "
-                "candidate's terms. Combinations already committed are excluded, which is "
-                "what makes repeated mining non-repetitive."
-            ),
-            "inputSchema": {
-                "type": "object",
-                "properties": {
-                    "survey_id": {"type": "string"},
-                    "limit": {"type": "integer", "default": 25},
-                    "per_kind": {"type": "integer", "default": 15},
-                    "include_mined": {"type": "boolean", "default": False},
-                    "no_self_check": {"type": "boolean", "default": False},
-                },
-                "required": ["survey_id"],
-            },
-        },
-        {
-            "name": "lit_topics_draft",
-            "description": (
-                "Step 4. Commit to ONE candidate. Returns the section skeleton a paper of "
-                "this kind needs — background, the four-step gap derivation, research "
-                "questions, contributions, approach, expected experiments and datasets, "
-                "anticipated criticism, references — with every claim's anchor attached. "
-                "The tool does not write prose; compose each section from its anchors."
-            ),
-            "inputSchema": {
-                "type": "object",
-                "properties": {"candidate_id": {"type": "string"}},
-                "required": ["candidate_id"],
-            },
-        },
-        {
-            "name": "lit_topics_rate",
-            "description": (
-                "Step 5. The CCF estimate for a topic: upper bound, band, confidence, and "
-                "the basis for every movement with its reason. A rule-based estimate from "
-                "the recorded evidence, not an acceptance prediction. Name a target venue "
-                "to check the estimate against that venue's own catalogue rank."
-            ),
-            "inputSchema": {
-                "type": "object",
-                "properties": {
-                    "topic_id": {"type": "string"},
-                    "venue": {"type": "string", "description": "Optional target venue."},
-                },
-                "required": ["topic_id"],
-            },
-        },
-        {
-            "name": "lit_topics_save",
-            "description": (
-                "Step 6. Commit a topic: export the Markdown draft and retire its "
-                "de-duplication keys so the same combination is never proposed again."
-            ),
-            "inputSchema": {
-                "type": "object",
-                "properties": {"topic_id": {"type": "string"}},
-                "required": ["topic_id"],
-            },
-        },
-        {
-            "name": "lit_topics_list",
-            "description": "Topics already mined, newest first, with what each consumed.",
-            "inputSchema": {
-                "type": "object",
-                "properties": {"limit": {"type": "integer", "default": 0}},
-                "required": [],
-            },
-        },
+            "name": op.mcp,
+            "description": ops.MCP_DESCRIPTIONS.get(op.mcp, op.summary),
+            "inputSchema": _schema_for(op),
+        }
+        for op in ops.OPERATIONS
+        if op.mcp
     ]
 
-
-# --------------------------------------------------------------------------- #
-# Server
-# --------------------------------------------------------------------------- #
 
 
 class McpServer:

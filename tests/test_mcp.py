@@ -287,10 +287,13 @@ class TestCliMcpParity(unittest.TestCase):
         # every registered client, so the names are pinned. Topic generation is
         # deliberately several tools rather than one: the agent has to read the gap
         # evidence before choosing, and choose before drafting.
-        names = [t["name"] for t in tool_definitions()]
+        #
+        # Compared as a set: the names are the promise, the order is presentation, and
+        # the list is now derived from the operation table rather than hand-written here.
+        names = {t["name"] for t in tool_definitions()}
         self.assertEqual(
             names,
-            [
+            {
                 "lit_contract",
                 "lit_channels",
                 "lit_find",
@@ -307,7 +310,7 @@ class TestCliMcpParity(unittest.TestCase):
                 "lit_topics_rate",
                 "lit_topics_save",
                 "lit_topics_list",
-            ],
+            },
         )
 
     def test_every_advertised_tool_has_a_handler(self):

@@ -12,6 +12,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from . import ops
+
 # The rules the program enforces so the agent does not have to remember them.
 INVARIANTS: list[dict[str, str]] = [
     {
@@ -108,6 +110,10 @@ INVARIANTS: list[dict[str, str]] = [
 # The three business modules, and the one shared floor beneath them. Declared here
 # rather than in prose because the boundary is what the whole split is for: a module
 # may import only what `depends_on` names.
+#
+# `cli` and `mcp` are derived from `lit.ops` rather than listed by hand: they used to be
+# a second copy of the command surface, kept in step by discipline alone, and a contract
+# that names a command it does not have is worse than no contract.
 MODULES: list[dict[str, Any]] = [
     {
         "name": "search",
@@ -119,8 +125,8 @@ MODULES: list[dict[str, Any]] = [
             "the local-first acquisition protocol (get / find / re-check)",
         ],
         "depends_on": ["core", "library"],
-        "cli": ["channels", "find", "get", "check", "check-files"],
-        "mcp": ["lit_channels", "lit_find", "lit_get"],
+        "cli": ops.cli_names("search"),
+        "mcp": ops.mcp_names("search"),
     },
     {
         "name": "library",
@@ -132,12 +138,8 @@ MODULES: list[dict[str, Any]] = [
             "the single write path through which every mutation passes",
         ],
         "depends_on": ["core"],
-        "cli": [
-            "ask", "index", "cite", "open", "show", "search-local", "library",
-            "doctor", "repair", "export", "add-file", "extract", "merge",
-            "evidence", "ledger", "reindex",
-        ],
-        "mcp": ["lit_ask", "lit_open", "lit_cite", "lit_export", "lit_stats"],
+        "cli": ops.cli_names("library"),
+        "mcp": ops.mcp_names("library"),
     },
     {
         "name": "topics",
@@ -149,11 +151,8 @@ MODULES: list[dict[str, Any]] = [
             "the CCF rating estimate and the draft skeleton",
         ],
         "depends_on": ["core", "library", "search"],
-        "cli": ["topics"],
-        "mcp": [
-            "lit_topics_survey", "lit_topics_gaps", "lit_topics_candidates",
-            "lit_topics_draft", "lit_topics_rate", "lit_topics_save", "lit_topics_list",
-        ],
+        "cli": ops.cli_names("topics"),
+        "mcp": ops.mcp_names("topics"),
     },
 ]
 

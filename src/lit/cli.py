@@ -28,6 +28,7 @@ from .contract import contract, contract_text
 from .core.extract import available_engines, extract_text
 from .core.paths import checkout_root
 from .core.util import read_json, utc_now
+from . import ops
 from .library import Library, default_library_root
 from .search import Registry, Resolver
 from .topics import commands as topics_commands
@@ -765,6 +766,65 @@ def cmd_topics(ctx: Context) -> int:
     return ctx.emit(payload)
 
 
+# --------------------------------------------------------------------------- #
+# Operations -> argparse
+# --------------------------------------------------------------------------- #
+
+
+def _add_params(sp: argparse.ArgumentParser, op: ops.Operation) -> None:
+    """Declare one operation's parameters on its subparser.
+
+    Derived from the same declarations the MCP schema and the contract use, so a new
+    parameter cannot exist on one face and be missing on another. ``mcp_only`` params are
+    skipped: the CLI reaches those through a global flag instead.
+    """
+    for param in op.params:
+        if param.mcp_only:
+            continue
+        kwargs: dict[str, Any] = {}
+        if param.help:
+            kwargs["help"] = param.help
+        if param.choices:
+            kwargs["choices"] = list(param.choices)
+        if param.kind == "flag":
+            sp.add_argument(*param.cli.split("|"), action="store_true",
+                            dest=param.argparse_dest, default=param.default, **kwargs)
+        elif param.cli:
+            sp.add_argument(*param.cli.split("|"), dest=param.argparse_dest,
+                            type=int if param.kind == "int" else str,
+                            default=param.default, **kwargs)
+        elif param.required:
+            sp.add_argument(param.name, **kwargs)
+        else:
+            sp.add_argument(param.name, nargs="?", default=param.default, **kwargs)
+
+
+def _add_operations(sub: Any, common: argparse.ArgumentParser) -> None:
+    """Build every subparser from ``lit.ops``.
+
+    Grouped operations (``library``, ``topics``) get a parent subcommand whose nested
+    subparsers carry the actions, and each parent declares the ``dest`` its handler
+    already reads, so ``args.action`` and ``args.topics_action`` keep working.
+    """
+    handlers = {name: obj for name, obj in globals().items() if name.startswith("cmd_")}
+    nesting: dict[str, Any] = {}
+    for op in ops.OPERATIONS:
+        if op.group:
+            target = nesting.get(op.group)
+            if target is None:
+                info = ops.GROUP_INFO[op.group]
+                parent = sub.add_parser(op.group, parents=[common], help=info["help"],
+                                        description=info.get("description"))
+                target = parent.add_subparsers(dest=info["dest"], required=True)
+                nesting[op.group] = target
+        else:
+            target = sub
+        sp = target.add_parser(op.name, parents=[common], help=op.summary)
+        _add_params(sp, op)
+        sp.set_defaults(func=handlers[op.handler])
+
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="lit",
@@ -806,230 +866,7 @@ def build_parser() -> argparse.ArgumentParser:
                         help="comma-separated channels to disable")
 
     sub = p.add_subparsers(dest="command", required=True)
-
-    def sub_parser(name: str, **kwargs: Any) -> argparse.ArgumentParser:
-        return sub.add_parser(name, parents=[common], **kwargs)
-
-    sc = sub_parser("channels", help="list channels, availability and missing credentials")
-    sc.add_argument("name", nargs="?", help="detail for one channel")
-    sc.set_defaults(func=cmd_channels)
-
-    sk = sub_parser("contract", help="the operating rules and canonical step order")
-    sk.set_defaults(func=cmd_contract)
-
-    sd = sub_parser("doctor", help="consistency report for the library")
-    sd.add_argument("--repair", action="store_true", help="rebuild derived artefacts")
-    sd.set_defaults(func=cmd_doctor)
-
-    sr = sub_parser("repair", help="force a full rebuild of derived artefacts")
-    sr.set_defaults(func=cmd_repair)
-
-    sf = sub_parser("find", help="search: local library first, then channels")
-    sf.add_argument("query")
-    sf.add_argument("-n", "--limit", type=int, default=10)
-    sf.add_argument("-s", "--source", help="channel selector: auto | all | a,b,c")
-    sf.add_argument("--year-from", type=int, dest="year_from")
-    sf.add_argument("--year-to", type=int, dest="year_to")
-    sf.add_argument("--no-local", action="store_true", help="skip the local pass")
-    sf.add_argument("--no-ingest", action="store_true", help="do not store channel results")
-    sf.add_argument("--min-local", type=int, default=0,
-                    help="only query channels when fewer than N local hits exist")
-    sf.add_argument("--compact", action="store_true", help="trim records to key fields")
-    sf.set_defaults(func=cmd_find)
-
-    sg = sub_parser("get", help="acquire one paper: local first, then channels")
-    sg.add_argument("identifier", help="DOI, arXiv id, OpenReview id, dblp key, PMID, URL, work_id")
-    sg.add_argument("--with-pdf", action="store_true", dest="with_pdf")
-    sg.add_argument("--extract", action="store_true", help="extract text after downloading")
-    sg.add_argument("--refresh", action="store_true", help="re-query channels even if local")
-    sg.add_argument("-s", "--source", help="channel selector")
-    sg.add_argument("--full", action="store_true", help="include the full record, not a summary")
-    sg.set_defaults(func=cmd_get)
-
-    sa = sub_parser(
-        "ask",
-        help="retrieve passages that answer a question, with page-anchored citations",
-    )
-    sa.add_argument("query")
-    sa.add_argument("-n", "--limit", type=int, default=5, help="passages to return")
-    sa.add_argument("--ids", help="comma-separated work ids to search (default: whole library)")
-    sa.add_argument("--max-per-work", type=int, default=2, dest="max_per_work",
-                    help="diversity guard so one long paper cannot fill the results")
-    sa.add_argument("--quotes-only", action="store_true", dest="quotes_only",
-                    help="omit the passage text, keep the anchors and scores")
-    sa.set_defaults(func=cmd_ask)
-
-    si = sub_parser("index", help="build/refresh the passage index for stored full texts")
-    si.add_argument("--ids", help="comma-separated work ids (default: whole library)")
-    si.set_defaults(func=cmd_index)
-
-    sc2 = sub_parser("cite", help="citation for one work, with field provenance")
-    sc2.add_argument("identifier")
-    sc2.add_argument("--format", default="bibtex",
-                     choices=["bibtex", "ris", "csl", "json", "text"])
-    sc2.add_argument("--key-style", default="authorYear", dest="key_style",
-                     choices=["authorYear", "key", "hash"])
-    sc2.set_defaults(func=cmd_cite)
-
-    so = sub_parser("open", help="read local full text (never touches the network)")
-    so.add_argument("identifier")
-    so.add_argument("--head", type=int, default=0, help="only the first N characters")
-    so.set_defaults(func=cmd_open)
-
-    ss = sub_parser("show", help="show one stored record with its claim provenance")
-    ss.add_argument("identifier")
-    ss.add_argument("--raw", action="store_true", help="raw stored JSON")
-    ss.set_defaults(func=cmd_show)
-
-    sl = sub_parser("search-local", help="search only the local library")
-    sl.add_argument("query", nargs="?", default="")
-    sl.add_argument("-n", "--limit", type=int, default=25)
-    sl.add_argument("--year-from", type=int, dest="year_from")
-    sl.add_argument("--year-to", type=int, dest="year_to")
-    sl.add_argument("--venue")
-    sl.add_argument("--author")
-    sl.add_argument("--with-pdf", action="store_true", dest="with_pdf")
-    sl.set_defaults(func=cmd_search_local)
-
-    slib = sub_parser("library", help="library-level views")
-    slib.add_argument("action", choices=["stats", "report", "list", "merges"])
-    slib.add_argument("-n", "--limit", type=int, default=0)
-    slib.set_defaults(func=cmd_library)
-
-    sck = sub_parser("check", help="re-verify stored records against the sources")
-    sck.add_argument("ids", nargs="?", help="comma-separated work ids")
-    sck.add_argument("--all", action="store_true")
-    sck.add_argument("-n", "--limit", type=int, default=0)
-    sck.set_defaults(func=cmd_check)
-
-    scf = sub_parser("check-files", help="verify stored PDFs against recorded hashes")
-    scf.set_defaults(func=cmd_check_files)
-
-    se = sub_parser("export", help="export citations (bibtex/ris/csl/text)")
-    se.add_argument("--format", default="bibtex")
-    se.add_argument("--key-style", default="authorYear", dest="key_style",
-                    choices=["authorYear", "key", "hash"])
-    se.add_argument("--ids", help="comma-separated work ids (default: whole library)")
-    se.add_argument("--query", help="substring filter over title/abstract")
-    se.add_argument("-o", "--out", help="write to a file instead of stdout")
-    se.add_argument("--raw", action="store_true",
-                    help="print the citation text itself, not JSON (for redirection)")
-    se.set_defaults(func=cmd_export)
-
-    saf = sub_parser("add-file", help="add a PDF you already have into the library")
-    saf.add_argument("file")
-    saf.add_argument("--title")
-    saf.add_argument("--authors", help="semicolon-separated")
-    saf.add_argument("--year", type=int)
-    saf.add_argument("--venue")
-    saf.add_argument("--doi")
-    saf.add_argument("--arxiv")
-    saf.add_argument("--openreview")
-    saf.add_argument("--url")
-    saf.add_argument("--extract", action="store_true")
-    saf.add_argument("--allow-non-pdf", action="store_true", dest="allow_non_pdf")
-    saf.set_defaults(func=cmd_add_file)
-
-    sx = sub_parser("extract", help="extract text from a stored PDF")
-    sx.add_argument("identifier")
-    sx.add_argument("--engine", choices=["", "pdfplumber", "pypdf", "fitz"], default="")
-    sx.set_defaults(func=cmd_extract)
-
-    sm = sub_parser("merge", help="confirm a merge of two works")
-    sm.add_argument("keep")
-    sm.add_argument("drop")
-    sm.set_defaults(func=cmd_merge)
-
-    sev = sub_parser("evidence", help="inspect raw response snapshots")
-    sev.add_argument("--id", help="render one snapshot")
-    sev.add_argument("-n", "--limit", type=int, default=0)
-    sev.set_defaults(func=cmd_evidence)
-
-    sled = sub_parser("ledger", help="read the append-only audit trail")
-    sled.add_argument("-n", "--limit", type=int, default=50)
-    sled.add_argument("--event")
-    sled.set_defaults(func=cmd_ledger)
-
-    sri = sub_parser("reindex", help="rebuild the derived index (rarely needed)")
-    sri.set_defaults(func=cmd_reindex)
-
-    # --- module three: topic generation ---------------------------------- #
-    stp = sub_parser(
-        "topics",
-        help="mine the corpus for one research topic worth doing (module three)",
-        description=(
-            "Survey a direction in the local corpus, extract the gaps it documents, "
-            "apply novelty operators to that evidence, and build one topic at a time. "
-            "The tool returns anchored evidence and a section skeleton; the agent "
-            "writes the prose."
-        ),
-    )
-    tsub = stp.add_subparsers(dest="topics_action", required=True)
-
-    def topics_parser(name: str, **kwargs: Any) -> argparse.ArgumentParser:
-        return tsub.add_parser(name, parents=[common], **kwargs)
-
-    tt = topics_parser("survey", help="map the corpus for a direction, topping it up if thin")
-    tt.add_argument("query", help="the direction, e.g. \"graph neural networks for molecules\"")
-    tt.add_argument("--min-works", type=int, default=20, dest="min_works",
-                    help="top up from channels below this many works (default 20)")
-    tt.add_argument("--min-fulltext", type=int, default=5, dest="min_fulltext",
-                    help="aim for this many works with stored full text (default 5)")
-    tt.add_argument("--year-from", type=int, dest="year_from")
-    tt.add_argument("--year-to", type=int, dest="year_to")
-    tt.add_argument("-n", "--limit", type=int, default=200, help="max works to include")
-    tt.add_argument("--top-terms", type=int, default=40, dest="top_terms")
-    tt.add_argument("--max-n", type=int, default=2, dest="max_n",
-                    help="longest term phrase to extract (1-3)")
-    tt.set_defaults(func=cmd_topics)
-
-    tg = topics_parser("gaps", help="gap evidence for a survey: quotes, statistics, kinds")
-    tg.add_argument("survey_id")
-    tg.add_argument("-n", "--limit", type=int, default=60, help="max declared gaps")
-    tg.add_argument("--max-per-work", type=int, default=3, dest="max_per_work")
-    tg.set_defaults(func=cmd_topics)
-
-    tc = topics_parser("candidates", help="ranked (evidence x operator) topic candidates")
-    tc.add_argument("survey_id")
-    tc.add_argument("-n", "--limit", type=int, default=25)
-    tc.add_argument("--per-kind", type=int, default=15, dest="per_kind",
-                    help="how many pieces of each evidence kind to consider")
-    tc.add_argument("--include-mined", action="store_true", dest="include_mined",
-                    help="also show combinations already committed")
-    tc.add_argument("--no-self-check", action="store_true", dest="no_self_check",
-                    help="skip the local novelty coverage check")
-    tc.set_defaults(func=cmd_topics)
-
-    td = topics_parser("draft", help="commit to one candidate; returns the section skeleton")
-    td.add_argument("candidate_id")
-    td.set_defaults(func=cmd_topics)
-
-    tr = topics_parser("rate", help="CCF estimate: upper bound, band, basis, risks")
-    tr.add_argument("topic_id")
-    tr.add_argument("--venue", help="target venue to check the estimate against")
-    tr.set_defaults(func=cmd_topics)
-
-    tsv = topics_parser("save", help="commit a topic and export its Markdown draft")
-    tsv.add_argument("topic_id")
-    tsv.set_defaults(func=cmd_topics)
-
-    tl = topics_parser("list", help="topics already mined, and what they consumed")
-    tl.add_argument("-n", "--limit", type=int, default=0)
-    tl.set_defaults(func=cmd_topics)
-
-    tsh = topics_parser("show", help="one stored topic, with its anchors and references")
-    tsh.add_argument("topic_id")
-    tsh.add_argument("--markdown", action="store_true", help="emit the rendered Markdown")
-    tsh.set_defaults(func=cmd_topics)
-
-    tv = topics_parser("venues", help="the CCF catalogue: look a venue up, or verify it")
-    tv.add_argument("query", nargs="?", default="", help="substring to search for")
-    tv.add_argument("-n", "--limit", type=int, default=20)
-    tv.add_argument("--verify", action="store_true", help="self-check the loaded catalogue")
-    tv.set_defaults(func=cmd_topics)
-
-    to = topics_parser("operators", help="the novelty operators and their difficulty scale")
-    to.set_defaults(func=cmd_topics)
+    _add_operations(sub, common)
 
     return p
 
@@ -1039,23 +876,17 @@ def build_parser() -> argparse.ArgumentParser:
 # --------------------------------------------------------------------------- #
 
 
-# Which payload key holds the record list, per command — and per action for the grouped
-# commands. Declared here so the renderer never has to guess a payload's shape.
-# Commands absent from this table simply render their headers plus the JSON body, which
-# is a readable fallback and never a crash.
-RECORD_KEYS: dict[str, tuple[str, ...]] = {
-    "find": ("local_hits", "fetched"),
-    "search-local": ("hits",),
-    "library:list": ("works",),
-    "library:merges": ("pending",),
-    "topics:list": ("topics",),
-}
-
-
 def _record_keys_for(args: argparse.Namespace) -> tuple[str, ...]:
+    """Which payload keys hold record lists, for the operation that just ran.
+
+    Declared by the operation in ``lit.ops``, never inferred from the payload: `works`
+    is a count in ``library stats`` and a list in ``library list``, and the renderer used
+    to guess between them and crash.
+    """
     command = getattr(args, "command", "") or ""
     action = getattr(args, "action", "") or getattr(args, "topics_action", "") or ""
-    return RECORD_KEYS.get(f"{command}:{action}" if action else command, ())
+    op = ops.BY_PATH.get(f"{command} {action}" if action else command)
+    return op.records_key if op else ()
 
 
 def _render_pretty(payload: dict[str, Any], record_keys: tuple[str, ...] = ()) -> str:
