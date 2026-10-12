@@ -172,15 +172,21 @@ CORE: dict[str, Any] = {
 }
 
 # The canonical sequences. Each step names the command so the agent does not choose.
+#
+# Every step carries a `kind`: "command" steps hold an executable `cmd`, "human" steps
+# hold a `do` describing work only the agent can perform. The distinction is enforced by
+# tests/test_contract.py, because a machine consumer that walks every step and runs it
+# would otherwise try to execute a sentence of English — which is exactly what the two
+# prose steps used to look like when they sat in a `cmd` field.
 WORKFLOWS: dict[str, dict[str, Any]] = {
     "answer-a-question-about-a-topic": {
         "when": "The user asks a question that papers in the corpus might answer.",
         "steps": [
-            {"n": 1, "cmd": "lit ask \"<question>\" -n 5",
+            {"n": 1, "kind": "command", "cmd": "lit ask \"<question>\" -n 5",
              "why": "Returns page-anchored passages from stored full text, not prose."},
-            {"n": 2, "cmd": "lit get <work_id> --with-pdf",
+            {"n": 2, "kind": "command", "cmd": "lit get <work_id> --with-pdf",
              "why": "Only for works listed under 'skipped' that have no stored text yet."},
-            {"n": 3, "cmd": "compose the answer from the returned passages",
+            {"n": 3, "kind": "human", "do": "compose the answer from the returned passages",
              "why": "Cite the anchors. If grounded is false, say the corpus does not cover it."},
         ],
         "notes": [
@@ -191,11 +197,12 @@ WORKFLOWS: dict[str, dict[str, Any]] = {
     "find-then-read-a-topic": {
         "when": "The user asks about a topic and you need papers, PDFs or full text.",
         "steps": [
-            {"n": 1, "cmd": "lit find \"<topic>\" --json",
-             "why": "Hits the local library first; only misses go to channels."},
-            {"n": 2, "cmd": "lit get <work_id> --with-pdf",
+            {"n": 1, "kind": "command", "cmd": "lit find \"<topic>\" -n 10",
+             "why": "Hits the local library first; only misses go to channels. JSON is the "
+                    "default output, so there is no --json flag to add."},
+            {"n": 2, "kind": "command", "cmd": "lit get <work_id> --with-pdf",
              "why": "Fetches only what is missing (metadata and/or text) and records it."},
-            {"n": 3, "cmd": "lit open <work_id>",
+            {"n": 3, "kind": "command", "cmd": "lit open <work_id>",
              "why": "Reads local full text with zero network calls."},
         ],
         "notes": [
@@ -206,7 +213,7 @@ WORKFLOWS: dict[str, dict[str, Any]] = {
     "resolve-a-known-paper": {
         "when": "The user gives a DOI, arXiv id, OpenReview id, PMID, dblp key or title.",
         "steps": [
-            {"n": 1, "cmd": "lit get <identifier> --with-pdf",
+            {"n": 1, "kind": "command", "cmd": "lit get <identifier> --with-pdf",
              "why": "Resolves locally first, then via channels; creates the record if new."},
         ],
         "notes": ["Any identifier form is accepted; the tool normalises it."],
@@ -214,11 +221,15 @@ WORKFLOWS: dict[str, dict[str, Any]] = {
     "build-a-bibliography": {
         "when": "The user needs citations for a manuscript.",
         "steps": [
-            {"n": 1, "cmd": "lit find \"<topic>\"", "why": "Populate the library."},
-            {"n": 2, "cmd": "lit get <work_id> --with-pdf", "why": "Ensure metadata is complete."},
-            {"n": 3, "cmd": "lit cite <work_id>",
+            {"n": 1, "kind": "command", "cmd": "lit find \"<topic>\"",
+             "why": "Populate the library."},
+            {"n": 2, "kind": "command", "cmd": "lit get <work_id> --with-pdf",
+             "why": "Ensure metadata is complete."},
+            {"n": 3, "kind": "command", "cmd": "lit cite <work_id>",
              "why": "Inspect one entry and which source supplied each field."},
-            {"n": 4, "cmd": "lit export --bibtex", "why": "Emit entries with provenance intact."},
+            {"n": 4, "kind": "command", "cmd": "lit export --format bibtex",
+             "why": "Emit entries with provenance intact. The format is a flag value, not "
+                    "a flag of its own."},
         ],
         "notes": [
             "Fields with no source are omitted rather than invented — never fabricate a "
@@ -229,8 +240,10 @@ WORKFLOWS: dict[str, dict[str, Any]] = {
     "re-verify-a-library": {
         "when": "The user asks whether stored papers are still valid, or a retraction is suspected.",
         "steps": [
-            {"n": 1, "cmd": "lit check --all", "why": "Re-queries only the decisive endpoints."},
-            {"n": 2, "cmd": "lit library report", "why": "Shows what changed and what is unknown."},
+            {"n": 1, "kind": "command", "cmd": "lit check --all",
+             "why": "Re-queries only the decisive endpoints."},
+            {"n": 2, "kind": "command", "cmd": "lit library report",
+             "why": "Shows what changed and what is unknown."},
         ],
         "notes": ["Absence of a retraction notice is reported as 'not found in the sources "
                   "checked', never as 'not retracted'."],
@@ -239,34 +252,34 @@ WORKFLOWS: dict[str, dict[str, Any]] = {
         "when": "Something looks wrong: a work is missing, a query returns odd results, or a "
                 "previous run was interrupted.",
         "steps": [
-            {"n": 1, "cmd": "lit doctor", "why": "Full consistency report."},
-            {"n": 2, "cmd": "lit repair", "why": "Rebuilds every derived artefact."},
+            {"n": 1, "kind": "command", "cmd": "lit doctor", "why": "Full consistency report."},
+            {"n": 2, "kind": "command", "cmd": "lit repair", "why": "Rebuilds every derived artefact."},
         ],
         "notes": ["Repair never deletes or rewrites works/*.json; the worst case is a rebuild."],
     },
     "generate-a-research-topic": {
         "when": "The user names a direction and wants one topic worth doing, with evidence.",
         "steps": [
-            {"n": 1, "cmd": "lit topics survey \"<direction>\"",
+            {"n": 1, "kind": "command", "cmd": "lit topics survey \"<direction>\"",
              "why": "Maps the corpus for that direction, and tops it up from channels when "
                     "it is too thin to mine. Reports what it added."},
-            {"n": 2, "cmd": "lit topics gaps <survey_id>",
+            {"n": 2, "kind": "command", "cmd": "lit topics gaps <survey_id>",
              "why": "Returns gap evidence with work_id + page anchors: self-declared "
                     "limitations, future-work sentences, and empty cells in the "
                     "method x task x dataset grid. Never prose."},
-            {"n": 3, "cmd": "lit topics candidates <survey_id>",
+            {"n": 3, "kind": "command", "cmd": "lit topics candidates <survey_id>",
              "why": "Applies the novelty operators to that evidence, runs the novelty "
                     "self-check, and ranks what survives."},
-            {"n": 4, "cmd": "lit topics draft <candidate_id>",
+            {"n": 4, "kind": "command", "cmd": "lit topics draft <candidate_id>",
              "why": "Commits to exactly one topic and returns a section skeleton in which "
                     "every claim carries its anchor. This is where one-at-a-time binds."},
-            {"n": 5, "cmd": "compose the topic text from the returned anchors",
+            {"n": 5, "kind": "human", "do": "compose the topic text from the returned anchors",
              "why": "The tool does not write prose; you do. Cite work_id + page per claim, "
                     "exactly as `ask` requires."},
-            {"n": 6, "cmd": "lit topics rate <topic_id>",
+            {"n": 6, "kind": "command", "cmd": "lit topics rate <topic_id>",
              "why": "CCF upper bound, band, per-rule basis and confidence — each input "
                     "recomputable, so the estimate can be argued with."},
-            {"n": 7, "cmd": "lit topics save <topic_id>",
+            {"n": 7, "kind": "command", "cmd": "lit topics save <topic_id>",
              "why": "Stores the structured record and exports the Markdown draft."},
         ],
         "notes": [
@@ -279,6 +292,10 @@ WORKFLOWS: dict[str, dict[str, Any]] = {
         ],
     },
 }
+
+# The only two kinds a workflow step may have. `command` steps are executable and are
+# verified as such by tests/test_contract.py; `human` steps are work the tool cannot do.
+STEP_KINDS: tuple[str, ...] = ("command", "human")
 
 # Where the agent should look first. Ordering is the recommendation, not a menu.
 ROUTING_HINTS: dict[str, str] = {
@@ -349,7 +366,11 @@ def contract_text() -> str:
     for name, wf in WORKFLOWS.items():
         lines.append(f"  {name} — {wf['when']}")
         for s in wf["steps"]:
-            lines.append(f"      {s['n']}. {s['cmd']}")
+            if s.get("kind") == "command":
+                what = s.get("cmd", "")
+            else:
+                what = f"(you) {s.get('do', '')}"
+            lines.append(f"      {s['n']}. {what}")
             lines.append(f"         {s['why']}")
         for note in wf.get("notes", []):
             lines.append(f"      note: {note}")

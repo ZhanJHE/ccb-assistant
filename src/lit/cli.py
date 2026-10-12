@@ -76,7 +76,9 @@ class Context:
 
     def emit(self, payload: dict[str, Any], code: int = EXIT_OK) -> int:
         if getattr(self.args, "pretty", False):
-            sys.stdout.write(_render_pretty(payload) + "\n")
+            sys.stdout.write(
+                _render_pretty(payload, _record_keys_for(self.args)) + "\n"
+            )
         else:
             sys.stdout.write(json.dumps(payload, ensure_ascii=False, sort_keys=True) + "\n")
         return code
@@ -280,8 +282,12 @@ def cmd_ask(ctx: Context) -> int:
             }
             for h in payload["hits"]
         ]
-    code = EXIT_OK if payload.get("grounded") else EXIT_NOT_FOUND
-    return ctx.emit(payload, code)
+    # `grounded: false` means the corpus does not cover the question — that is a
+    # *successful* retrieval reporting a gap, not a failed command. It used to return
+    # EXIT_NOT_FOUND (3), the same code as "this identifier is not in the library",
+    # which conflated two facts the `never-answer-from-memory` invariant requires the
+    # caller to tell apart. The payload carries `outcome` for that branch instead.
+    return ctx.emit(payload, EXIT_OK)
 
 
 def cmd_index(ctx: Context) -> int:
@@ -551,9 +557,17 @@ def cmd_export(ctx: Context) -> int:
         if missing:
             payload["not_found"] = missing
         return ctx.emit(payload)
-    # Stdout export is the raw citation text, not JSON: it is meant to be redirected.
-    sys.stdout.write(text)
-    return EXIT_OK
+    # Stdout is JSON like every other command. `--raw` is the explicit opt-in for the
+    # redirectable form (`lit export --raw > refs.bib`), because the previous behaviour —
+    # raw text by default — broke the one contract every caller relies on, and on an
+    # empty library it printed nothing at all while still exiting 0.
+    if args.raw:
+        sys.stdout.write(text)
+        return EXIT_OK
+    payload = {"format": args.format, "entries": len(works), "text": text}
+    if missing:
+        payload["not_found"] = missing
+    return ctx.emit(payload)
 
 
 def cmd_add_file(ctx: Context) -> int:
@@ -686,7 +700,15 @@ def _extract_with_engine(library: Library, work_id: str, *, engine: str) -> dict
 
 def cmd_merge(ctx: Context) -> int:
     args = ctx.args
-    result = ctx.library.merge(args.keep, args.drop, reason="cli")
+    try:
+        result = ctx.library.merge(args.keep, args.drop, reason="cli")
+    except KeyError as exc:
+        # `Library.merge` guards its own contract with KeyError, which is right for a
+        # programmer calling the API. From the CLI the same condition is a typo, and it
+        # used to surface as an unhandled exception: exit 5 plus a traceback instead of
+        # "these ids are not in the library".
+        detail = exc.args[0] if exc.args else str(exc)
+        raise CommandError(str(detail), EXIT_NOT_FOUND) from exc
     return ctx.emit(result)
 
 
@@ -765,23 +787,44 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--channel", help="comma-separated channel allow-list")
     p.add_argument("--disable-channel", help="comma-separated channels to disable")
 
+    # The same global flags are attached to every subparser so they may appear *after*
+    # the subcommand as well. argparse only accepts them before it, which trips everyone
+    # who appends `--pretty` to the command they just typed — including the probe script
+    # written for this repository. Each copy defaults to SUPPRESS so an absent occurrence
+    # leaves the value parsed at the top level untouched.
+    common = argparse.ArgumentParser(add_help=False)
+    common.add_argument("--library", default=argparse.SUPPRESS,
+                        help="library root (default: $LIT_HOME, else <checkout>/papers)")
+    common.add_argument("--pretty", action="store_true", default=argparse.SUPPRESS,
+                        help="human-readable output instead of JSON")
+    common.add_argument("--offline", action="store_true", default=argparse.SUPPRESS,
+                        help="never touch the network")
+    common.add_argument("--verbose", action="store_true", default=argparse.SUPPRESS)
+    common.add_argument("--channel", default=argparse.SUPPRESS,
+                        help="comma-separated channel allow-list")
+    common.add_argument("--disable-channel", default=argparse.SUPPRESS,
+                        help="comma-separated channels to disable")
+
     sub = p.add_subparsers(dest="command", required=True)
 
-    sc = sub.add_parser("channels", help="list channels, availability and missing credentials")
+    def sub_parser(name: str, **kwargs: Any) -> argparse.ArgumentParser:
+        return sub.add_parser(name, parents=[common], **kwargs)
+
+    sc = sub_parser("channels", help="list channels, availability and missing credentials")
     sc.add_argument("name", nargs="?", help="detail for one channel")
     sc.set_defaults(func=cmd_channels)
 
-    sk = sub.add_parser("contract", help="the operating rules and canonical step order")
+    sk = sub_parser("contract", help="the operating rules and canonical step order")
     sk.set_defaults(func=cmd_contract)
 
-    sd = sub.add_parser("doctor", help="consistency report for the library")
+    sd = sub_parser("doctor", help="consistency report for the library")
     sd.add_argument("--repair", action="store_true", help="rebuild derived artefacts")
     sd.set_defaults(func=cmd_doctor)
 
-    sr = sub.add_parser("repair", help="force a full rebuild of derived artefacts")
+    sr = sub_parser("repair", help="force a full rebuild of derived artefacts")
     sr.set_defaults(func=cmd_repair)
 
-    sf = sub.add_parser("find", help="search: local library first, then channels")
+    sf = sub_parser("find", help="search: local library first, then channels")
     sf.add_argument("query")
     sf.add_argument("-n", "--limit", type=int, default=10)
     sf.add_argument("-s", "--source", help="channel selector: auto | all | a,b,c")
@@ -794,7 +837,7 @@ def build_parser() -> argparse.ArgumentParser:
     sf.add_argument("--compact", action="store_true", help="trim records to key fields")
     sf.set_defaults(func=cmd_find)
 
-    sg = sub.add_parser("get", help="acquire one paper: local first, then channels")
+    sg = sub_parser("get", help="acquire one paper: local first, then channels")
     sg.add_argument("identifier", help="DOI, arXiv id, OpenReview id, dblp key, PMID, URL, work_id")
     sg.add_argument("--with-pdf", action="store_true", dest="with_pdf")
     sg.add_argument("--extract", action="store_true", help="extract text after downloading")
@@ -803,7 +846,7 @@ def build_parser() -> argparse.ArgumentParser:
     sg.add_argument("--full", action="store_true", help="include the full record, not a summary")
     sg.set_defaults(func=cmd_get)
 
-    sa = sub.add_parser(
+    sa = sub_parser(
         "ask",
         help="retrieve passages that answer a question, with page-anchored citations",
     )
@@ -816,11 +859,11 @@ def build_parser() -> argparse.ArgumentParser:
                     help="omit the passage text, keep the anchors and scores")
     sa.set_defaults(func=cmd_ask)
 
-    si = sub.add_parser("index", help="build/refresh the passage index for stored full texts")
+    si = sub_parser("index", help="build/refresh the passage index for stored full texts")
     si.add_argument("--ids", help="comma-separated work ids (default: whole library)")
     si.set_defaults(func=cmd_index)
 
-    sc2 = sub.add_parser("cite", help="citation for one work, with field provenance")
+    sc2 = sub_parser("cite", help="citation for one work, with field provenance")
     sc2.add_argument("identifier")
     sc2.add_argument("--format", default="bibtex",
                      choices=["bibtex", "ris", "csl", "json", "text"])
@@ -828,17 +871,17 @@ def build_parser() -> argparse.ArgumentParser:
                      choices=["authorYear", "key", "hash"])
     sc2.set_defaults(func=cmd_cite)
 
-    so = sub.add_parser("open", help="read local full text (never touches the network)")
+    so = sub_parser("open", help="read local full text (never touches the network)")
     so.add_argument("identifier")
     so.add_argument("--head", type=int, default=0, help="only the first N characters")
     so.set_defaults(func=cmd_open)
 
-    ss = sub.add_parser("show", help="show one stored record with its claim provenance")
+    ss = sub_parser("show", help="show one stored record with its claim provenance")
     ss.add_argument("identifier")
     ss.add_argument("--raw", action="store_true", help="raw stored JSON")
     ss.set_defaults(func=cmd_show)
 
-    sl = sub.add_parser("search-local", help="search only the local library")
+    sl = sub_parser("search-local", help="search only the local library")
     sl.add_argument("query", nargs="?", default="")
     sl.add_argument("-n", "--limit", type=int, default=25)
     sl.add_argument("--year-from", type=int, dest="year_from")
@@ -848,30 +891,32 @@ def build_parser() -> argparse.ArgumentParser:
     sl.add_argument("--with-pdf", action="store_true", dest="with_pdf")
     sl.set_defaults(func=cmd_search_local)
 
-    slib = sub.add_parser("library", help="library-level views")
+    slib = sub_parser("library", help="library-level views")
     slib.add_argument("action", choices=["stats", "report", "list", "merges"])
     slib.add_argument("-n", "--limit", type=int, default=0)
     slib.set_defaults(func=cmd_library)
 
-    sck = sub.add_parser("check", help="re-verify stored records against the sources")
+    sck = sub_parser("check", help="re-verify stored records against the sources")
     sck.add_argument("ids", nargs="?", help="comma-separated work ids")
     sck.add_argument("--all", action="store_true")
     sck.add_argument("-n", "--limit", type=int, default=0)
     sck.set_defaults(func=cmd_check)
 
-    scf = sub.add_parser("check-files", help="verify stored PDFs against recorded hashes")
+    scf = sub_parser("check-files", help="verify stored PDFs against recorded hashes")
     scf.set_defaults(func=cmd_check_files)
 
-    se = sub.add_parser("export", help="export citations (bibtex/ris/csl/text)")
+    se = sub_parser("export", help="export citations (bibtex/ris/csl/text)")
     se.add_argument("--format", default="bibtex")
     se.add_argument("--key-style", default="authorYear", dest="key_style",
                     choices=["authorYear", "key", "hash"])
     se.add_argument("--ids", help="comma-separated work ids (default: whole library)")
     se.add_argument("--query", help="substring filter over title/abstract")
     se.add_argument("-o", "--out", help="write to a file instead of stdout")
+    se.add_argument("--raw", action="store_true",
+                    help="print the citation text itself, not JSON (for redirection)")
     se.set_defaults(func=cmd_export)
 
-    saf = sub.add_parser("add-file", help="add a PDF you already have into the library")
+    saf = sub_parser("add-file", help="add a PDF you already have into the library")
     saf.add_argument("file")
     saf.add_argument("--title")
     saf.add_argument("--authors", help="semicolon-separated")
@@ -885,31 +930,31 @@ def build_parser() -> argparse.ArgumentParser:
     saf.add_argument("--allow-non-pdf", action="store_true", dest="allow_non_pdf")
     saf.set_defaults(func=cmd_add_file)
 
-    sx = sub.add_parser("extract", help="extract text from a stored PDF")
+    sx = sub_parser("extract", help="extract text from a stored PDF")
     sx.add_argument("identifier")
     sx.add_argument("--engine", choices=["", "pdfplumber", "pypdf", "fitz"], default="")
     sx.set_defaults(func=cmd_extract)
 
-    sm = sub.add_parser("merge", help="confirm a merge of two works")
+    sm = sub_parser("merge", help="confirm a merge of two works")
     sm.add_argument("keep")
     sm.add_argument("drop")
     sm.set_defaults(func=cmd_merge)
 
-    sev = sub.add_parser("evidence", help="inspect raw response snapshots")
+    sev = sub_parser("evidence", help="inspect raw response snapshots")
     sev.add_argument("--id", help="render one snapshot")
     sev.add_argument("-n", "--limit", type=int, default=0)
     sev.set_defaults(func=cmd_evidence)
 
-    sled = sub.add_parser("ledger", help="read the append-only audit trail")
+    sled = sub_parser("ledger", help="read the append-only audit trail")
     sled.add_argument("-n", "--limit", type=int, default=50)
     sled.add_argument("--event")
     sled.set_defaults(func=cmd_ledger)
 
-    sri = sub.add_parser("reindex", help="rebuild the derived index (rarely needed)")
+    sri = sub_parser("reindex", help="rebuild the derived index (rarely needed)")
     sri.set_defaults(func=cmd_reindex)
 
     # --- module three: topic generation ---------------------------------- #
-    stp = sub.add_parser(
+    stp = sub_parser(
         "topics",
         help="mine the corpus for one research topic worth doing (module three)",
         description=(
@@ -921,7 +966,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     tsub = stp.add_subparsers(dest="topics_action", required=True)
 
-    tt = tsub.add_parser("survey", help="map the corpus for a direction, topping it up if thin")
+    def topics_parser(name: str, **kwargs: Any) -> argparse.ArgumentParser:
+        return tsub.add_parser(name, parents=[common], **kwargs)
+
+    tt = topics_parser("survey", help="map the corpus for a direction, topping it up if thin")
     tt.add_argument("query", help="the direction, e.g. \"graph neural networks for molecules\"")
     tt.add_argument("--min-works", type=int, default=20, dest="min_works",
                     help="top up from channels below this many works (default 20)")
@@ -935,13 +983,13 @@ def build_parser() -> argparse.ArgumentParser:
                     help="longest term phrase to extract (1-3)")
     tt.set_defaults(func=cmd_topics)
 
-    tg = tsub.add_parser("gaps", help="gap evidence for a survey: quotes, statistics, kinds")
+    tg = topics_parser("gaps", help="gap evidence for a survey: quotes, statistics, kinds")
     tg.add_argument("survey_id")
     tg.add_argument("-n", "--limit", type=int, default=60, help="max declared gaps")
     tg.add_argument("--max-per-work", type=int, default=3, dest="max_per_work")
     tg.set_defaults(func=cmd_topics)
 
-    tc = tsub.add_parser("candidates", help="ranked (evidence x operator) topic candidates")
+    tc = topics_parser("candidates", help="ranked (evidence x operator) topic candidates")
     tc.add_argument("survey_id")
     tc.add_argument("-n", "--limit", type=int, default=25)
     tc.add_argument("--per-kind", type=int, default=15, dest="per_kind",
@@ -952,35 +1000,35 @@ def build_parser() -> argparse.ArgumentParser:
                     help="skip the local novelty coverage check")
     tc.set_defaults(func=cmd_topics)
 
-    td = tsub.add_parser("draft", help="commit to one candidate; returns the section skeleton")
+    td = topics_parser("draft", help="commit to one candidate; returns the section skeleton")
     td.add_argument("candidate_id")
     td.set_defaults(func=cmd_topics)
 
-    tr = tsub.add_parser("rate", help="CCF estimate: upper bound, band, basis, risks")
+    tr = topics_parser("rate", help="CCF estimate: upper bound, band, basis, risks")
     tr.add_argument("topic_id")
     tr.add_argument("--venue", help="target venue to check the estimate against")
     tr.set_defaults(func=cmd_topics)
 
-    tsv = tsub.add_parser("save", help="commit a topic and export its Markdown draft")
+    tsv = topics_parser("save", help="commit a topic and export its Markdown draft")
     tsv.add_argument("topic_id")
     tsv.set_defaults(func=cmd_topics)
 
-    tl = tsub.add_parser("list", help="topics already mined, and what they consumed")
+    tl = topics_parser("list", help="topics already mined, and what they consumed")
     tl.add_argument("-n", "--limit", type=int, default=0)
     tl.set_defaults(func=cmd_topics)
 
-    tsh = tsub.add_parser("show", help="one stored topic, with its anchors and references")
+    tsh = topics_parser("show", help="one stored topic, with its anchors and references")
     tsh.add_argument("topic_id")
     tsh.add_argument("--markdown", action="store_true", help="emit the rendered Markdown")
     tsh.set_defaults(func=cmd_topics)
 
-    tv = tsub.add_parser("venues", help="the CCF catalogue: look a venue up, or verify it")
+    tv = topics_parser("venues", help="the CCF catalogue: look a venue up, or verify it")
     tv.add_argument("query", nargs="?", default="", help="substring to search for")
     tv.add_argument("-n", "--limit", type=int, default=20)
     tv.add_argument("--verify", action="store_true", help="self-check the loaded catalogue")
     tv.set_defaults(func=cmd_topics)
 
-    to = tsub.add_parser("operators", help="the novelty operators and their difficulty scale")
+    to = topics_parser("operators", help="the novelty operators and their difficulty scale")
     to.set_defaults(func=cmd_topics)
 
     return p
@@ -991,8 +1039,35 @@ def build_parser() -> argparse.ArgumentParser:
 # --------------------------------------------------------------------------- #
 
 
-def _render_pretty(payload: dict[str, Any]) -> str:
-    """Readable rendering for humans; never used by machine callers."""
+# Which payload key holds the record list, per command — and per action for the grouped
+# commands. Declared here so the renderer never has to guess a payload's shape.
+# Commands absent from this table simply render their headers plus the JSON body, which
+# is a readable fallback and never a crash.
+RECORD_KEYS: dict[str, tuple[str, ...]] = {
+    "find": ("local_hits", "fetched"),
+    "search-local": ("hits",),
+    "library:list": ("works",),
+    "library:merges": ("pending",),
+    "topics:list": ("topics",),
+}
+
+
+def _record_keys_for(args: argparse.Namespace) -> tuple[str, ...]:
+    command = getattr(args, "command", "") or ""
+    action = getattr(args, "action", "") or getattr(args, "topics_action", "") or ""
+    return RECORD_KEYS.get(f"{command}:{action}" if action else command, ())
+
+
+def _render_pretty(payload: dict[str, Any], record_keys: tuple[str, ...] = ()) -> str:
+    """Readable rendering for humans; never used by machine callers.
+
+    Which payload keys hold record lists is *declared by the command that produced the
+    payload*, not inferred here. The previous version guessed with
+    ``local_hits or fetched or works`` and crashed on ``library stats``, where ``works``
+    is a count — the same key means different things in different commands, so a renderer
+    that sniffs shapes will eventually meet a payload that breaks it. The type is still
+    checked before iterating, because a declared key can legitimately hold a scalar.
+    """
     lines: list[str] = []
     for key in ("message", "note", "error"):
         if payload.get(key):
@@ -1001,10 +1076,17 @@ def _render_pretty(payload: dict[str, Any]) -> str:
         lines.append(f"  ! {chan}: {err}")
     for warn in payload.get("warnings") or []:
         lines.append(f"  ~ {warn}")
-    records = payload.get("local_hits") or payload.get("fetched") or payload.get("works")
-    if records:
+    for key in record_keys:
+        rows = payload.get(key)
+        if not isinstance(rows, list) or not rows:
+            continue
         lines.append("")
-        for r in records:
+        if len(record_keys) > 1:
+            lines.append(f"  {key}:")
+        for r in rows:
+            if not isinstance(r, dict):
+                lines.append(f"  {r}")
+                continue
             year = r.get("year") or "----"
             venue = r.get("venue") or ""
             flags = []

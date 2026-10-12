@@ -70,6 +70,10 @@ def ask(
     result: dict[str, Any] = {
         "query": query,
         "grounded": bool(hits),
+        # Explicit and branchable: "the corpus does not cover this" is an outcome, not
+        # an error. Callers that only read exit codes cannot otherwise tell a gap in
+        # coverage from a failure to look.
+        "outcome": "answered" if hits else "not-covered",
         "corpus": index.stats(),
         "hits": [h.as_dict() for h in hits],
         "note": (

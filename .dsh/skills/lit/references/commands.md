@@ -6,6 +6,10 @@ subcommand: `--library`, `--pretty`, `--offline`, `--verbose`, `--channel`, `--d
 
 Exit codes: `0` ok · `2` usage · `3` not found · `4` partial · `5` failed.
 
+One nuance worth knowing before you branch: `ask` exits `0` when the corpus does not cover
+the question, with `"outcome": "not-covered"` and `grounded: false` in the payload. Only
+`3` means "that identifier is not in the library".
+
 ## Setup
 
 ```bash
@@ -19,8 +23,9 @@ $LIT --pretty contract                 # the operating rules, for humans
 The library defaults to `<checkout>/papers` — inside the clone, wherever you call from.
 `--library <dir>` or `$LIT_HOME` override it.
 
-`--pretty` is a **global** flag: it goes *before* the subcommand (`$LIT --pretty doctor`,
-not `$LIT doctor --pretty`). Same for `--library`, `--offline`, `--verbose`.
+`--pretty`, `--library`, `--offline` and `--verbose` are **global** flags and are accepted
+either side of the subcommand — `$LIT --pretty doctor` and `$LIT doctor --pretty` are the
+same command.
 
 ## find — search local first, then channels
 
@@ -179,7 +184,12 @@ $LIT export --format ris
 $LIT export --format csl            # CSL-JSON for citation processors
 $LIT export --format text --query "transformer"      # filter by title/abstract
 $LIT export --key-style key          # DOI-derived keys instead of author-year
+$LIT export --raw > refs.bib          # the citation text itself, for redirection
 ```
+
+Output is JSON like every other command (`{"format", "entries", "text"}`). `--raw` is the
+explicit opt-in to plain citation text on stdout; without it, `> refs.bib` would capture
+JSON.
 
 Citation keys are **stable across exports** (derived from identity, not list position),
 so `\cite` commands survive re-export. Missing fields are omitted, never invented —

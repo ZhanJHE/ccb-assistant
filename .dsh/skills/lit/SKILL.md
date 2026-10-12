@@ -40,6 +40,8 @@ the subcommand for humans (`$LIT --pretty doctor`).
 **Exit codes** — branch on these instead of parsing text:
 `0` ok · `2` usage · `3` not found · `4` partial (some channels failed, or the corpus is
 too thin to mine) · `5` failed.
+`ask` exits `0` when the corpus does not cover the question and reports
+`"outcome": "not-covered"`: a coverage gap is an outcome to report, not a failed command.
 
 ## The canonical sequence
 

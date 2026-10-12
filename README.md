@@ -141,9 +141,13 @@ lit export --format bibtex -o refs.bib            # bibliography
 lit check --all                                   # re-verify: new version, OA, retraction
 ```
 
-All commands print JSON on stdout; add `--pretty` **before** the subcommand for humans
-(`lit --pretty doctor`), `--offline` to forbid the network. Exit codes: `0` ok, `2` usage,
-`3` not found, `4` partial, `5` failed.
+All commands print JSON on stdout; add `--pretty` for humans (either before or after the
+subcommand — `lit --pretty doctor` and `lit doctor --pretty` are the same), `--offline` to
+forbid the network. One deliberate exception: `lit export --raw` writes the citation text
+itself, for redirection. Exit codes: `0` ok, `2` usage, `3` not found, `4` partial,
+`5` failed — and `lit ask` exits `0` when the corpus simply does not cover the question,
+reporting `"outcome": "not-covered"` in the payload, because a coverage gap is not a
+failure to look.
 
 ### Answering questions from the corpus
 
