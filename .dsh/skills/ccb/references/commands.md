@@ -10,6 +10,21 @@ One nuance worth knowing before you branch: `ask` exits `0` when the corpus does
 the question, with `"outcome": "not-covered"` and `grounded: false` in the payload. Only
 `3` means "that identifier is not in the library".
 
+## Credentials — what `channels` tells you
+
+`$CCB channels` reports four credential fields, and never a value:
+
+| Field | Meaning |
+|---|---|
+| `credentials_present` | variables that are set and in use |
+| `credentials_missing` | per channel: `var`, `kind` (`required` = the source cannot be used at all, `optional` = it only raises rate limits), `effect`, and a `note` where the answer is not implied by the declaration |
+| `credentials_without_channel` | set, but the channel that consumes it is not loaded — a silent misconfiguration |
+| `credential_guidance` | how to talk about a missing key: name the variable, ask the user to set it, never move the value through a conversation |
+
+A channel that needs a credential it does not have is **skipped automatically** and named
+in `unavailable` with its reason — one missing key never fails the whole fan-out, and
+"nothing found" is never reported when the truth is "could not look".
+
 ## Setup
 
 ```bash

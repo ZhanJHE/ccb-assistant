@@ -37,11 +37,15 @@ from ..core.util import utc_now
 DEFAULT_UA_TEMPLATE = "ccb/0.3 (+https://github.com/ZhanJHE/ccb-assistant; mailto:{mailto})"
 FALLBACK_UA = "ccb/0.1 (academic literature client)"
 
-# Credentials are read from the environment only, and only these names are ever
-# consulted — an allow-list, so a stray variable can never be forwarded silently.
+# Which channel a credential belongs to, by variable name. This is a *reporting* map, not
+# an access list: what actually decides which variables are read is each channel's own
+# declaration (`auth: env:VAR` / `env:VAR?`), so an undeclared variable is never consulted
+# no matter what the environment holds. Keeping the map complete is what lets `channels`
+# tell the user that a key is set but unused, and what lets a missing key carry a note.
 KNOWN_CREDENTIALS: dict[str, str] = {
     "CORE_API_KEY": "core",
     "DOAJ_API_KEY": "doaj",
+    "PAPER_SEARCH_CORE_API_KEY": "paper_search",
     "S2_API_KEY": "semantic_scholar",
     "SEMANTIC_SCHOLAR_API_KEY": "semantic_scholar",
     "NCBI_API_KEY": "pubmed",
@@ -53,6 +57,28 @@ KNOWN_CREDENTIALS: dict[str, str] = {
     "ACM_API_KEY": "acm",
     "ZENODO_ACCESS_TOKEN": "zenodo",
     "MINERU_TOKEN": "mineru",
+}
+
+# What a missing credential actually costs, for the ones where the answer is not obvious
+# from how the channel declared it (see ChannelSpec.required_env / optional_env). This is
+# the distinction a user needs in order to decide whether to go and find a key: does the
+# source stop working, or does it merely get slower?
+CREDENTIAL_NOTES: dict[str, str] = {
+    "UNPAYWALL_EMAIL": "must be a real address — Unpaywall rejects placeholder emails",
+    "PAPER_SEARCH_MCP_UNPAYWALL_EMAIL":
+        "must be a real address — Unpaywall rejects placeholder emails",
+    "S2_API_KEY": "keyless requests are throttled (HTTP 429)",
+    "SEMANTIC_SCHOLAR_API_KEY": "keyless requests are throttled (HTTP 429)",
+    "OPENALEX_EMAIL": "joins the polite pool and raises the request budget",
+    "OPENALEX_API_KEY": "raises the request budget",
+    "NCBI_API_KEY": "raises the permitted request rate",
+    "CORE_API_KEY": "raises the permitted request rate",
+    "PAPER_SEARCH_CORE_API_KEY": "raises the permitted request rate",
+    "DOAJ_API_KEY": "raises the permitted request rate",
+    "IEEE_API_KEY": "access to the source",
+    "ACM_API_KEY": "access to the source",
+    "ZENODO_ACCESS_TOKEN": "access to the source",
+    "MINERU_TOKEN": "access to the source",
 }
 
 

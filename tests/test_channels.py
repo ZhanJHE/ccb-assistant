@@ -322,6 +322,79 @@ class TestRegistryWithDeclaredChannels(unittest.TestCase):
             os.environ.pop("S2_API_KEY", None)
 
 
+class TestMissingCredentialsAreActionable(unittest.TestCase):
+    """A missing key arrives with enough context to act on — and never with its value.
+
+    The distinction that decides what a user does next is required vs optional: one means
+    the source is gone, the other means it is merely slower. Without it, "this channel is
+    unavailable" is an instruction to go and hunt for a key that may buy nothing.
+    """
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp(prefix="ccb-cred-"))
+        self.cfg = self.tmp / "channels.yaml"
+        self.lib = Library(self.tmp / "lib")
+        self.lib.ensure()
+
+    def tearDown(self):
+        self.lib.close()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _summary(self):
+        self.cfg.write_text(
+            "channels:\n"
+            "  needs_key:\n"
+            "    kind: http\n"
+            "    url: 'https://example.invalid/api?q={query}'\n"
+            "    caps: [search]\n"
+            "    auth: env:CCB_TEST_REQUIRED_KEY\n"
+            "  better_with_key:\n"
+            "    kind: http\n"
+            "    url: 'https://example.invalid/api?q={query}'\n"
+            "    caps: [search]\n"
+            "    auth: env:CCB_TEST_OPTIONAL_KEY?\n",
+            encoding="utf-8",
+        )
+        return Registry(evidence=self.lib.evidence, config_paths=[self.cfg]).availability_summary()
+
+    def test_a_required_key_is_reported_as_blocking(self):
+        summary = self._summary()
+        gaps = {g["var"]: g for g in summary["credentials_missing"]["needs_key"]}
+        self.assertEqual(gaps["CCB_TEST_REQUIRED_KEY"]["kind"], "required")
+        self.assertIn("cannot be used", gaps["CCB_TEST_REQUIRED_KEY"]["effect"])
+
+    def test_an_optional_key_is_reported_as_an_enhancement(self):
+        summary = self._summary()
+        gaps = {g["var"]: g for g in summary["credentials_missing"]["better_with_key"]}
+        self.assertEqual(gaps["CCB_TEST_OPTIONAL_KEY"]["kind"], "optional")
+        self.assertIn("rate limits", gaps["CCB_TEST_OPTIONAL_KEY"]["effect"])
+
+    def test_the_guidance_forbids_moving_the_value_through_the_conversation(self):
+        summary = self._summary()
+        guidance = summary["credential_guidance"]
+        self.assertIn("Never move a credential value", guidance)
+        self.assertIn("environment variable", guidance)
+
+    def test_a_configured_value_never_appears_in_the_report(self):
+        import os
+
+        os.environ["CCB_TEST_REQUIRED_KEY"] = "super-secret-value"
+        try:
+            summary = self._summary()
+            self.assertNotIn("super-secret-value", json.dumps(summary))
+            self.assertIn("CCB_TEST_REQUIRED_KEY", summary["credentials_present"])
+            self.assertNotIn("needs_key", summary["credentials_missing"])
+        finally:
+            os.environ.pop("CCB_TEST_REQUIRED_KEY", None)
+
+    def test_the_bundled_registry_reports_its_own_optional_keys(self):
+        """The default channels declare optional keys; the report must surface them."""
+        summary = Registry(evidence=self.lib.evidence, config_paths=[]).availability_summary()
+        self.assertIn("openalex", summary["credentials_missing"])
+        kinds = {g["kind"] for g in summary["credentials_missing"]["openalex"]}
+        self.assertEqual(kinds, {"optional"})
+
+
 class TestAllFourKindsThroughOneInterface(unittest.TestCase):
     """http, cli, mcp and manual must be indistinguishable to the resolver."""
 

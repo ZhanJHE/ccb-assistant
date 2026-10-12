@@ -31,6 +31,16 @@ BUILTIN_CHANNELS: dict[str, str] = {
     "paper_search": "paper_search:PaperSearchChannel",
 }
 
+
+def _gap(var: str, kind: str, effect: str) -> dict[str, str]:
+    """One missing credential, described in terms a user can act on."""
+    from ..net import CREDENTIAL_NOTES
+
+    entry = {"var": var, "kind": kind, "effect": effect}
+    if var in CREDENTIAL_NOTES:
+        entry["note"] = CREDENTIAL_NOTES[var]
+    return entry
+
 # Default health, learned from live probing rather than from documentation. Used to
 # explain a degradation before the first call, and corrected by runtime results.
 KNOWN_HEALTH: dict[str, dict[str, str]] = {
@@ -251,7 +261,7 @@ class Registry:
         enabled and nothing says otherwise — so it is surfaced as a configuration note
         rather than silently ignored.
         """
-        from ..net import KNOWN_CREDENTIALS, credential_provider
+        from ..net import CREDENTIAL_NOTES, KNOWN_CREDENTIALS, credential_provider
 
         usable = [c.name for c in self.all() if c.available()[0]]
         unusable = {c.name: c.available()[1] for c in self.all() if not c.available()[0]}
@@ -263,6 +273,23 @@ class Registry:
                 if credential(var)
             }
         )
+        # What is missing, and what it costs. A caller that only learns "this channel is
+        # unavailable" cannot tell the user whether to go and find a key or to carry on
+        # without one; `kind` and `effect` answer exactly that, and `note` covers the
+        # cases where the answer is not implied by the channel's declaration.
+        missing: dict[str, list[dict[str, str]]] = {}
+        for c in self.all():
+            gaps: list[dict[str, str]] = []
+            for var in c.spec.required_env():
+                if not credential(var):
+                    gaps.append(_gap(var, "required",
+                                     "the channel cannot be used without it"))
+            for var in c.spec.optional_env():
+                if not credential(var):
+                    gaps.append(_gap(var, "optional", "raises rate limits only"))
+            if gaps:
+                missing[c.name] = gaps
+
         loaded = {c.name for c in self.all()}
         orphaned = {
             var: credential_provider(var)
@@ -273,6 +300,13 @@ class Registry:
             "usable": usable,
             "unavailable": unusable,
             "credentials_present": present,
+            "credentials_missing": missing,
+            "credential_guidance": (
+                "Never move a credential value through a conversation, a log or a command "
+                "line. Tell the user which environment variable enables the source and "
+                "what it buys, ask them to set it in their own environment, then re-run "
+                "the command. Credential values are never read into output."
+            ),
         }
         if orphaned:
             out["credentials_without_channel"] = orphaned

@@ -125,6 +125,10 @@ class McpServer:
             "usable": summary["usable"],
             "unavailable": summary["unavailable"],
             "credentials_present": summary["credentials_present"],
+            # What is missing, what it costs, and how to talk about it — the CLI reports
+            # the same fields, so a caller gets the same answer whichever face it uses.
+            "credentials_missing": summary["credentials_missing"],
+            "credential_guidance": summary["credential_guidance"],
         }
         # A credential whose channel is not loaded is a silent misconfiguration; pass it
         # through the same way the CLI does so both faces report it.

@@ -28,6 +28,11 @@ SKIP_DIRS = {".git", "papers", "__pycache__", ".mypy_cache", ".pytest_cache",
              ".ruff_cache", ".venv", "venv"}
 TEXT_SUFFIXES = {".py", ".md", ".html", ".toml", ".txt", ".yaml", ".yml", ".csv"}
 
+# A line may name the old token in order to forbid it — that is the rule being stated, not
+# a violation of it. The exemption is line-scoped so the rest of the same file is still
+# checked for stale paths and package names.
+FORBID_CLAUSE = re.compile(r"不要新增|[Nn]ever add|no compatibility|零兼容")
+
 
 def _files():
     for path in ROOT.rglob("*"):
@@ -78,6 +83,8 @@ class TestNoOldNameRemains(unittest.TestCase):
             except (UnicodeDecodeError, OSError):
                 continue
             for lineno, line in enumerate(text.split("\n"), 1):
+                if FORBID_CLAUSE.search(line):
+                    continue
                 if TOKEN.search(line) or OLD_ENV in line:
                     offenders.append(f"{path.relative_to(ROOT)}:{lineno}: {line.strip()[:90]}")
         self.assertEqual(offenders, [], "\n".join(offenders))

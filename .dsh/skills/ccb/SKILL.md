@@ -118,10 +118,9 @@ Rules:
 
 ## Also available over MCP
 
-The same core is exposed as an MCP server with 16 tools: `ccb_contract`, `ccb_channels`,
-`ccb_find`, `ccb_get`, `ccb_ask`, `ccb_open`, `ccb_cite`, `ccb_export`, `ccb_stats`, and
-the seven `ccb_topics_*` tools that mirror the sequence above — one core, several faces,
-identical behaviour to the CLI. See `references/commands.md` for how to register it.
+The same core is exposed as 16 `ccb_*` tools — one per operation, identical behaviour to
+the CLI. `ccb --pretty contract` lists them; `references/commands.md` shows how to
+register the server.
 
 ## Reading results
 
@@ -138,6 +137,22 @@ Every record carries its provenance. Trust and quote it:
   silently pick one.
 - `errors` maps a channel name to why it produced nothing. **"Nothing found" and
   "could not look" are different facts.** Say which one happened.
+
+## When a credential is missing
+
+Trigger: `channels_unavailable` is non-empty, or `errors` mentions `missing credential:`.
+
+1. **Say what happened.** Name the channel and quote the reason as given — do not soften it
+   into "a network problem".
+2. **Say what it costs.** `ccb channels` → `credentials_missing[<channel>].kind`:
+   `required` = the source cannot be used at all; `optional` = it only raises rate limits.
+3. **Give the next step.** Name the environment variable and the command to re-run, then
+   carry on with the channels that do work and state the coverage gap (exit `4`).
+
+Never ask the user to paste a key into the conversation — a value that enters the
+conversation enters the context and any log; ask them to set the variable themselves.
+Never report "no papers found" when the truth is "could not look", and never retry a
+channel in a loop.
 
 ## Rules the tool enforces — work with them
 
@@ -159,19 +174,9 @@ Every record carries its provenance. Trust and quote it:
 ## Choosing a channel
 
 `-s auto` (the default) already prefers CS authorities and skips channels that cannot
-handle the identifier you gave. Override only for a reason:
-
-| Job | Channel |
-|---|---|
-| CS conference paper, possibly no DOI | `openreview`, then `dblp` |
-| Journal article | `crossref` (publisher of record), then `openalex` |
-| Preprint or LaTeX source | `arxiv` |
-| Legal open-access PDF | `openalex` OA locations, then `arxiv` |
-| Broad topic discovery | `openalex`, `crossref` |
-| Biomedicine / clinical ML | `europepmc` |
-
-arXiv ranks loosely (an identifier source, not a ranking engine); `dblp` is often gated
-and says so; Semantic Scholar 429s keyless.
+handle the identifier you gave — override only for a reason. The routing table is the
+`routing` section of `ccb contract` (`ccb --pretty contract` to read it); per-source traps,
+measured behaviour and known gating live in `references/channels.md`.
 
 ## Full detail
 

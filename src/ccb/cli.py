@@ -139,12 +139,22 @@ def cmd_channels(ctx: Context) -> int:
         "usable": summary["usable"],
         "unavailable": summary["unavailable"],
         "credentials_present": summary["credentials_present"],
+        # What is missing, what it costs, and how to talk about it. A caller that only
+        # hears "this channel is unavailable" cannot tell the user whether to go and find
+        # a key or to carry on without one.
+        "credentials_missing": summary["credentials_missing"],
+        "credential_guidance": summary["credential_guidance"],
         "note": (
             "Credential values are never read into output. 'unavailable' channels are "
             "skipped automatically; their reason tells you which environment variable "
             "would enable them."
         ),
     }
+    if summary.get("credentials_without_channel"):
+        payload["credentials_without_channel"] = summary["credentials_without_channel"]
+        payload["credentials_without_channel_note"] = summary[
+            "credentials_without_channel_note"
+        ]
     if args.name:
         chan = ctx.registry.get(args.name)
         if chan is None:

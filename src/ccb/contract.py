@@ -355,6 +355,8 @@ def contract_text() -> str:
             lines.append(f"      owns: {owned}")
         if mod["cli"]:
             lines.append(f"      cli: {', '.join(mod['cli'])}")
+        if mod["mcp"]:
+            lines.append(f"      mcp: {', '.join(mod['mcp'])}")
         lines.append("")
     lines.append("INVARIANTS (the program enforces these; do not work around them)")
     for inv in INVARIANTS:
