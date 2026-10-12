@@ -11,19 +11,19 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from lit.channels.registry import Registry  # noqa: E402
-from lit.library import Library  # noqa: E402
-from lit.resolver import Resolver  # noqa: E402
+from ccb.channels.registry import Registry  # noqa: E402
+from ccb.library import Library  # noqa: E402
+from ccb.resolver import Resolver  # noqa: E402
 
 
 def main() -> int:
     ident = sys.argv[1] if len(sys.argv) > 1 else "arxiv:1706.03762"
-    lib = Library(ROOT / ".lit-probe")
+    lib = Library(ROOT / ".ccb-probe")
     lib.init(force=True)
     reg = Registry(evidence=lib.evidence)
     res = Resolver(lib, reg)
 
-    from lit.ids import parse_identifier
+    from ccb.ids import parse_identifier
 
     parsed = parse_identifier(ident)
     print(f"identifier : {ident!r}")

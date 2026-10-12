@@ -9,7 +9,7 @@ import json
 import urllib.error
 import urllib.request
 
-UA = {"User-Agent": "lit/0.1 (mailto:lit-tool@example.org)"}
+UA = {"User-Agent": "ccb/0.1 (mailto:ccb-tool@example.org)"}
 
 
 def probe(url: str) -> str:

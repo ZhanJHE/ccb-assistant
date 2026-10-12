@@ -13,10 +13,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from lit.channels.openalex import OpenAlexChannel  # noqa: E402
-from lit.net import Http  # noqa: E402
+from ccb.channels.openalex import OpenAlexChannel  # noqa: E402
+from ccb.net import Http  # noqa: E402
 
-UA = {"User-Agent": "lit/0.1 (mailto:lit-tool@example.org)"}
+UA = {"User-Agent": "ccb/0.1 (mailto:ccb-tool@example.org)"}
 
 
 def raw(url: str) -> dict:

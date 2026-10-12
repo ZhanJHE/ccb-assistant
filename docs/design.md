@@ -1,4 +1,4 @@
-# lit — 设计定稿
+# ccb — 设计定稿
 
 > 一句话目标：**问第二次时直接命中本地论文库，不再把「查询→下载→处理→读取」重跑一遍；在此基础上，从库里挖出值得做的课题，并且每条论断都能被回溯。**
 
@@ -49,7 +49,7 @@ core      记录模型、身份链、文本规范化、PDF 抽取
 
 ---
 
-## 2. 模块一：搜索与下载（`lit.search`）
+## 2. 模块一：搜索与下载（`ccb.search`）
 
 ### 2.1 渠道描述符（声明式）
 
@@ -110,7 +110,7 @@ get(identifier):
 
 ---
 
-## 3. 模块二：论文库（`lit.library`）
+## 3. 模块二：论文库（`ccb.library`）
 
 ### 3.1 双层身份：Work / Manifestation
 
@@ -162,7 +162,7 @@ manifestation  载体层：arXiv v1/v2、NeurIPS 正式版、OpenReview 投稿�
 ### 3.4 去重：两段式，匹配结果可审计
 
 1. **精确段**：键优先级链命中 → 直接同一 work
-2. **模糊段**：规范化标题 + token 集合 Jaccard + 一作姓 + 年份容差 → Jaccard ≥ 0.92 才自动合并；0.60–0.92 之间生成一条 `merge_candidate` 进账本，由 `lit merge` 确认
+2. **模糊段**：规范化标题 + token 集合 Jaccard + 一作姓 + 年份容差 → Jaccard ≥ 0.92 才自动合并；0.60–0.92 之间生成一条 `merge_candidate` 进账本，由 `ccb merge` 确认
 
 保守优先：**宁可留候选，不要错合并**。错合并会污染引用，代价远高于多一条候选。
 
@@ -172,7 +172,7 @@ manifestation  载体层：arXiv v1/v2、NeurIPS 正式版、OpenReview 投稿�
 
 ---
 
-## 4. 模块三：课题生成（`lit.topics`）
+## 4. 模块三：课题生成（`ccb.topics`）
 
 ### 4.1 贯穿一切的原则：工具不写散文
 
@@ -279,9 +279,9 @@ deficit  = expected - together
 
 ### 4.8 CCF 目录是数据，不是代码
 
-`src/lit/topics/data/ccf_recommended.csv`，字段 `abbr,aliases,name,kind,field,rank`。两条刻意为之：
+`src/ccb/topics/data/ccf_recommended.csv`，字段 `abbr,aliases,name,kind,field,rank`。两条刻意为之：
 
-- **内置的是精选子集**（159 条主流 CS 会议/期刊），不是官方全量文档；`LIT_CCF_CATALOG` 可整体替换，`lit topics venues --verify` 先检查重复与畸形行。
+- **内置的是精选子集**（159 条主流 CS 会议/期刊），不是官方全量文档；`CCB_CCF_CATALOG` 可整体替换，`ccb topics venues --verify` 先检查重复与畸形行。
 - **未匹配是一个真实答案**。匹配保守：缩写必须是连续的 token 串，或名字精确相等。**不做子串匹配**，因为 `ai` 是 `artificial` 的子串，而错的等级比没有等级更糟。
 
 ### 4.9 落盘布局
@@ -300,7 +300,7 @@ papers/
 
 ## 5. 磁盘布局（纯文本为真相源）
 
-**库里在这个仓库里**：默认根是 `<checkout>/papers`，与代码同目录、使用者一眼可见。解析顺序 `--library` > `$LIT_HOME` > `$LIT_REPO` > **checkout 锚定** > `<cwd>` 兜底。
+**库里在这个仓库里**：默认根是 `<checkout>/papers`，与代码同目录、使用者一眼可见。解析顺序 `--library` > `$CCB_HOME` > `$CCB_REPO` > **checkout 锚定** > `<cwd>` 兜底。
 
 锚在 checkout 而不是 cwd 是刻意的：harness 从使用者的项目目录调用工具，cwd 相对默认值会让语料长在**调用者所在的地方**，而 clone 出来的那个目录——唯一可见且稳定的位置——反而空着。「clone 即用」要求数据落在 clone 里。
 
@@ -329,8 +329,8 @@ papers/
 同一核心三种形态 —— 注意它们是**同一个目录的三个入口**，不是三种分发方式：
 
 ```
-lit CLI (JSON)  ←── 确定层，可测试（<checkout>/lit.py，免安装）
-  ├─► Agent Skill（.dsh/skills/lit/）：就住在这个仓库里，agent 在本目录工作即被发现
+ccb CLI (JSON)  ←── 确定层，可测试（<checkout>/ccb.py，免安装）
+  ├─► Agent Skill（.dsh/skills/ccb/）：就住在这个仓库里，agent 在本目录工作即被发现
   └─► MCP server：16 个工具（9 个检索/库 + 7 个课题）
 ```
 
@@ -346,7 +346,7 @@ lit CLI (JSON)  ←── 确定层，可测试（<checkout>/lit.py，免安装�
 **零第三方依赖**：只用标准库 `urllib`/`json`/`sqlite3`/`hashlib`/`csv`。
 PDF 抽取按可用性探测 `pdfplumber` → `pypdf`，都没有则提示走本机 `liteparse` 技能。
 
-**过渡期兼容**：旧导入路径（`lit.library`、`lit.resolver`、`lit.channels.*` 等）保留为 `sys.modules` 别名，与规范路径是**同一个模块对象**，不会产生两份状态。待外部调用方迁移后删除。
+**过渡期兼容**：旧导入路径（`ccb.library`、`ccb.resolver`、`ccb.channels.*` 等）保留为 `sys.modules` 别名，与规范路径是**同一个模块对象**，不会产生两份状态。待外部调用方迁移后删除。
 
 ---
 
@@ -372,27 +372,27 @@ PDF 抽取按可用性探测 `pdfplumber` → `pypdf`，都没有则提示走本
 ## 8. 命令面
 
 ```
-lit channels                     列出所有渠道、可用性、缺哪个 key（不泄露值）
-lit find "<query>"               检索：先本地，再渠道；结果落入候选
-lit get <identifier>             取得论文：本地优先，必要时补元数据/补全文
-lit open <work_id>               直接读本地全文（零网络）
-lit ask "<question>"             检索带页码锚点的段落（不生成散文）
-lit library stats|report|list|merges   库统计与待确认合并
-lit library check                增量复查：撤稿/新版/OA 变化
-lit export --format bibtex       导出引用
-lit merge <a> <b>                确认合并候选
+ccb channels                     列出所有渠道、可用性、缺哪个 key（不泄露值）
+ccb find "<query>"               检索：先本地，再渠道；结果落入候选
+ccb get <identifier>             取得论文：本地优先，必要时补元数据/补全文
+ccb open <work_id>               直接读本地全文（零网络）
+ccb ask "<question>"             检索带页码锚点的段落（不生成散文）
+ccb library stats|report|list|merges   库统计与待确认合并
+ccb library check                增量复查：撤稿/新版/OA 变化
+ccb export --format bibtex       导出引用
+ccb merge <a> <b>                确认合并候选
 
-lit topics survey "<方向>"       ① 领域测绘（不足则补齐）
-lit topics gaps <survey_id>      ② 缺口证据（自述句 + 稀疏术语对）
-lit topics candidates <survey_id> ③ 候选课题（证据 × 算子，打分排序）
-lit topics draft <candidate_id>  ④ 提交一个，产出章节骨架（绑锚点）
-lit topics rate <topic_id>       ⑤ CCF 评级预估（上界/分档/依据/风险）
-lit topics save <topic_id>       ⑥ 落库 + 导出 Markdown + 退役去重键
-lit topics list|show|venues|operators   历史 / 详情 / CCF 目录 / 算子目录
+ccb topics survey "<方向>"       ① 领域测绘（不足则补齐）
+ccb topics gaps <survey_id>      ② 缺口证据（自述句 + 稀疏术语对）
+ccb topics candidates <survey_id> ③ 候选课题（证据 × 算子，打分排序）
+ccb topics draft <candidate_id>  ④ 提交一个，产出章节骨架（绑锚点）
+ccb topics rate <topic_id>       ⑤ CCF 评级预估（上界/分档/依据/风险）
+ccb topics save <topic_id>       ⑥ 落库 + 导出 Markdown + 退役去重键
+ccb topics list|show|venues|operators   历史 / 详情 / CCF 目录 / 算子目录
 ```
 
-所有命令支持 `--pretty`（人读）与 `--offline`（禁止联网），且**两个位置都接受**（`lit --pretty doctor` 与 `lit doctor --pretty` 等价）。退出码：`0` 成功、`2` 用法错、`3` 未找到、`4` 部分成功（渠道有失败，或语料薄到不足以挖掘）、`5` 失败。
+所有命令支持 `--pretty`（人读）与 `--offline`（禁止联网），且**两个位置都接受**（`ccb --pretty doctor` 与 `ccb doctor --pretty` 等价）。退出码：`0` 成功、`2` 用法错、`3` 未找到、`4` 部分成功（渠道有失败，或语料薄到不足以挖掘）、`5` 失败。
 
-两处例外与细则：`lit export --raw` 输出引用原文而非 JSON（为管道重定向显式提供的口子）；`lit ask` 在语料未覆盖该问题时返回 `0` 并在载荷里给 `"outcome": "not-covered"`——**覆盖缺口不是失败**，退出码 `3` 只留给"标识符/产物未找到"。
+两处例外与细则：`ccb export --raw` 输出引用原文而非 JSON（为管道重定向显式提供的口子）；`ccb ask` 在语料未覆盖该问题时返回 `0` 并在载荷里给 `"outcome": "not-covered"`——**覆盖缺口不是失败**，退出码 `3` 只留给"标识符/产物未找到"。
 
-`lit contract` 以机器可读 JSON 返回全部规则，**包含三个模块的边界声明与课题生成的规定步骤**——契约住在代码里，而不是会漂移的文档里。
+`ccb contract` 以机器可读 JSON 返回全部规则，**包含三个模块的边界声明与课题生成的规定步骤**——契约住在代码里，而不是会漂移的文档里。

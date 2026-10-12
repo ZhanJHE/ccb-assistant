@@ -20,18 +20,18 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from lit.search.channels.base import ChannelSpec  # noqa: E402
-from lit.search.channels.generic import (  # noqa: E402
+from ccb.search.channels.base import ChannelSpec  # noqa: E402
+from ccb.search.channels.generic import (  # noqa: E402
     GenericCliChannel,
     GenericHttpChannel,
     GenericMcpChannel,
     _dig,
     _unwrap_mcp_content,
 )
-from lit.search.channels.registry import Registry  # noqa: E402
-from lit.library.evidence import EvidenceStore  # noqa: E402
-from lit.library import Library  # noqa: E402
-from lit.search.acquire import Resolver  # noqa: E402
+from ccb.search.channels.registry import Registry  # noqa: E402
+from ccb.library.evidence import EvidenceStore  # noqa: E402
+from ccb.library import Library  # noqa: E402
+from ccb.search.acquire import Resolver  # noqa: E402
 
 PROBE_MCP = ROOT / "tools" / "probe_mcp_source.py"
 
@@ -87,7 +87,7 @@ class TestMcpContentUnwrap(unittest.TestCase):
 
 class TestDeclarativeChannels(unittest.TestCase):
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp(prefix="lit-chan-"))
+        self.tmp = Path(tempfile.mkdtemp(prefix="ccb-chan-"))
         self.ev = EvidenceStore(self.tmp / "evidence")
 
     def tearDown(self):
@@ -131,7 +131,7 @@ class TestDeclarativeChannels(unittest.TestCase):
             }
         }
         res = type("R", (), {})()
-        from lit.search.channels.base import ChannelResult
+        from ccb.search.channels.base import ChannelResult
 
         res = ChannelResult("declared")
         chan._extract = None  # guard: http channel must use its own mapper
@@ -148,7 +148,7 @@ class TestDeclarativeChannels(unittest.TestCase):
     def test_cli_channel_normalises_the_documented_envelope(self):
         decl = {"kind": "cli", "command": "definitely-not-installed", "caps": ["search"]}
         chan = GenericCliChannel("local", decl, evidence=self.ev)
-        from lit.search.channels.base import ChannelResult
+        from ccb.search.channels.base import ChannelResult
 
         res = ChannelResult("local")
         chan._extract(
@@ -174,7 +174,7 @@ class TestDeclarativeChannels(unittest.TestCase):
 
     def test_cli_channel_accepts_a_bare_list(self):
         chan = GenericCliChannel("local", {"kind": "cli", "command": "x"}, evidence=self.ev)
-        from lit.search.channels.base import ChannelResult
+        from ccb.search.channels.base import ChannelResult
 
         res = ChannelResult("local")
         chan._extract([{"title": "Bare"}], res, limit=5, mapping={})
@@ -182,7 +182,7 @@ class TestDeclarativeChannels(unittest.TestCase):
 
     def test_cli_channel_reports_a_non_list_payload_instead_of_crashing(self):
         chan = GenericCliChannel("local", {"kind": "cli", "command": "x"}, evidence=self.ev)
-        from lit.search.channels.base import ChannelResult
+        from ccb.search.channels.base import ChannelResult
 
         # An unrecognised envelope must be an error, not an empty result: "this source
         # has nothing" and "I could not read this source" are different facts.
@@ -203,7 +203,7 @@ class TestDeclarativeChannels(unittest.TestCase):
 
     def test_empty_but_valid_envelope_is_not_an_error(self):
         chan = GenericCliChannel("local", {"kind": "cli", "command": "x"}, evidence=self.ev)
-        from lit.search.channels.base import ChannelResult
+        from ccb.search.channels.base import ChannelResult
 
         res = ChannelResult("local")
         chan._extract({"papers": []}, res, limit=5, mapping={})
@@ -260,7 +260,7 @@ class TestDeclarativeChannels(unittest.TestCase):
 
 class TestRegistryWithDeclaredChannels(unittest.TestCase):
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp(prefix="lit-reg-"))
+        self.tmp = Path(tempfile.mkdtemp(prefix="ccb-reg-"))
         self.cfg = self.tmp / "channels.yaml"
         self.lib = Library(self.tmp / "lib")
         self.lib.ensure()
@@ -276,7 +276,7 @@ class TestRegistryWithDeclaredChannels(unittest.TestCase):
             "    kind: http\n"
             "    url: 'https://example.invalid/api?q={query}'\n"
             "    caps: [search, lookup]\n"
-            "    auth: env:LIT_TEST_ABSENT?\n",
+            "    auth: env:CCB_TEST_ABSENT?\n",
             encoding="utf-8",
         )
         reg = Registry(evidence=self.lib.evidence, config_paths=[self.cfg])
@@ -293,14 +293,14 @@ class TestRegistryWithDeclaredChannels(unittest.TestCase):
             "    kind: http\n"
             "    url: 'https://example.invalid/api?q={query}'\n"
             "    caps: [search]\n"
-            "    auth: env:LIT_TEST_ABSENT_KEY\n",
+            "    auth: env:CCB_TEST_ABSENT_KEY\n",
             encoding="utf-8",
         )
         reg = Registry(evidence=self.lib.evidence, config_paths=[self.cfg])
         chan = reg.get("keyed_source")
         usable, reason = chan.available()
         self.assertFalse(usable)
-        self.assertIn("LIT_TEST_ABSENT_KEY", reason)
+        self.assertIn("CCB_TEST_ABSENT_KEY", reason)
         summary = reg.availability_summary()
         self.assertIn("keyed_source", summary["unavailable"])
         # Everything else still routes, so one missing key cannot break the fan-out.
@@ -326,7 +326,7 @@ class TestAllFourKindsThroughOneInterface(unittest.TestCase):
     """http, cli, mcp and manual must be indistinguishable to the resolver."""
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp(prefix="lit-kinds-"))
+        self.tmp = Path(tempfile.mkdtemp(prefix="ccb-kinds-"))
         self.lib = Library(self.tmp / "lib")
         self.lib.ensure()
         self.ev = self.lib.evidence
@@ -337,7 +337,7 @@ class TestAllFourKindsThroughOneInterface(unittest.TestCase):
 
     def _protocol_only_records(self):
         """Call each generic channel's normaliser directly on a representative payload."""
-        from lit.search.channels.base import ChannelResult
+        from ccb.search.channels.base import ChannelResult
 
         out = {}
         http_map = {"items": "results", "title": "title", "year": "year"}
@@ -383,7 +383,7 @@ class TestAllFourKindsThroughOneInterface(unittest.TestCase):
             self.assertIsNotNone(self.lib.resolve(wid))
 
     def test_manual_kind_enters_the_same_pipeline(self):
-        from lit.core.model import ChannelRecord
+        from ccb.core.model import ChannelRecord
 
         rec = ChannelRecord(channel="manual", title="Hand-Supplied Paper",
                             authors=["D Four"], year=2023)

@@ -3,8 +3,8 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "lit-paper"
-version = "0.2.0"
+name = "ccb-assistant"
+version = "0.3.0"
 description = "Three modules over one shared floor: source-agnostic paper search and download, a durable local paper library, and research-topic mining over that corpus. Built for AI harnesses."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -21,8 +21,8 @@ yaml = ["PyYAML>=6.0"]
 dev = ["pytest>=8.0"]
 
 [project.scripts]
-lit = "lit.cli:main"
-lit-mcp = "lit.mcp_server:main"
+ccb = "ccb.cli:main"
+ccb-mcp = "ccb.mcp_server:main"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
@@ -31,6 +31,6 @@ package-dir = { "" = "src" }
 where = ["src"]
 
 # The CCF catalogue is data, not code: it ships as a CSV so it can be replaced without
-# touching Python. Set LIT_CCF_CATALOG to point at your own copy.
+# touching Python. Set CCB_CCF_CATALOG to point at your own copy.
 [tool.setuptools.package-data]
-"lit.topics" = ["data/*.csv"]
+"ccb.topics" = ["data/*.csv"]

@@ -1,14 +1,14 @@
-# lit — search, library, topics: three modules over one shared floor
+# ccb — search, library, topics: three modules over one shared floor
 
-`lit` answers three questions that most literature tooling answers separately and badly:
+`ccb` answers three questions that most literature tooling answers separately and badly:
 
 1. **How do I get this paper from any of the sources I have access to?** Free APIs,
    keyed APIs, MCP servers, local CLI tools and hand-supplied PDFs all sit behind one
    interface. Which channel was used, and whether it needed a key, is not your problem.
 2. **Why am I downloading and parsing this paper again?** Because nothing was kept.
-   `lit` keeps it.
+   `ccb` keeps it.
 3. **What should I work on next?** The corpus already documents what the field cannot
-   do. `lit topics` mines that, one topic at a time, with the evidence attached.
+   do. `ccb topics` mines that, one topic at a time, with the evidence attached.
 
 The second question is why the library exists; the third is why it is worth keeping.
 Existing tools cover *finding* papers extremely well — several mature aggregators span
@@ -29,10 +29,10 @@ core      records, identities, normalisation, PDF extraction
 
 | Module | Package | Owns |
 |---|---|---|
-| **search** | `lit.search` | the channel registry (http / cli / mcp / manual), rate limiting and credential transparency, the local-first acquisition protocol |
-| **library** | `lit.library` | work records, raw evidence snapshots, the disposable query index, grounded passage retrieval, citation export |
-| **topics** | `lit.topics` | domain survey, gap mining, novelty operators, candidate ranking, the draft skeleton, the CCF estimate |
-| **core** | `lit.core` | the record models, the `work_id` key chain, text normalisation, PDF extraction |
+| **search** | `ccb.search` | the channel registry (http / cli / mcp / manual), rate limiting and credential transparency, the local-first acquisition protocol |
+| **library** | `ccb.library` | work records, raw evidence snapshots, the disposable query index, grounded passage retrieval, citation export |
+| **topics** | `ccb.topics` | domain survey, gap mining, novelty operators, candidate ranking, the draft skeleton, the CCF estimate |
+| **core** | `ccb.core` | the record models, the `work_id` key chain, text normalisation, PDF extraction |
 
 A module may import only what is listed beneath it. `tests/test_modules.py` parses the
 real import graph and fails when a boundary is crossed — and the split paid for itself
@@ -72,9 +72,9 @@ the topic drafts all live in this one directory.
 
 ```bash
 git clone <this repo> && cd ccb-assistant
-python lit.py channels            # works immediately from a checkout, no install step
-python lit.py find "diffusion models for molecule generation" -n 10
-python lit.py get arxiv:1706.03762 --with-pdf
+python ccb.py channels            # works immediately from a checkout, no install step
+python ccb.py find "diffusion models for molecule generation" -n 10
+python ccb.py get arxiv:1706.03762 --with-pdf
 ```
 
 That is the whole setup. The first command creates `papers/`.
@@ -96,7 +96,7 @@ papers/
 
 The location is resolved from **the clone**, not from your working directory, so calling
 the tool from some other project still writes here — the papers stay in the directory you
-cloned. To keep several corpora apart, use `--library papers-<topic>` or `$LIT_HOME`.
+cloned. To keep several corpora apart, use `--library papers-<topic>` or `$CCB_HOME`.
 
 `papers/` is **local data, and is not in version control**: Git tracks code, tests, dev
 docs and the skill only. Two consequences worth knowing:
@@ -107,7 +107,7 @@ docs and the skill only. Two consequences worth knowing:
 Optionally install it, and add PDF text extraction (the tool works without either):
 
 ```bash
-pip install -e .                  # provides the `lit` command
+pip install -e .                  # provides the `ccb` command
 pip install -e ".[pdf]"           # pdfplumber + pypdf for full-text extraction
 ```
 
@@ -115,43 +115,43 @@ Optional API keys **only raise rate limits**; nothing breaks without them:
 
 | Variable | Effect |
 |---|---|
-| `LIT_MAILTO` | Joins vendor "polite pools" (Unpaywall requires a real address) |
+| `CCB_MAILTO` | Joins vendor "polite pools" (Unpaywall requires a real address) |
 | `OPENALEX_API_KEY`, `OPENALEX_EMAIL` | Higher OpenAlex budget |
 | `S2_API_KEY` | Avoids Semantic Scholar 429s |
 | `CORE_API_KEY`, `DOAJ_API_KEY`, `NCBI_API_KEY` | Higher limits |
-| `LIT_HOME` | Library location (default `<checkout>/papers`) |
-| `LIT_REPO` | Checkout root, for when the skill runs from outside the clone |
-| `LIT_CHANNELS` | Extra channel declaration files |
-| `LIT_CCF_CATALOG` | Replace the bundled CCF venue catalogue with your own CSV |
+| `CCB_HOME` | Library location (default `<checkout>/papers`) |
+| `CCB_REPO` | Checkout root, for when the skill runs from outside the clone |
+| `CCB_CHANNELS` | Extra channel declaration files |
+| `CCB_CCF_CATALOG` | Replace the bundled CCF venue catalogue with your own CSV |
 
 ## Use
 
-The examples write `lit`; from a bare checkout, use `python lit.py` — `cd` into the clone
+The examples write `ccb`; from a bare checkout, use `python ccb.py` — `cd` into the clone
 and everything below works without installing anything.
 
 ```bash
-lit channels                                     # what is available, and what is missing
-lit find "diffusion models for molecules" -n 10   # local first, then channels
-lit get arxiv:1706.03762 --with-pdf              # acquire once, idempotently (+ extract)
-lit ask "how does scaled dot-product attention work"   # page-anchored passages
-lit open arxiv:1706.03762 --head 20000            # read locally, zero network
-lit show arxiv:1706.03762                         # which source supplied each field
-lit cite arxiv:1706.03762                         # one entry + field provenance
-lit export --format bibtex -o refs.bib            # bibliography
-lit check --all                                   # re-verify: new version, OA, retraction
+ccb channels                                     # what is available, and what is missing
+ccb find "diffusion models for molecules" -n 10   # local first, then channels
+ccb get arxiv:1706.03762 --with-pdf              # acquire once, idempotently (+ extract)
+ccb ask "how does scaled dot-product attention work"   # page-anchored passages
+ccb open arxiv:1706.03762 --head 20000            # read locally, zero network
+ccb show arxiv:1706.03762                         # which source supplied each field
+ccb cite arxiv:1706.03762                         # one entry + field provenance
+ccb export --format bibtex -o refs.bib            # bibliography
+ccb check --all                                   # re-verify: new version, OA, retraction
 ```
 
 All commands print JSON on stdout; add `--pretty` for humans (either before or after the
-subcommand — `lit --pretty doctor` and `lit doctor --pretty` are the same), `--offline` to
-forbid the network. One deliberate exception: `lit export --raw` writes the citation text
+subcommand — `ccb --pretty doctor` and `ccb doctor --pretty` are the same), `--offline` to
+forbid the network. One deliberate exception: `ccb export --raw` writes the citation text
 itself, for redirection. Exit codes: `0` ok, `2` usage, `3` not found, `4` partial,
-`5` failed — and `lit ask` exits `0` when the corpus simply does not cover the question,
+`5` failed — and `ccb ask` exits `0` when the corpus simply does not cover the question,
 reporting `"outcome": "not-covered"` in the payload, because a coverage gap is not a
 failure to look.
 
 ### Answering questions from the corpus
 
-`lit ask` is retrieval, not generation. It returns ranked passages with `work_id` and
+`ccb ask` is retrieval, not generation. It returns ranked passages with `work_id` and
 **page** anchors so a claim can be checked:
 
 ```json
@@ -170,20 +170,20 @@ network, and deterministic — the same question yields the same citations.
 
 ## Generating a research topic
 
-`lit topics` mines the library for **one topic at a time**, and returns evidence rather
+`ccb topics` mines the library for **one topic at a time**, and returns evidence rather
 than prose. Every claim it produces is anchored to a stored work and a page.
 
 ```bash
-lit topics survey "graph neural networks for molecular property prediction"   # 1
-lit topics gaps <survey_id>                  # 2  author-stated gaps + sparse term pairs
-lit topics candidates <survey_id>            # 3  ranked (evidence × novelty operator)
-lit topics draft <candidate_id>              # 4  commit to ONE; the section skeleton
+ccb topics survey "graph neural networks for molecular property prediction"   # 1
+ccb topics gaps <survey_id>                  # 2  author-stated gaps + sparse term pairs
+ccb topics candidates <survey_id>            # 3  ranked (evidence × novelty operator)
+ccb topics draft <candidate_id>              # 4  commit to ONE; the section skeleton
 #    ... the agent writes each section from the anchors attached to it ...
-lit topics rate <topic_id> [--venue NeurIPS] # 5  CCF estimate: bound, band, basis, risks
-lit topics save <topic_id>                   # 6  commit, export Markdown, retire the key
-lit topics list                              # what has already been mined
-lit topics venues --verify                   # the CCF catalogue
-lit topics operators                         # the eleven novelty operators
+ccb topics rate <topic_id> [--venue NeurIPS] # 5  CCF estimate: bound, band, basis, risks
+ccb topics save <topic_id>                   # 6  commit, export Markdown, retire the key
+ccb topics list                              # what has already been mined
+ccb topics venues --verify                   # the CCF catalogue
+ccb topics operators                         # the eleven novelty operators
 ```
 
 What each step actually returns:
@@ -234,13 +234,13 @@ clone, through one core — so they cannot disagree about identity, dedup policy
 counts as a legal source.
 
 ```bash
-python lit-mcp.py                      # MCP over stdio, no SDK, no extra dependency
-python lit-mcp.py --list-tools
+python ccb-mcp.py                      # MCP over stdio, no SDK, no extra dependency
+python ccb-mcp.py --list-tools
 ```
 
-Sixteen tools. Search and library: `lit_contract`, `lit_channels`, `lit_find`,
-`lit_get`, `lit_ask`, `lit_open`, `lit_cite`, `lit_export`, `lit_stats`. Topic
-generation: the seven `lit_topics_*` tools, one per step. `tests/test_mcp.py` asserts
+Sixteen tools. Search and library: `ccb_contract`, `ccb_channels`, `ccb_find`,
+`ccb_get`, `ccb_ask`, `ccb_open`, `ccb_cite`, `ccb_export`, `ccb_stats`. Topic
+generation: the seven `ccb_topics_*` tools, one per step. `tests/test_mcp.py` asserts
 CLI/MCP parity, and `tests/test_topics.py` drives the whole topics sequence through the
 MCP face.
 
@@ -250,9 +250,9 @@ The tool ships with a skill in the [Agent Skills](https://agentskills.io/specifi
 format, so an agent can drive it without you explaining it:
 
 ```
-.dsh/skills/lit/
+.dsh/skills/ccb/
   SKILL.md                  # what it is, the rules, the canonical step order
-  lit.py                    # launcher (finds the checkout; no copy to drift)
+  ccb.py                    # launcher (finds the checkout; no copy to drift)
   references/
     topics.md               # the operators, the scoring, the CCF estimate
     architecture.md         # the three modules, on-disk layout, why local-first works
@@ -264,9 +264,9 @@ It is discovered from `<project>/.dsh/skills` and `~/.dsh/skills` (both scan one
 deep), and `SKILL.md` is kept under the 8192-character render budget with the detail in
 `references/`. Because the skill sits inside the clone, an agent working **in this
 directory** finds it with no setup at all. To use it from other projects too, copy or
-symlink `.dsh/skills/lit` into `~/.dsh/skills/` — a convenience, not a requirement.
+symlink `.dsh/skills/ccb` into `~/.dsh/skills/` — a convenience, not a requirement.
 
-`lit contract` returns the same operating rules as machine-readable JSON — including the
+`ccb contract` returns the same operating rules as machine-readable JSON — including the
 three modules and the canonical topic-generation sequence — so the contract lives in
 code rather than in prose that drifts.
 
@@ -286,7 +286,7 @@ code rather than in prose that drifts.
 
 Adding a source does not require code: declare it in `<library>/channels.yaml` as
 `http`, `cli` or `mcp` with dot-path field mappings. See
-[references/channels.md](.dsh/skills/lit/references/channels.md).
+[references/channels.md](.dsh/skills/ccb/references/channels.md).
 
 Verified working in all four kinds — **http** (OpenAlex, Crossref, arXiv, Europe PMC,
 OpenReview, DBLP), **cli** (a local 21-source tool), **mcp** (a stdio MCP server used

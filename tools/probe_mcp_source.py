@@ -3,7 +3,7 @@
 This is a *test fixture*, not part of the tool: it stands in for a third-party MCP
 server so that the MCP-as-a-source channel can be exercised end to end without
 depending on any external service. It speaks the same newline-delimited JSON-RPC 2.0
-that `lit.mcp_server` does, and returns one fixed paper.
+that `ccb.mcp_server` does, and returns one fixed paper.
 
     python tools/probe_mcp_source.py        # then drive it via a channels.yaml
 """

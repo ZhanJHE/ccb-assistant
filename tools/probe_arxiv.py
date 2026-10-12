@@ -11,8 +11,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from lit.channels.arxiv import ArxivChannel  # noqa: E402
-from lit.net import Http  # noqa: E402
+from ccb.channels.arxiv import ArxivChannel  # noqa: E402
+from ccb.net import Http  # noqa: E402
 
 
 def show(label: str, chan: ArxivChannel, fn, *args, **kw) -> None:

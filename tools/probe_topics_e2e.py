@@ -33,14 +33,14 @@ if os.name == "nt":
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from lit.core.model import ChannelRecord  # noqa: E402
-from lit.library import Library  # noqa: E402
-from lit.topics import candidates as candidates_mod  # noqa: E402
-from lit.topics import draft as draft_mod  # noqa: E402
-from lit.topics import gaps as gaps_mod  # noqa: E402
-from lit.topics import rating as rating_mod  # noqa: E402
-from lit.topics import store as store_mod  # noqa: E402
-from lit.topics import survey as survey_mod  # noqa: E402
+from ccb.core.model import ChannelRecord  # noqa: E402
+from ccb.library import Library  # noqa: E402
+from ccb.topics import candidates as candidates_mod  # noqa: E402
+from ccb.topics import draft as draft_mod  # noqa: E402
+from ccb.topics import gaps as gaps_mod  # noqa: E402
+from ccb.topics import rating as rating_mod  # noqa: E402
+from ccb.topics import store as store_mod  # noqa: E402
+from ccb.topics import survey as survey_mod  # noqa: E402
 
 # Two clusters that share "molecular" and almost nothing else: the shape of a
 # recombination opening. Titles differ by more than a single character on purpose —
@@ -214,7 +214,7 @@ def main() -> int:
                 failures.append("a committed combination was proposed again")
 
             banner("8. CCF catalogue self-check")
-            from lit.topics.ccf import default_catalog
+            from ccb.topics.ccf import default_catalog
 
             report = default_catalog().verify()
             print(json.dumps({

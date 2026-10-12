@@ -19,8 +19,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from lit.library import Library  # noqa: E402
-from lit.mcp_server import (  # noqa: E402
+from ccb.library import Library  # noqa: E402
+from ccb.mcp_server import (  # noqa: E402
     INTERNAL_ERROR,
     INVALID_PARAMS,
     METHOD_NOT_FOUND,
@@ -29,7 +29,7 @@ from lit.mcp_server import (  # noqa: E402
     serve,
     tool_definitions,
 )
-from lit.core.model import ChannelRecord  # noqa: E402
+from ccb.core.model import ChannelRecord  # noqa: E402
 
 
 def _call(server: McpServer, msg_id: int, name: str, args: dict) -> dict:
@@ -55,7 +55,7 @@ def _call(server: McpServer, msg_id: int, name: str, args: dict) -> dict:
 
 class TestMcpProtocol(unittest.TestCase):
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp(prefix="lit-mcp-"))
+        self.tmp = Path(tempfile.mkdtemp(prefix="ccb-mcp-"))
         self.server = McpServer(self.tmp / "lib")
         self.addCleanup(self._cleanup)
 
@@ -81,7 +81,7 @@ class TestMcpProtocol(unittest.TestCase):
         self.assertEqual(resp["jsonrpc"], "2.0")
         self.assertEqual(resp["id"], 1)
         self.assertIn("protocolVersion", resp["result"])
-        self.assertEqual(resp["result"]["serverInfo"]["name"], "lit")
+        self.assertEqual(resp["result"]["serverInfo"]["name"], "ccb")
 
     def test_notifications_get_no_response(self):
         self.assertIsNone(
@@ -91,7 +91,7 @@ class TestMcpProtocol(unittest.TestCase):
         self.assertIsNone(
             _handle_protocol(
                 {"jsonrpc": "2.0", "method": "tools/call",
-                 "params": {"name": "lit_stats", "arguments": {}}},
+                 "params": {"name": "ccb_stats", "arguments": {}}},
                 self.server,
             )
         )
@@ -103,7 +103,7 @@ class TestMcpProtocol(unittest.TestCase):
         tools = resp["result"]["tools"]
         self.assertGreaterEqual(len(tools), 8)
         names = {t["name"] for t in tools}
-        for expected in ("lit_find", "lit_get", "lit_ask", "lit_open", "lit_cite", "lit_contract"):
+        for expected in ("ccb_find", "ccb_get", "ccb_ask", "ccb_open", "ccb_cite", "ccb_contract"):
             self.assertIn(expected, names)
         for t in tools:
             self.assertTrue(t["description"], f"{t['name']} has no description")
@@ -116,11 +116,11 @@ class TestMcpProtocol(unittest.TestCase):
         self.assertEqual(resp["error"]["code"], METHOD_NOT_FOUND)
 
     def test_unknown_tool_is_an_error(self):
-        err = _call(self.server, 4, "lit_nonexistent", {})
+        err = _call(self.server, 4, "ccb_nonexistent", {})
         self.assertEqual(err["code"], METHOD_NOT_FOUND)
 
     def test_missing_required_parameter_is_rejected_clearly(self):
-        err = _call(self.server, 5, "lit_get", {})
+        err = _call(self.server, 5, "ccb_get", {})
         self.assertEqual(err["code"], INVALID_PARAMS)
         self.assertIn("identifier", err["message"])
 
@@ -158,57 +158,57 @@ class TestMcpProtocol(unittest.TestCase):
 
     def test_stats_reports_the_corpus(self):
         self._add("10.1000/a", "Paper A", "attention text")
-        stats = _call(self.server, 10, "lit_stats", {})
+        stats = _call(self.server, 10, "ccb_stats", {})
         self.assertEqual(stats["works"], 1)
         self.assertEqual(stats["with_fulltext"], 1)
 
     def test_ask_returns_page_anchored_passages(self):
         self._add("10.1000/b", "Paper B", "intro\fscaled dot product attention matters")
-        out = _call(self.server, 11, "lit_ask", {"query": "scaled dot product attention"})
+        out = _call(self.server, 11, "ccb_ask", {"query": "scaled dot product attention"})
         self.assertTrue(out["grounded"])
         self.assertEqual(out["hits"][0]["page"], 2)
         self.assertIn("p.2", out["hits"][0]["citation"])
 
     def test_ask_without_coverage_says_so(self):
         self._add("10.1000/c", "Paper C", "databases and indexing")
-        out = _call(self.server, 12, "lit_ask", {"query": "protein folding"})
+        out = _call(self.server, 12, "ccb_ask", {"query": "protein folding"})
         self.assertFalse(out["grounded"])
         self.assertEqual(out["hits"], [])
 
     def test_open_returns_text_and_flags_truncation(self):
         self._add("10.1000/d", "Paper D", "x" * 500)
-        out = _call(self.server, 13, "lit_open", {"identifier": "10.1000/d", "head": 100})
+        out = _call(self.server, 13, "ccb_open", {"identifier": "10.1000/d", "head": 100})
         self.assertEqual(out["chars"], 100)
         self.assertEqual(out["total_chars"], 500)
         self.assertTrue(out["truncated"])
 
     def test_open_on_missing_work_reports_a_structured_error(self):
-        out = _call(self.server, 14, "lit_open", {"identifier": "10.9999/nope"})
+        out = _call(self.server, 14, "ccb_open", {"identifier": "10.9999/nope"})
         self.assertFalse(out["ok"])
         self.assertEqual(out["error"], "not_found")
 
     def test_open_without_fulltext_distinguishes_the_two_cases(self):
         self._add("10.1000/e", "Paper E")  # no text stored
-        out = _call(self.server, 15, "lit_open", {"identifier": "10.1000/e"})
+        out = _call(self.server, 15, "ccb_open", {"identifier": "10.1000/e"})
         self.assertFalse(out["ok"])
         self.assertEqual(out["error"], "no_fulltext")
         self.assertIn("with_pdf", out["message"])
 
     def test_cite_returns_citation_and_provenance(self):
         self._add("10.1000/f", "Paper F")
-        out = _call(self.server, 16, "lit_cite", {"identifier": "10.1000/f", "format": "bibtex"})
+        out = _call(self.server, 16, "ccb_cite", {"identifier": "10.1000/f", "format": "bibtex"})
         self.assertIn("@", out["citation"])
         self.assertIn("title", out["provenance"])
         self.assertEqual(out["provenance"]["title"], ["test"])
 
     def test_export_handles_unknown_ids_without_failing(self):
         self._add("10.1000/g", "Paper G")
-        out = _call(self.server, 17, "lit_export", {"work_ids": ["10.1000/g", "10.9999/missing"]})
+        out = _call(self.server, 17, "ccb_export", {"work_ids": ["10.1000/g", "10.9999/missing"]})
         self.assertEqual(out["entries"], 1)
         self.assertEqual(out["not_found"], ["10.9999/missing"])
 
     def test_contract_is_exposed_through_mcp(self):
-        out = _call(self.server, 18, "lit_contract", {})
+        out = _call(self.server, 18, "ccb_contract", {})
         ids = {i["id"] for i in out["invariants"]}
         self.assertIn("local-first", ids)
         self.assertIn("no-overwrite", ids)
@@ -218,7 +218,7 @@ class TestMcpProtocol(unittest.TestCase):
 
         os.environ["S2_API_KEY"] = "mcp-secret-value"
         try:
-            out = _call(self.server, 19, "lit_channels", {})
+            out = _call(self.server, 19, "ccb_channels", {})
             rendered = json.dumps(out, ensure_ascii=False)
             self.assertNotIn("mcp-secret-value", rendered)
             self.assertIn("S2_API_KEY", rendered)
@@ -230,7 +230,7 @@ class TestCliMcpParity(unittest.TestCase):
     """The two faces must not diverge: same core, same answer."""
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp(prefix="lit-parity-"))
+        self.tmp = Path(tempfile.mkdtemp(prefix="ccb-parity-"))
         self.lib = Library(self.tmp / "lib")
         self.lib.ensure()
         self.server = McpServer(self.tmp / "lib")
@@ -250,7 +250,7 @@ class TestCliMcpParity(unittest.TestCase):
         cli_side = Library(self.tmp / "lib")
         try:
             cli_stats = cli_side.stats()
-            mcp_stats = _call(self.server, 1, "lit_stats", {})
+            mcp_stats = _call(self.server, 1, "ccb_stats", {})
             self.assertEqual(cli_stats["works"], mcp_stats["works"])
             self.assertEqual(cli_stats["with_pdf"], mcp_stats["with_pdf"])
         finally:
@@ -264,8 +264,8 @@ class TestCliMcpParity(unittest.TestCase):
         self.lib.attach_fulltext(upsert.work_id, rel_path=rel, chars=chars)
         self.lib.close()
 
-        from lit.search.channels import Registry
-        from lit.search.acquire import Resolver
+        from ccb.search.channels import Registry
+        from ccb.search.acquire import Resolver
 
         cli_side = Library(self.tmp / "lib")
         try:
@@ -273,7 +273,7 @@ class TestCliMcpParity(unittest.TestCase):
             cli_out = cli_res.ask("parity passage attention")
         finally:
             cli_side.close()
-        mcp_out = _call(self.server, 2, "lit_ask", {"query": "parity passage attention"})
+        mcp_out = _call(self.server, 2, "ccb_ask", {"query": "parity passage attention"})
 
         self.assertEqual(cli_out["grounded"], mcp_out["grounded"])
         self.assertEqual(
@@ -294,28 +294,28 @@ class TestCliMcpParity(unittest.TestCase):
         self.assertEqual(
             names,
             {
-                "lit_contract",
-                "lit_channels",
-                "lit_find",
-                "lit_get",
-                "lit_ask",
-                "lit_open",
-                "lit_cite",
-                "lit_export",
-                "lit_stats",
-                "lit_topics_survey",
-                "lit_topics_gaps",
-                "lit_topics_candidates",
-                "lit_topics_draft",
-                "lit_topics_rate",
-                "lit_topics_save",
-                "lit_topics_list",
+                "ccb_contract",
+                "ccb_channels",
+                "ccb_find",
+                "ccb_get",
+                "ccb_ask",
+                "ccb_open",
+                "ccb_cite",
+                "ccb_export",
+                "ccb_stats",
+                "ccb_topics_survey",
+                "ccb_topics_gaps",
+                "ccb_topics_candidates",
+                "ccb_topics_draft",
+                "ccb_topics_rate",
+                "ccb_topics_save",
+                "ccb_topics_list",
             },
         )
 
     def test_every_advertised_tool_has_a_handler(self):
         """An advertised tool with no implementation is a client-side crash."""
-        from lit.mcp_server import McpServer
+        from ccb.mcp_server import McpServer
 
         with tempfile.TemporaryDirectory() as tmp:
             server = McpServer(Path(tmp) / "lib")
@@ -323,7 +323,7 @@ class TestCliMcpParity(unittest.TestCase):
                 for entry in tool_definitions():
                     with self.subTest(tool=entry["name"]):
                         handler = getattr(
-                            server, f"_tool_{entry['name'].removeprefix('lit_')}", None
+                            server, f"_tool_{entry['name'].removeprefix('ccb_')}", None
                         )
                         self.assertIsNotNone(handler, f"{entry['name']} has no handler")
             finally:

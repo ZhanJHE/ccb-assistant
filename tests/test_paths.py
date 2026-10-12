@@ -27,19 +27,19 @@ from unittest import mock
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from lit.cli import CommandError, _not_found, cmd_extract  # noqa: E402
-from lit.core import paths as core_paths  # noqa: E402
-from lit.core.model import ChannelRecord, Manifestation  # noqa: E402
-from lit.library import store as library_store  # noqa: E402
-from lit.library import Library  # noqa: E402
+from ccb.cli import CommandError, _not_found, cmd_extract  # noqa: E402
+from ccb.core import paths as core_paths  # noqa: E402
+from ccb.core.model import ChannelRecord, Manifestation  # noqa: E402
+from ccb.library import store as library_store  # noqa: E402
+from ccb.library import Library  # noqa: E402
 
 
 class _EnvIsolated(unittest.TestCase):
-    """Neither resolution test may inherit a real LIT_HOME/LIT_REPO."""
+    """Neither resolution test may inherit a real CCB_HOME/CCB_REPO."""
 
     def setUp(self):
         self._saved = {
-            name: os.environ.pop(name, None) for name in ("LIT_HOME", "LIT_REPO")
+            name: os.environ.pop(name, None) for name in ("CCB_HOME", "CCB_REPO")
         }
 
     def tearDown(self):
@@ -59,23 +59,23 @@ class TestLibraryRootResolution(_EnvIsolated):
 
     def test_the_working_directory_does_not_decide(self):
         """A cwd argument may only ever supply the last-resort base."""
-        elsewhere = Path(tempfile.gettempdir()) / "lit-not-a-checkout"
+        elsewhere = Path(tempfile.gettempdir()) / "ccb-not-a-checkout"
         self.assertEqual(
             library_store.default_library_root(cwd=elsewhere),
             ROOT / library_store.DEFAULT_LIBRARY_DIRNAME,
             "the checkout wins over the working directory",
         )
 
-    def test_lit_home_wins_outright(self):
+    def test_ccb_home_wins_outright(self):
         with tempfile.TemporaryDirectory() as tmp:
-            os.environ["LIT_HOME"] = tmp
+            os.environ["CCB_HOME"] = tmp
             # An explicit root is used verbatim — no directory name appended, because
             # the caller named the directory, not its parent.
             self.assertEqual(library_store.default_library_root(), Path(tmp))
 
-    def test_lit_repo_wins_over_the_checkout(self):
+    def test_ccb_repo_wins_over_the_checkout(self):
         with tempfile.TemporaryDirectory() as tmp:
-            os.environ["LIT_REPO"] = tmp
+            os.environ["CCB_REPO"] = tmp
             self.assertEqual(
                 library_store.default_library_root(),
                 Path(tmp) / library_store.DEFAULT_LIBRARY_DIRNAME,
@@ -106,17 +106,17 @@ class TestCheckoutDetection(_EnvIsolated):
 
     def test_detection_walks_up_from_a_nested_module(self):
         self.assertEqual(
-            core_paths.checkout_root(ROOT / "src" / "lit" / "core" / "paths.py"), ROOT
+            core_paths.checkout_root(ROOT / "src" / "ccb" / "core" / "paths.py"), ROOT
         )
 
     def test_a_subdirectory_is_not_a_checkout(self):
         self.assertFalse(core_paths.looks_like_checkout(ROOT / "src"))
 
     def test_an_installed_layout_is_not_a_checkout(self):
-        """`src/lit/cli.py` alone is a package, not a clone: the entry point is the tell."""
+        """`src/ccb/cli.py` alone is a package, not a clone: the entry point is the tell."""
         with tempfile.TemporaryDirectory() as tmp:
-            (Path(tmp) / "src" / "lit").mkdir(parents=True)
-            (Path(tmp) / "src" / "lit" / "cli.py").write_text("", encoding="utf-8")
+            (Path(tmp) / "src" / "ccb").mkdir(parents=True)
+            (Path(tmp) / "src" / "ccb" / "cli.py").write_text("", encoding="utf-8")
             self.assertIsNone(core_paths.checkout_root(tmp))
 
 
@@ -125,7 +125,7 @@ class TestFreshWorkspace(_EnvIsolated):
 
     def setUp(self):
         super().setUp()
-        self.tmp = Path(tempfile.mkdtemp(prefix="lit-fresh-"))
+        self.tmp = Path(tempfile.mkdtemp(prefix="ccb-fresh-"))
         self.lib = Library(self.tmp / "papers")
 
     def tearDown(self):
@@ -164,7 +164,7 @@ class TestFreshWorkspace(_EnvIsolated):
         err = _not_found(SimpleNamespace(library=self.lib), "arxiv:1706.03762")
         self.assertEqual(err.code, 3)
         self.assertIn("empty", err.message)
-        self.assertIn("lit find", err.message)
+        self.assertIn("ccb find", err.message)
 
     def test_a_missing_paper_in_a_populated_library_reads_differently(self):
         self.lib.ensure()

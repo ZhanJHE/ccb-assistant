@@ -10,7 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from lit.net import Http, looks_like_pdf, pdf_rejection_reason  # noqa: E402
+from ccb.net import Http, looks_like_pdf, pdf_rejection_reason  # noqa: E402
 
 URLS = [
     "https://arxiv.org/pdf/1706.03762",

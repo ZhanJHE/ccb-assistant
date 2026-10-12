@@ -3,9 +3,9 @@
 Two defects lived here, both invisible because this layer had no tests at all:
 
 * ``--pretty`` was only accepted *before* the subcommand, so the natural thing to type —
-  ``lit doctor --pretty`` — was a usage error. (The probe script written for this very
+  ``ccb doctor --pretty`` — was a usage error. (The probe script written for this very
   repository tripped over it.)
-* ``lit --pretty library stats`` crashed with ``TypeError: 'int' object is not iterable``
+* ``ccb --pretty library stats`` crashed with ``TypeError: 'int' object is not iterable``
   whenever the library held a work: the renderer looked for records under whichever of
   ``local_hits``/``fetched``/``works`` was truthy, and ``library stats`` reports ``works``
   as a *count*.
@@ -30,9 +30,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from lit.cli import build_parser, main  # noqa: E402
-from lit.core.model import ChannelRecord  # noqa: E402
-from lit.library import Library  # noqa: E402
+from ccb.cli import build_parser, main  # noqa: E402
+from ccb.core.model import ChannelRecord  # noqa: E402
+from ccb.library import Library  # noqa: E402
 
 
 # --------------------------------------------------------------------------- #
@@ -94,7 +94,7 @@ class _LibraryFixture(unittest.TestCase):
     """A library holding one work — the state that crashed the renderer."""
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp(prefix="lit-cli-"))
+        self.tmp = Path(tempfile.mkdtemp(prefix="ccb-cli-"))
         self.root = self.tmp / "papers"
         lib = Library(self.root)
         lib.ensure()

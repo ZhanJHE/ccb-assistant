@@ -28,11 +28,6 @@ htmlcov/
 #   deletes the entire corpus. Back up by copying the directory, not through Git.
 papers/
 
-# Legacy library name, kept so an older `.lit/` never gets committed by accident.
-.lit/
-.lit-*/
-*.lit/
-
 # Scratch directories used while developing parsers
 .probe/
 .research/

@@ -1,11 +1,11 @@
 """The contract has to be executable, not aspirational.
 
-`lit contract` is the document every prompt tells the agent to trust over its own memory —
+`ccb contract` is the document every prompt tells the agent to trust over its own memory —
 "the contract lives in code rather than in prose that drifts". That claim only holds if the
 commands it names actually run, and two of them did not:
 
-* ``lit find "<topic>" --json`` — JSON is already the default output; there is no such flag.
-* ``lit export --bibtex`` — the format is a *value* (``--format bibtex``), not a flag.
+* ``ccb find "<topic>" --json`` — JSON is already the default output; there is no such flag.
+* ``ccb export --bibtex`` — the format is a *value* (``--format bibtex``), not a flag.
 
 Both failed with a usage error (exit 2), from the one document the agent is instructed to
 trust first. These tests walk every workflow step and hold the contract to its word, so a
@@ -27,8 +27,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from lit.cli import build_parser  # noqa: E402
-from lit.contract import STEP_KINDS, contract  # noqa: E402
+from ccb.cli import build_parser  # noqa: E402
+from ccb.contract import STEP_KINDS, contract  # noqa: E402
 
 PLACEHOLDER = "placeholder"
 
@@ -36,7 +36,7 @@ PLACEHOLDER = "placeholder"
 def _argv_for(cmd: str) -> list[str]:
     """Turn a contract command string into argv, substituting its <placeholders>."""
     parts = shlex.split(cmd)
-    if parts and parts[0] == "lit":
+    if parts and parts[0] == "ccb":
         parts = parts[1:]
     return [re.sub(r"^<[^>]+>$", PLACEHOLDER, p) for p in parts]
 

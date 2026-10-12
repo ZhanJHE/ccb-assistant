@@ -6,7 +6,7 @@ handler, an MCP tool name, an MCP ``inputSchema``, a contract name list, and pos
 tool with no handler, or a contract naming a flag that does not exist — and both
 eventually did (see tests/test_contract.py).
 
-Now `lit.ops` declares the operations and the faces are derived. These tests fail on the
+Now `ccb.ops` declares the operations and the faces are derived. These tests fail on the
 drift itself rather than on its symptom.
 """
 
@@ -21,9 +21,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from lit import cli, ops  # noqa: E402
-from lit.contract import contract  # noqa: E402
-from lit.mcp_server import McpServer, tool_definitions  # noqa: E402
+from ccb import cli, ops  # noqa: E402
+from ccb.contract import contract  # noqa: E402
+from ccb.mcp_server import McpServer, tool_definitions  # noqa: E402
 
 
 def _leaf_paths(action: argparse.ArgumentParser, prefix: tuple[str, ...] = ()) -> list[str]:

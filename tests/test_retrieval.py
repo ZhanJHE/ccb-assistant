@@ -16,13 +16,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from lit.search.channels.base import Channel, ChannelResult, ChannelSpec  # noqa: E402
-from lit.search.channels.registry import Registry  # noqa: E402
-from lit.core.extract import assess_text_quality, _sentence_break_heuristic  # noqa: E402
-from lit.core.model import ChannelRecord  # noqa: E402
-from lit.library import Library  # noqa: E402
-from lit.library.evidence import EvidenceStore  # noqa: E402
-from lit.library.passages import (  # noqa: E402
+from ccb.search.channels.base import Channel, ChannelResult, ChannelSpec  # noqa: E402
+from ccb.search.channels.registry import Registry  # noqa: E402
+from ccb.core.extract import assess_text_quality, _sentence_break_heuristic  # noqa: E402
+from ccb.core.model import ChannelRecord  # noqa: E402
+from ccb.library import Library  # noqa: E402
+from ccb.library.evidence import EvidenceStore  # noqa: E402
+from ccb.library.passages import (  # noqa: E402
     BM25_K1,
     Passage,
     PassageIndex,
@@ -31,9 +31,9 @@ from lit.library.passages import (  # noqa: E402
     split_pages,
     tokenize,
 )
-from lit.search.net import credential, credential_available  # noqa: E402
-from lit.search.acquire import Resolver  # noqa: E402
-from lit.core.util import sha256_text  # noqa: E402
+from ccb.search.net import credential, credential_available  # noqa: E402
+from ccb.search.acquire import Resolver  # noqa: E402
+from ccb.core.util import sha256_text  # noqa: E402
 
 
 class TestTokenizer(unittest.TestCase):
@@ -245,44 +245,44 @@ class TestChannelTransparency(unittest.TestCase):
 
     def test_missing_required_credential_reports_the_variable(self):
         chan = Channel()
-        chan.spec = self._spec(auth="env:LIT_TEST_ABSENT_KEY")
+        chan.spec = self._spec(auth="env:CCB_TEST_ABSENT_KEY")
         usable, reason = chan.available()
         self.assertFalse(usable)
-        self.assertIn("LIT_TEST_ABSENT_KEY", reason)
+        self.assertIn("CCB_TEST_ABSENT_KEY", reason)
 
     def test_optional_credential_does_not_block(self):
         chan = Channel()
-        chan.spec = self._spec(auth="env:LIT_TEST_ABSENT_KEY?")
+        chan.spec = self._spec(auth="env:CCB_TEST_ABSENT_KEY?")
         usable, _ = chan.available()
         self.assertTrue(usable)
 
     def test_required_env_lists_only_mandatory_variables(self):
         chan = Channel()
-        chan.spec = self._spec(auth="env:LIT_TEST_ABSENT_KEY")
-        self.assertEqual(chan.spec.required_env(), ["LIT_TEST_ABSENT_KEY"])
-        chan.spec = self._spec(auth="env:LIT_TEST_ABSENT_KEY?")
+        chan.spec = self._spec(auth="env:CCB_TEST_ABSENT_KEY")
+        self.assertEqual(chan.spec.required_env(), ["CCB_TEST_ABSENT_KEY"])
+        chan.spec = self._spec(auth="env:CCB_TEST_ABSENT_KEY?")
         self.assertEqual(chan.spec.required_env(), [])
-        self.assertEqual(chan.spec.optional_env(), ["LIT_TEST_ABSENT_KEY"])
+        self.assertEqual(chan.spec.optional_env(), ["CCB_TEST_ABSENT_KEY"])
 
     def test_credential_value_never_reaches_the_report(self):
         import os
 
-        os.environ["LIT_TEST_SECRET_KEY"] = "super-secret-value"
+        os.environ["CCB_TEST_SECRET_KEY"] = "super-secret-value"
         try:
             chan = Channel()
-            chan.spec = self._spec(auth="env:LIT_TEST_SECRET_KEY")
+            chan.spec = self._spec(auth="env:CCB_TEST_SECRET_KEY")
             import json
 
             rendered = json.dumps(chan.describe(), ensure_ascii=False)
             self.assertNotIn("super-secret-value", rendered)
             self.assertTrue(chan.available()[0])
-            self.assertTrue(credential_available("LIT_TEST_SECRET_KEY"))
-            self.assertEqual(credential("LIT_TEST_SECRET_KEY"), "super-secret-value")
+            self.assertTrue(credential_available("CCB_TEST_SECRET_KEY"))
+            self.assertEqual(credential("CCB_TEST_SECRET_KEY"), "super-secret-value")
         finally:
-            os.environ.pop("LIT_TEST_SECRET_KEY", None)
+            os.environ.pop("CCB_TEST_SECRET_KEY", None)
 
     def test_unknown_credential_maps_to_no_channel(self):
-        from lit.search.net import credential_provider
+        from ccb.search.net import credential_provider
 
         self.assertEqual(credential_provider("NOT_A_KNOWN_VAR"), "")
         self.assertEqual(credential_provider("S2_API_KEY"), "semantic_scholar")
@@ -335,7 +335,7 @@ class TestAskGrounded(unittest.TestCase):
     """`ask` returns evidence with anchors, and never invents coverage."""
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp(prefix="lit-ask-"))
+        self.tmp = Path(tempfile.mkdtemp(prefix="ccb-ask-"))
         self.lib = Library(self.tmp / "lib")
         self.lib.ensure()
 
@@ -447,7 +447,7 @@ class TestCitationsClosed(unittest.TestCase):
     """`cite` output must be usable and honest about what is missing."""
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp(prefix="lit-cite-"))
+        self.tmp = Path(tempfile.mkdtemp(prefix="ccb-cite-"))
         self.lib = Library(self.tmp / "lib")
         self.lib.ensure()
 
@@ -456,7 +456,7 @@ class TestCitationsClosed(unittest.TestCase):
         shutil.rmtree(self.tmp, ignore_errors=True)
 
     def test_citation_records_field_provenance(self):
-        from lit.library.cite import to_bibtex
+        from ccb.library.cite import to_bibtex
 
         rec = ChannelRecord(channel="crossref", title="A Paper", authors=["A One"],
                             year=2021, venue="NeurIPS", doi="10.1000/z")
@@ -467,7 +467,7 @@ class TestCitationsClosed(unittest.TestCase):
         self.assertEqual(set(w.claims), {"title", "authors", "year", "venue", "doi"})
 
     def test_missing_doi_is_not_invented(self):
-        from lit.library.cite import to_bibtex
+        from ccb.library.cite import to_bibtex
 
         rec = ChannelRecord(channel="arxiv", title="A Preprint", authors=["B Two"],
                             year=2022, arxiv_id="2201.00001")

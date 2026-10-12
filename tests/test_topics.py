@@ -25,17 +25,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from lit.core.model import ChannelRecord  # noqa: E402
-from lit.library import Library  # noqa: E402
-from lit.topics import candidates as candidates_mod  # noqa: E402
-from lit.topics import ccf as ccf_mod  # noqa: E402
-from lit.topics import draft as draft_mod  # noqa: E402
-from lit.topics import gaps as gaps_mod  # noqa: E402
-from lit.topics import operators as operators_mod  # noqa: E402
-from lit.topics import rating as rating_mod  # noqa: E402
-from lit.topics import store as store_mod  # noqa: E402
-from lit.topics import survey as survey_mod  # noqa: E402
-from lit.topics import terms as terms_mod  # noqa: E402
+from ccb.core.model import ChannelRecord  # noqa: E402
+from ccb.library import Library  # noqa: E402
+from ccb.topics import candidates as candidates_mod  # noqa: E402
+from ccb.topics import ccf as ccf_mod  # noqa: E402
+from ccb.topics import draft as draft_mod  # noqa: E402
+from ccb.topics import gaps as gaps_mod  # noqa: E402
+from ccb.topics import operators as operators_mod  # noqa: E402
+from ccb.topics import rating as rating_mod  # noqa: E402
+from ccb.topics import store as store_mod  # noqa: E402
+from ccb.topics import survey as survey_mod  # noqa: E402
+from ccb.topics import terms as terms_mod  # noqa: E402
 
 # Two clusters that share "molecular" and almost nothing else. This is what a
 # recombination opening looks like: both concepts are common in the direction, and
@@ -567,7 +567,7 @@ class TestMcpFace(unittest.TestCase):
     """The MCP face drives the same commands, so it must produce the same records."""
 
     def test_the_whole_pipeline_is_reachable_through_mcp(self):
-        from lit.mcp_server import McpServer
+        from ccb.mcp_server import McpServer
 
         with tempfile.TemporaryDirectory() as tmp:
             lib = _make_library(Path(tmp))
@@ -576,48 +576,48 @@ class TestMcpFace(unittest.TestCase):
             server = McpServer(root)
             try:
                 survey = server.call_tool(
-                    "lit_topics_survey",
+                    "ccb_topics_survey",
                     {"query": "molecular", "offline": True, "min_works": 5, "min_fulltext": 0},
                 )
                 self.assertIn("survey_id", survey)
                 survey_id = survey["survey_id"]
 
-                found = server.call_tool("lit_topics_gaps", {"survey_id": survey_id})
+                found = server.call_tool("ccb_topics_gaps", {"survey_id": survey_id})
                 self.assertTrue(found["usable"])
 
                 built = server.call_tool(
-                    "lit_topics_candidates", {"survey_id": survey_id, "limit": 3}
+                    "ccb_topics_candidates", {"survey_id": survey_id, "limit": 3}
                 )
                 self.assertTrue(built["candidates"])
 
                 record = server.call_tool(
-                    "lit_topics_draft",
+                    "ccb_topics_draft",
                     {"candidate_id": built["candidates"][0]["candidate_id"]},
                 )
                 self.assertTrue(record["sections"])
                 self.assertTrue(record["evidence"])
 
-                result = server.call_tool("lit_topics_rate", {"topic_id": record["topic_id"]})
+                result = server.call_tool("ccb_topics_rate", {"topic_id": record["topic_id"]})
                 self.assertIn(result["estimated_ccf"], rating_mod.BANDS)
                 self.assertTrue(result["basis"])
 
-                saved = server.call_tool("lit_topics_save", {"topic_id": record["topic_id"]})
+                saved = server.call_tool("ccb_topics_save", {"topic_id": record["topic_id"]})
                 self.assertEqual(saved["status"], "committed")
                 self.assertTrue(Path(saved["markdown_path"]).exists())
 
-                listed = server.call_tool("lit_topics_list", {})
+                listed = server.call_tool("ccb_topics_list", {})
                 self.assertEqual(listed["count"], 1)
 
                 # A retired combination is not proposed again on the next pass.
                 rebuilt = server.call_tool(
-                    "lit_topics_candidates", {"survey_id": survey_id, "limit": 3}
+                    "ccb_topics_candidates", {"survey_id": survey_id, "limit": 3}
                 )
                 self.assertGreaterEqual(rebuilt["excluded_as_mined"], 1)
             finally:
                 server.close()
 
     def test_an_unknown_id_is_reported_rather_than_raising(self):
-        from lit.mcp_server import McpServer
+        from ccb.mcp_server import McpServer
 
         with tempfile.TemporaryDirectory() as tmp:
             lib = _make_library(Path(tmp))
@@ -626,10 +626,10 @@ class TestMcpFace(unittest.TestCase):
             server = McpServer(root)
             try:
                 for tool, key in (
-                    ("lit_topics_gaps", "survey_id"),
-                    ("lit_topics_draft", "candidate_id"),
-                    ("lit_topics_rate", "topic_id"),
-                    ("lit_topics_save", "topic_id"),
+                    ("ccb_topics_gaps", "survey_id"),
+                    ("ccb_topics_draft", "candidate_id"),
+                    ("ccb_topics_rate", "topic_id"),
+                    ("ccb_topics_save", "topic_id"),
                 ):
                     with self.subTest(tool=tool):
                         out = server.call_tool(tool, {key: "deadbeefdeadbeef"})

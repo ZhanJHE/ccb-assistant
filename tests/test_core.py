@@ -18,11 +18,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from lit.search.channels.openalex import uninvert  # noqa: E402
-from lit.search.channels.crossref import clean_jats  # noqa: E402
-from lit.core.ids import compute_dedup_keys, compute_work_id, parse_identifier  # noqa: E402
-from lit.core.model import ChannelRecord, add_claim, resolve_field  # noqa: E402
-from lit.core.util import (  # noqa: E402
+from ccb.search.channels.openalex import uninvert  # noqa: E402
+from ccb.search.channels.crossref import clean_jats  # noqa: E402
+from ccb.core.ids import compute_dedup_keys, compute_work_id, parse_identifier  # noqa: E402
+from ccb.core.model import ChannelRecord, add_claim, resolve_field  # noqa: E402
+from ccb.core.util import (  # noqa: E402
     arxiv_doi,
     normalize_arxiv_id,
     normalize_doi,
@@ -31,10 +31,10 @@ from lit.core.util import (  # noqa: E402
     strip_latex,
     title_tokens,
 )
-from lit.library import Library  # noqa: E402
-from lit.library.cite import export, to_bibtex, to_ris  # noqa: E402
-from lit.library.evidence import redact_url  # noqa: E402
-from lit.search.net import is_bot_challenge, looks_like_pdf  # noqa: E402
+from ccb.library import Library  # noqa: E402
+from ccb.library.cite import export, to_bibtex, to_ris  # noqa: E402
+from ccb.library.evidence import redact_url  # noqa: E402
+from ccb.search.net import is_bot_challenge, looks_like_pdf  # noqa: E402
 
 
 class TestIdentifierParsing(unittest.TestCase):
@@ -167,7 +167,7 @@ class TestProvenance(unittest.TestCase):
         self.assertEqual(resolve_field(claims, "venue"), "NeurIPS")
 
     def test_conflict_is_detectable(self):
-        from lit.core.model import field_conflict
+        from ccb.core.model import field_conflict
 
         claims: dict = {}
         add_claim(claims, "year", 2020, src="a")
@@ -218,7 +218,7 @@ class TestChannelParsers(unittest.TestCase):
 
 class TestLibrary(unittest.TestCase):
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp(prefix="lit-test-"))
+        self.tmp = Path(tempfile.mkdtemp(prefix="ccb-test-"))
         self.lib = Library(self.tmp / "lib")
         self.lib.ensure()
 
