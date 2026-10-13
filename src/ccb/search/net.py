@@ -32,11 +32,16 @@ from typing import Any
 
 from ..core.files import read_json, write_json_atomic
 from ..core.util import utc_now
+from ..library.evidence import scrub_secrets
 
 # A descriptive UA gets better behaviour from several scholarly APIs and is basic
 # good manners. Override with CCB_MAILTO so vendors can contact a real person.
 DEFAULT_UA_TEMPLATE = "ccb/0.3 (+https://github.com/ZhanJHE/ccb-assistant; mailto:{mailto})"
 FALLBACK_UA = "ccb/0.1 (academic literature client)"
+
+# How long a server's own `Retry-After` may hold the process. Honouring the header is
+# right; honouring "3600" is a hung command, so it is bounded the way our own backoff is.
+MAX_RETRY_AFTER = 60.0
 
 # Which channel a credential belongs to, by credential name. This is a *reporting* map,
 # not an access list: what actually decides which credentials are read is each channel's
@@ -110,20 +115,23 @@ class Response:
 
         A number of scholarly endpoints answer errors as HTML or plain text with
         200, so the failure has to be described in terms of the body, not the code.
+        Everything interpolated here is scrubbed first: some APIs authenticate by query
+        string, and this message travels out to the CLI/MCP payload as `error`.
         """
         text = self.body or ""
         stripped = text.lstrip()
+        safe_url = scrub_secrets(self.url) or "request"
         if not stripped:
-            raise ValueError(f"empty response body from {self.url or 'request'}")
+            raise ValueError(f"empty response body from {safe_url}")
         if stripped[0] not in "[{":
-            snippet = stripped[:200].replace("\n", " ")
+            snippet = scrub_secrets(stripped[:200].replace("\n", " "))
             if "<html" in stripped[:1000].casefold() or "<!doctype" in stripped[:1000].casefold():
                 raise ValueError(f"expected JSON, got an HTML page (status {self.status}): {snippet}")
             raise ValueError(f"expected JSON, got {snippet!r} (status {self.status})")
         try:
             return json.loads(text)
         except json.JSONDecodeError as exc:
-            raise ValueError(f"invalid JSON from {self.url or 'request'}: {exc}") from exc
+            raise ValueError(f"invalid JSON from {safe_url}: {exc}") from exc
 
 
 @dataclass
@@ -286,8 +294,6 @@ class Http:
         return v if v else None
 
     def _remember_validator(self, url: str, v: dict[str, str]) -> None:
-        from ..library.evidence import scrub_secrets
-
         url = scrub_secrets(url)
         if self._validators is None:
             self._validators = (
@@ -317,7 +323,23 @@ class Http:
             time.sleep(min(delay, 10.0))
 
     @staticmethod
-    def _decode_body(raw: bytes, encoding: str) -> str:
+    def _charset(content_type: str) -> str:
+        """The charset a response declares, if any (``text/html; charset=gbk``).
+
+        A malformed or unknown value is ignored rather than raised on: the transport
+        contract is that a caller always gets a Response back.
+        """
+        for part in (content_type or "").split(";")[1:]:
+            key, _, value = part.partition("=")
+            if key.strip().casefold() != "charset":
+                continue
+            value = value.strip().strip("\"'")
+            if value and all(c.isalnum() or c in "-_." for c in value):
+                return value
+        return ""
+
+    @staticmethod
+    def _decode_body(raw: bytes, encoding: str, charset: str = "") -> str:
         if encoding == "gzip":
             try:
                 raw = gzip.decompress(raw)
@@ -331,6 +353,14 @@ class Http:
                     raw = zlib.decompress(raw, -zlib.MAX_WBITS)
                 except zlib.error:
                     pass
+        # The declared charset is used when there is one: hardcoding utf-8 turned a
+        # GBK or ISO-8859-1 body into permanent U+FFFD, both in the parsed record and in
+        # the evidence snapshot kept for provenance.
+        if charset:
+            try:
+                return raw.decode(charset, errors="replace")
+            except LookupError:
+                pass
         return raw.decode("utf-8", errors="replace")
 
     # ---------------- public API ---------------- #
@@ -376,8 +406,8 @@ class Http:
         for attempt in range(1, self.max_retries + 1):
             self._wait(host)
             self.stats["requests"] += 1
-            req = urllib.request.Request(full, data=data, headers=hdrs, method=method)
             try:
+                req = urllib.request.Request(full, data=data, headers=hdrs, method=method)
                 with urllib.request.urlopen(req, timeout=self.timeout) as resp:
                     raw = resp.read()
                     status = resp.status
@@ -387,7 +417,7 @@ class Http:
                         "etag": resp.headers.get("ETag", ""),
                         "last_modified": resp.headers.get("Last-Modified", ""),
                     }
-                body = self._decode_body(raw, enc)
+                body = self._decode_body(raw, enc, self._charset(ctype))
                 last = Response(
                     status=status,
                     body=body,
@@ -404,6 +434,20 @@ class Http:
                     time.sleep(self._backoff(attempt))
                     continue
                 return last
+            except ValueError as exc:
+                # `Request()` refuses a URL urllib cannot fetch (no scheme, an unknown
+                # one) with ValueError. That is a defect in an identifier or a stored
+                # pdf_url, not a transient failure: report it once instead of retrying,
+                # and keep the "never raises" contract.
+                self.stats["errors"] += 1
+                return Response(
+                    status=0,
+                    body="",
+                    url=full,
+                    error=f"not a fetchable URL: {exc}",
+                    attempts=attempt,
+                    elapsed_ms=int((time.monotonic() - started) * 1000),
+                )
             except urllib.error.HTTPError as exc:
                 if conditional and exc.code == 304:
                     # The validators did their job: the source vouches that nothing
@@ -419,7 +463,10 @@ class Http:
                     )
                 try:
                     raw = exc.read()
-                    body = self._decode_body(raw, "")
+                    body = self._decode_body(
+                        raw, "",
+                        self._charset(exc.headers.get("Content-Type", "") if exc.headers else ""),
+                    )
                 except Exception:
                     body = ""
                 last = Response(
@@ -439,7 +486,10 @@ class Http:
                             retry_after = float(exc.headers.get("Retry-After", "0") or 0)
                         except (TypeError, ValueError):
                             retry_after = 0.0
-                    time.sleep(retry_after if retry_after > 0 else self._backoff(attempt))
+                    time.sleep(
+                        min(retry_after, MAX_RETRY_AFTER) if retry_after > 0
+                        else self._backoff(attempt)
+                    )
                     continue
                 self.stats["errors"] += 1
                 return last
@@ -492,8 +542,8 @@ class Http:
         for attempt in range(1, self.max_retries + 1):
             self._wait(host)
             self.stats["requests"] += 1
-            req = urllib.request.Request(full, headers=hdrs, method="GET")
             try:
+                req = urllib.request.Request(full, headers=hdrs, method="GET")
                 with urllib.request.urlopen(req, timeout=self.timeout) as resp:
                     chunks: list[bytes] = []
                     total = 0
@@ -518,6 +568,11 @@ class Http:
                         url=full,
                         attempts=attempt,
                     )
+            except ValueError as exc:
+                self.stats["errors"] += 1
+                return b"", Response(
+                    status=0, body="", url=full, error=f"not a fetchable URL: {exc}"
+                )
             except urllib.error.HTTPError as exc:
                 last = Response(
                     status=exc.code, body="", url=full, error=f"HTTP {exc.code}", attempts=attempt

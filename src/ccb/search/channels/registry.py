@@ -13,12 +13,13 @@ Centralises three things the aggregator needs so no caller has to know them:
 from __future__ import annotations
 
 import importlib
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, Iterable
 
 from ...library.evidence import EvidenceStore
 from ..net import Http, credential
-from .base import Channel, ChannelResult
+from .base import Channel
 
 # name -> "module:ClassName". Adding a built-in channel is one line here plus the module.
 BUILTIN_CHANNELS: dict[str, str] = {
@@ -74,22 +75,22 @@ class Registry:
         # One shared transport, with per-host rate limits taken from each channel's
         # declaration and the union of their opt-in retry codes. Sharing the client is
         # what makes politeness to a host actually hold across channels that use it.
+        #
+        # The rate table is keyed by the *hosts a channel requests*, because that is what
+        # the token bucket is handed: a table keyed by channel name never matched a
+        # netloc, so every host silently got `default_rps` and arXiv's declared 3s/request
+        # was really 1 req/s.
         if http is None:
-            rates = {name: 1.0 for name in BUILTIN_CHANNELS}
             retry: set[int] = set()
-            for name, target in BUILTIN_CHANNELS.items():
+            for target in BUILTIN_CHANNELS.values():
                 mod_name, _, cls_name = target.partition(":")
                 try:
                     module = importlib.import_module(f"..channels.{mod_name}", __package__)
                     cls = getattr(module, cls_name)
-                    rates[name] = float(getattr(cls, "spec", None).rate_rps) if getattr(
-                        cls, "spec", None
-                    ) else 1.0
-                    retry |= set(getattr(cls, "extra_retry_codes", ()) or ())
                 except Exception:
                     continue
+                retry |= set(getattr(cls, "extra_retry_codes", ()) or ())
             http = Http(
-                host_rates=rates,
                 extra_retry_on=tuple(sorted(retry)),
                 validators_path=validators_path,
             )
@@ -106,6 +107,20 @@ class Registry:
     # ------------------------------------------------------------------ #
     # Construction
     # ------------------------------------------------------------------ #
+
+    def _register_rates(self, spec: Any) -> None:
+        """Fold a channel's declared rate into the shared per-host table.
+
+        The strictest declared rate wins when two channels share a host: being slower than
+        necessary is a cost, being faster than a source asked for is a violation.
+        """
+        rate = float(getattr(spec, "rate_rps", 1.0) or 1.0)
+        for host in getattr(spec, "hosts", ()) or ():
+            host = str(host).strip().casefold()
+            if not host:
+                continue
+            current = self.http.host_rates.get(host)
+            self.http.host_rates[host] = rate if current is None else min(current, rate)
 
     def _load_config(self, paths: Iterable[Path]) -> None:
         """Read channel declarations from YAML/JSON files (best effort)."""
@@ -149,6 +164,7 @@ class Registry:
             except Exception:
                 continue
             self._apply_config(chan)
+            self._register_rates(chan.spec)
             self._channels[name] = chan
 
     def _load_declared(self) -> None:
@@ -176,21 +192,34 @@ class Registry:
                     continue
             except Exception:
                 continue
+            self._register_rates(chan.spec)
             self._channels[name] = chan
 
     def _apply_config(self, chan: Channel) -> None:
-        spec = self._config.get(chan.name)
-        if not spec:
+        """Apply a config override to *this instance's* spec.
+
+        `spec` is a class attribute on every built-in channel, so assigning to
+        `chan.spec.rate_rps` rewrote shared class state: a second Registry built for
+        another library in the same process inherited the override, and `describe()`
+        reported the injected value as if the channel had declared it.
+        """
+        override = self._config.get(chan.name)
+        if not override:
             return
-        if "enabled" in spec:
-            chan.spec.enabled = bool(spec["enabled"])
-            if not chan.spec.enabled:
-                chan.spec.disabled_reason = str(spec.get("disabled_reason", "disabled in config"))
-        if "rate_rps" in spec:
+        changes: dict[str, Any] = {}
+        if "enabled" in override:
+            changes["enabled"] = bool(override["enabled"])
+            if not changes["enabled"]:
+                changes["disabled_reason"] = str(
+                    override.get("disabled_reason", "disabled in config")
+                )
+        if "rate_rps" in override:
             try:
-                chan.spec.rate_rps = float(spec["rate_rps"])
+                changes["rate_rps"] = float(override["rate_rps"])
             except (TypeError, ValueError):
                 pass
+        if changes:
+            chan.spec = replace(chan.spec, **changes)
 
     # ------------------------------------------------------------------ #
     # Access
@@ -212,9 +241,6 @@ class Registry:
             if ok and (not cap or chan.has(cap)):
                 out.append(chan)
         return out
-
-    def with_cap(self, cap: str) -> list[Channel]:
-        return [c for c in self.all() if c.has(cap)]
 
     def search_channels(self, spec: str = "") -> list[Channel]:
         """Resolve a user/channel selector into concrete channels.
@@ -321,64 +347,3 @@ class Registry:
                 "the registry or a channels.yaml declaration) to take advantage of it."
             )
         return out
-
-    def fan_out(
-        self,
-        op: str,
-        argument: str,
-        *,
-        limit: int = 10,
-        channel_spec: str = "",
-        year_from: int | None = None,
-        year_to: int | None = None,
-        stop_after_successes: int = 0,
-    ) -> dict[str, Any]:
-        """Call `op` ("search" or "lookup") across channels, isolating failures.
-
-        A channel that raises, is gated, or needs a key contributes an error entry and
-        the fan-out continues. This is the behaviour that makes many heterogeneous
-        sources — free, keyed, MCP-backed, local — look like one source to the caller.
-        """
-        channels = (
-            self.search_channels(channel_spec)
-            if op == "search"
-            else [c for c in self.search_channels(channel_spec) if c.has("lookup")]
-        )
-        if op == "lookup" and not channel_spec:
-            channels = sorted(
-                self.usable("lookup"),
-                key=lambda c: (0 if c.spec.cs_authority else 1, c.spec.name),
-            )
-        results: list[ChannelResult] = []
-        successes = 0
-        for chan in channels:
-            try:
-                if op == "search":
-                    res = chan.search(
-                        argument, limit=limit, year_from=year_from, year_to=year_to
-                    )
-                else:
-                    res = chan.lookup(argument)
-            except Exception as exc:  # a channel bug must not abort the fan-out
-                res = ChannelResult(chan.name, error=f"{type(exc).__name__}: {exc}")
-            if op == "lookup" and res.records:
-                kept, rejected = chan.verify_identifier(argument, res.records)
-                if rejected:
-                    res.records = kept
-                    res.warnings.extend(rejected)
-                    if not kept:
-                        res.error = res.error or (
-                            "returned a record for the wrong paper; discarded rather than "
-                            "stored"
-                        )
-            results.append(res)
-            if res.ok and res.records:
-                successes += 1
-                if stop_after_successes and successes >= stop_after_successes:
-                    break
-        return {
-            "operation": op,
-            "argument": argument,
-            "channels_queried": [c.name for c in channels],
-            "results": results,
-        }

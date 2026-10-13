@@ -53,6 +53,7 @@ class DblpChannel(Channel):
         auth="none",
         license="CC0 1.0 (dblp data)",
         rate_rps=1.0,
+        hosts=("dblp.org",),
         cs_authority=True,
         notes=(
             "Curated CS bibliography; strongest for venue- and author-level "

@@ -146,5 +146,100 @@ class TestConditionalRequests(unittest.TestCase):
         )
 
 
+class TestTransportBounds(unittest.TestCase):
+    """The promises the transport makes about *how* it waits and what it returns."""
+
+    def setUp(self):
+        self.http = Http(default_rps=1000.0)
+
+    def test_retry_after_is_honoured_but_capped(self):
+        """A server may ask us to wait; it may not hang the command for an hour."""
+        slept: list[float] = []
+        hdrs = http.client.HTTPMessage()
+        hdrs["Retry-After"] = "3600"
+
+        def failing(req, timeout=None):
+            raise urllib.error.HTTPError(req.full_url, 429, "slow down", hdrs, None)
+
+        with mock.patch("urllib.request.urlopen", side_effect=failing), \
+                mock.patch("ccb.search.net.time.sleep", side_effect=slept.append):
+            resp = self.http.request("https://x.example/api")
+        self.assertEqual(resp.status, 429)
+        self.assertTrue(slept, "a 429 with Retry-After should back off between attempts")
+        self.assertLessEqual(max(slept), 60.0, "Retry-After must be capped")
+
+    def test_the_declared_charset_is_used_for_decoding(self):
+        body = "标题：扩散模型".encode("gbk")
+        fake = _fake_response(200, body, {"Content-Type": "application/json; charset=gbk"})
+        with mock.patch("urllib.request.urlopen", return_value=fake):
+            resp = self.http.request("https://x.example/api")
+        self.assertIn("扩散模型", resp.body)
+
+    def test_an_unknown_charset_falls_back_instead_of_raising(self):
+        fake = _fake_response(200, b"ok", {"Content-Type": "text/plain; charset=nope-9"})
+        with mock.patch("urllib.request.urlopen", return_value=fake):
+            resp = self.http.request("https://x.example/api")
+        self.assertEqual(resp.body, "ok")
+
+    def test_an_unfetchable_url_returns_a_response_instead_of_raising(self):
+        """`Request()` rejects a URL with no scheme; that must not escape as a traceback.
+
+        `urlopen` is stubbed to fail loudly, which also proves the failure is detected
+        before any I/O is attempted.
+        """
+        boom = mock.patch("urllib.request.urlopen", side_effect=AssertionError("no I/O"))
+        with boom:
+            resp = self.http.request("example.com/no-scheme")
+        self.assertEqual(resp.status, 0)
+        self.assertIn("not a fetchable URL", resp.error)
+        with mock.patch("urllib.request.urlopen", side_effect=AssertionError("no I/O")):
+            data, dl_resp = self.http.download("example.com/no-scheme")
+        self.assertEqual(data, b"")
+        self.assertEqual(dl_resp.status, 0)
+
+
+class TestHostRateLimits(unittest.TestCase):
+    """The declared rate must reach the bucket that is keyed by the *host*."""
+
+    def test_declared_rates_are_keyed_by_host(self):
+        from ccb.search.channels.registry import Registry
+
+        reg = Registry()
+        # arXiv asks for >= 3 seconds between requests; keying the table by channel name
+        # meant this silently became the 1 req/s default for every host.
+        self.assertAlmostEqual(reg.http._bucket("export.arxiv.org").rate, 0.34, places=3)
+        self.assertAlmostEqual(reg.http._bucket("arxiv.org").rate, 0.34, places=3)
+        self.assertAlmostEqual(reg.http._bucket("api.crossref.org").rate, 2.0, places=3)
+        self.assertAlmostEqual(reg.http._bucket("api.openalex.org").rate, 2.0, places=3)
+        self.assertNotIn("arxiv", reg.http.host_rates, "channel names are not hosts")
+
+    def test_every_http_channel_declares_the_hosts_it_requests(self):
+        """A channel that forgets `hosts` silently loses its declared rate."""
+        import importlib
+
+        from ccb.search.channels.registry import BUILTIN_CHANNELS
+
+        for name, target in BUILTIN_CHANNELS.items():
+            mod_name, _, cls_name = target.partition(":")
+            module = importlib.import_module(f"ccb.search.channels.{mod_name}")
+            cls = getattr(module, cls_name)
+            if cls.spec.kind != "http":
+                # A local CLI/MCP-backed channel makes no HTTP request of its own.
+                continue
+            with self.subTest(channel=name):
+                self.assertTrue(cls.spec.hosts, f"{name} declares no hosts for its rate")
+
+    def test_a_registry_override_does_not_rewrite_the_class_spec(self):
+        """`spec` is a class attribute: an override must not leak into other instances."""
+        from ccb.search.channels.registry import Registry
+        from ccb.search.channels.arxiv import ArxivChannel
+
+        before = ArxivChannel.spec.rate_rps
+        reg = Registry()
+        reg._channels["arxiv"].spec.rate_rps = 999.0
+        self.assertEqual(ArxivChannel.spec.rate_rps, before)
+        self.assertIsNot(reg._channels["arxiv"].spec, ArxivChannel.spec)
+
+
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()

@@ -39,6 +39,7 @@ class EuropePmcChannel(Channel):
         auth="none",
         license="Metadata is open; full text availability is per-article (OA subset)",
         rate_rps=1.0,
+        hosts=("www.ebi.ac.uk", "europepmc.org"),
         notes=(
             "No key and no email required, so it is a dependable fallback. Use it for "
             "biomedical/clinical CS work; it also indexes preprints via SRC:\"PPR\"."

@@ -23,6 +23,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from ccb.search.channels.base import Channel  # noqa: E402
+from ccb.search.channels.base import CAP_SEARCH, ChannelResult, ChannelSpec  # noqa: E402
 from ccb.search.channels.generic import (  # noqa: E402
     GenericCliChannel,
     GenericHttpChannel,
@@ -31,8 +32,14 @@ from ccb.search.channels.generic import (  # noqa: E402
     _unwrap_mcp_content,
 )
 from ccb.search.channels.registry import Registry  # noqa: E402
+from ccb.search.acquire import Resolver  # noqa: E402
 from ccb.search.net import set_credentials  # noqa: E402
-from ccb.library.evidence import EvidenceStore  # noqa: E402
+from ccb.core.model import ChannelRecord  # noqa: E402
+from ccb.library.evidence import (  # noqa: E402
+    EvidenceStore,
+    register_secret_values,
+    reset_secret_values,
+)
 from ccb.library import Library  # noqa: E402
 
 PROBE_MCP = ROOT / "tools" / "probe_mcp_source.py"
@@ -652,6 +659,112 @@ class TestAllFourKindsThroughOneInterface(unittest.TestCase):
         # A manual record is a first-class citizen: it resolves, searches and exports.
         self.assertTrue(self.lib.search("Hand-Supplied"))
         self.assertIn("Hand-Supplied Paper", self.lib.export_bibtex([upsert.work_id]))
+
+
+class TestCredentialBoundary(unittest.TestCase):
+    """A credential value must not survive into anything a caller prints."""
+
+    def tearDown(self):
+        reset_secret_values()
+
+    def test_a_registered_value_is_scrubbed_from_errors_and_warnings(self):
+        register_secret_values(["s3cr3t-value"])
+        res = ChannelResult(
+            "x",
+            error="GET https://api.example.org/q?s3cr3t-value returned HTML",
+            warnings=["retried with s3cr3t-value in the query"],
+        )
+        self.assertNotIn("s3cr3t-value", res.error)
+        self.assertNotIn("s3cr3t-value", " ".join(res.warnings))
+
+    def test_a_response_error_names_the_url_without_its_secret(self):
+        from ccb.search.net import Response
+
+        register_secret_values(["s3cr3t-value"])
+        resp = Response(status=200, body="<html>nope</html>",
+                        url="https://api.example.org/q?s3cr3t-value=1")
+        with self.assertRaises(ValueError) as ctx:
+            resp.json()
+        self.assertNotIn("s3cr3t-value", str(ctx.exception))
+
+
+class _StubChannel:
+    """A search channel that records that it was called."""
+
+    def __init__(self, name: str, calls: list[str], records: int = 1):
+        self.name = name
+        self._calls = calls
+        self._records = records
+        self.spec = ChannelSpec(name=name, kind="http", caps=(CAP_SEARCH,),
+                                hosts=("stub.example.org",))
+
+    def has(self, cap: str) -> bool:
+        return cap in self.spec.caps
+
+    def available(self) -> tuple[bool, str]:
+        return True, ""
+
+    def search(self, query: str, **kw: Any) -> ChannelResult:
+        self._calls.append(self.name)
+        return ChannelResult(
+            self.name,
+            records=[
+                ChannelRecord(channel=self.name, title=f"Paper {self.name} {i}",
+                              authors=["A Author"], year=2020,
+                              doi=f"10.1000/{self.name}.{i}")
+                for i in range(self._records)
+            ],
+        )
+
+
+class _StubRegistry:
+    def __init__(self, channels: list[_StubChannel]):
+        self._channels = channels
+
+    def search_channels(self, spec: str = "") -> list[_StubChannel]:
+        return list(self._channels)
+
+    def unknown_names(self, spec: str = "") -> list[str]:
+        return []
+
+
+class TestFindFanOut(unittest.TestCase):
+    """`--stop-after N` bounds the fan-out; the default queries everything."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp(prefix="ccb-fanout-"))
+        self.lib = Library(self.tmp / "lib")
+        self.lib.ensure()
+        self.calls: list[str] = []
+        self.channels = [_StubChannel(n, self.calls) for n in ("a", "b", "c")]
+
+    def tearDown(self):
+        self.lib.close()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _find(self, **kw):
+        resolver = Resolver(self.lib, _StubRegistry(self.channels))
+        return resolver.find("request routing", **kw)
+
+    def test_without_a_cap_every_channel_is_queried(self):
+        res = self._find()
+        self.assertEqual(self.calls, ["a", "b", "c"])
+        self.assertFalse(res.stopped_early)
+        self.assertEqual(res.channels_queried, ["a", "b", "c"])
+
+    def test_the_cap_stops_after_n_productive_channels(self):
+        res = self._find(stop_after=1)
+        self.assertEqual(self.calls, ["a"], "the fan-out should have stopped after one")
+        self.assertTrue(res.stopped_early)
+        # The list names what was queried, not what merely existed.
+        self.assertEqual(res.channels_queried, ["a"])
+
+    def test_channels_that_produce_nothing_do_not_count_towards_the_cap(self):
+        self.channels[0]._records = 0
+        res = self._find(stop_after=1)
+        self.assertEqual(self.calls, ["a", "b"])
+        self.assertTrue(res.stopped_early)
+        self.assertEqual(res.channels_queried, ["a", "b"])
 
 
 if __name__ == "__main__":

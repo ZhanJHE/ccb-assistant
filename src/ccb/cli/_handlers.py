@@ -192,6 +192,7 @@ def cmd_find(ctx: Context) -> int:
         local_first=not args.no_local,
         ingest=not args.no_ingest,
         min_local=args.min_local or 0,
+        stop_after=args.stop_after or 0,
     )
     payload = res.as_dict()
     if args.compact:

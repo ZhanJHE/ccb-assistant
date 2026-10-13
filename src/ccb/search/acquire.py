@@ -93,6 +93,7 @@ class FindResult:
     ingested: int = 0
     merge_candidates: list[dict[str, Any]] = field(default_factory=list)
     local_answered: bool = False
+    stopped_early: bool = False
     message: str = ""
 
     def as_dict(self) -> dict[str, Any]:
@@ -110,6 +111,8 @@ class FindResult:
             out["warnings"] = self.warnings
         if self.merge_candidates:
             out["merge_candidates"] = self.merge_candidates
+        if self.stopped_early:
+            out["stopped_early"] = True
         if self.message:
             out["message"] = self.message
         return out
@@ -469,8 +472,14 @@ class Resolver:
         local_first: bool = True,
         ingest: bool = True,
         min_local: int = 0,
+        stop_after: int = 0,
     ) -> FindResult:
-        """Search locally first; only go to the network when the local corpus is thin."""
+        """Search locally first; only go to the network when the local corpus is thin.
+
+        ``stop_after`` caps the fan-out at N channels that actually produced records
+        (0 = query every usable channel). It exists because breadth and politeness are in
+        tension on a broad query, and the caller is the one who knows which it needs.
+        """
         result = FindResult(query=query)
         local_hits = self.library.search(
             query, limit=max(limit, min_local or 0), year_from=year_from, year_to=year_to
@@ -498,14 +507,18 @@ class Resolver:
         unknown = self.registry.unknown_names(channels)
         if unknown:
             result.warnings.append(f"unknown channel name(s) ignored: {', '.join(unknown)}")
-        result.channels_queried = [c.name for c in usable]
+        result.channels_queried = []
         if not usable:
             result.warnings.append(
                 "no search-capable channel is currently available; see `ccb channels`"
             )
 
         seen_keys: set[str] = set(k["work_id"] for k in local_hits)
+        queried: list[str] = []
+        productive = 0
         for chan in usable:
+            queried.append(chan.name)
+            before = len(result.fetched)
             try:
                 res: ChannelResult = chan.search(
                     query, limit=limit, year_from=year_from, year_to=year_to
@@ -532,6 +545,21 @@ class Resolver:
                     entry = w.summary()
                     entry["found_via"] = rec.channel
                     result.fetched.append(entry)
+            if len(result.fetched) > before:
+                productive += 1
+                if stop_after and productive >= stop_after:
+                    result.stopped_early = True
+                    remaining = len(usable) - len(queried)
+                    if remaining:
+                        result.warnings.append(
+                            f"stopped after {productive} channel(s) produced records "
+                            f"(--stop-after {stop_after}); {remaining} channel(s) were not "
+                            "queried"
+                        )
+                    break
+        # Filled as channels were actually called: on an early stop the list must name
+        # what was queried, not what was available.
+        result.channels_queried = queried
         if not result.fetched and not local_hits:
             result.message = (
                 "No results. Check the per-channel errors: a keyed or gated channel may "

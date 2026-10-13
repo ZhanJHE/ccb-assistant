@@ -52,6 +52,7 @@ class OpenReviewChannel(Channel):
         auth="none",
         license="Per-venue terms; most OpenReview content is openly readable",
         rate_rps=1.0,
+        hosts=("api2.openreview.net", "openreview.net"),
         cs_authority=True,
         notes=(
             "The stable identity source for CS conference papers that have no DOI. "

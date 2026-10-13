@@ -8,8 +8,8 @@ for you; the [README](../README.md) is written for people.
 
 | Face | What it is | Context cost | Use it when |
 |---|---|---|---|
-| `python ccb.py …` | A CLI with 23 commands; JSON on stdout, meaningful exit codes | **zero until used** | **You can run shell commands.** This is the default answer. |
-| `ccb-mcp.py` | An MCP server exposing 16 `ccb_*` tools | ~1.5k tokens of tool schema on every request (6197 characters of schema JSON; kept in sync by `tests/test_docs.py`) | Your client speaks MCP but has no shell. |
+| `python ccb.py …` | A CLI with 36 commands; JSON on stdout, meaningful exit codes | **zero until used** | **You can run shell commands.** This is the default answer. |
+| `ccb-mcp.py` | An MCP server exposing 16 `ccb_*` tools | ~1.5k tokens of tool schema on every request (6232 characters of schema JSON; kept in sync by `tests/test_docs.py`) | Your client speaks MCP but has no shell. |
 
 Both read the same library and cannot disagree — they are derived from one operation
 table. The CLI exposes strictly more (per-command flags like `--compact`, `--raw`,

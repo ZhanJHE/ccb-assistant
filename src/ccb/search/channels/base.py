@@ -20,10 +20,10 @@ Adding a channel is therefore a data problem, not a control-flow problem: implem
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 
-from ...library.evidence import EvidenceStore
+from ...library.evidence import EvidenceStore, scrub_secrets
 from ...core.model import ChannelRecord
 from ..net import Http, Response, credential, mailto
 
@@ -49,6 +49,11 @@ class ChannelSpec:
     auth: str = "none"  # "none" | credential name ("NAME") | "NAME?" (optional)
     license: str = ""
     rate_rps: float = 1.0
+    # The hosts this channel actually requests, so its declared rate applies to *them*.
+    # The token bucket is keyed by the netloc of the URL being fetched, not by the channel
+    # name: a table keyed by name never matched, which silently downgraded arXiv's
+    # declared 3s/request to the 1 req/s default for every host.
+    hosts: tuple[str, ...] = ()
     cs_authority: bool = False
     # True when responses may carry entitlement-gated content (a keyed institutional
     # source): their evidence snapshots are marked `restricted` so a consumer about to
@@ -89,6 +94,8 @@ class ChannelSpec:
         for k in ("title", "license", "notes", "disabled_reason"):
             if getattr(self, k):
                 out[k] = getattr(self, k)
+        if self.hosts:
+            out["hosts"] = list(self.hosts)
         if self.cs_authority:
             out["cs_authority"] = True
         if self.sensitive_response:
@@ -118,6 +125,19 @@ class ChannelResult:
     # True when the channel answered HTTP 304 to a conditional request: the sources
     # vouch that nothing changed, so `check` reports "unchanged" without a re-parse.
     not_modified: bool = False
+
+    def __post_init__(self) -> None:
+        """Scrub credentials where a result becomes output.
+
+        Value-based redaction already covers the evidence snapshot and the validator
+        cache; `error` and `warnings` are the third sink — they travel straight into the
+        find/get payload, and a key carried in a URL or in a subprocess's stderr would
+        otherwise be printed verbatim.
+        """
+        if self.error:
+            self.error = scrub_secrets(self.error)
+        if self.warnings:
+            self.warnings = [scrub_secrets(w) for w in self.warnings]
 
     @property
     def ok(self) -> bool:
@@ -167,7 +187,15 @@ class Channel:
         evidence: EvidenceStore | None = None,
         verbose: bool = False,
     ):
-        self.http = http or Http(host_rates={self.spec.name: self.spec.rate_rps})
+        # Every instance gets its own copy of the descriptor. `spec` is declared as a
+        # class attribute, so the first code path that assigned to `chan.spec.x` (a
+        # channels.yaml override) rewrote shared class state: a second Registry in the
+        # same process inherited it, and `describe()` reported the injected value as if
+        # the channel had declared it.
+        self.spec = replace(self.spec)
+        self.http = http or Http(
+            host_rates={host: self.spec.rate_rps for host in self.spec.hosts}
+        )
         self.evidence = evidence
         self.verbose = verbose
     # ---------------- capabilities ---------------- #

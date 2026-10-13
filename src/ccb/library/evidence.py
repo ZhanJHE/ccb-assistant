@@ -225,7 +225,7 @@ class EvidenceStore:
             retrieved_at=utc_now(),
             body_sha256=sha256_text(body) if body else "",
             body_chars=len(body or ""),
-            command=list(command) if command else None,
+            command=[scrub_secrets(str(c)) for c in command] if command else None,
             error=error,
             notes=notes,
             restricted=restricted,

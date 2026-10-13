@@ -61,6 +61,7 @@ class CrossrefChannel(Channel):
         auth="none",
         license="Crossref metadata is openly available (CC0 for the metadata itself)",
         rate_rps=2.0,
+        hosts=("api.crossref.org",),
         notes=(
             "Authoritative for published DOI metadata: container title, volume, "
             "issue, pages, publisher. Abstracts are present only when the publisher "

@@ -76,6 +76,7 @@ class OpenAlexChannel(Channel):
         auth="OPENALEX_API_KEY?",
         license="CC0 (data)",
         rate_rps=2.0,
+        hosts=("api.openalex.org",),
         notes=(
             "Best general-purpose open index and the most reliable open-access "
             "locator. Works keyless; OPENALEX_API_KEY raises the daily budget, "

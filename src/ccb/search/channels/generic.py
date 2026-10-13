@@ -101,6 +101,29 @@ def _as_list(value: Any) -> list[str]:
     return [str(value)]
 
 
+def _declared_hosts(spec: dict[str, Any]) -> tuple[str, ...]:
+    """The hosts a config-declared channel requests, so its rate can be applied to them.
+
+    Explicit `hosts:` wins; otherwise the host is read off the `url:` template, because a
+    declared channel still pays the same politeness cost as a built-in one.
+    """
+    explicit = spec.get("hosts")
+    out: list[str] = []
+    if isinstance(explicit, (list, tuple)):
+        out.extend(str(h).strip() for h in explicit if str(h).strip())
+    elif isinstance(explicit, str) and explicit.strip():
+        out.append(explicit.strip())
+    if not out:
+        url = str(spec.get("url", "") or "")
+        if "://" in url:
+            rest = url.split("://", 1)[1]
+            for sep in ("/", "?", "#"):
+                rest = rest.split(sep, 1)[0]
+            if rest:
+                out.append(rest)
+    return tuple(dict.fromkeys(out))
+
+
 class _DeclaredChannel(Channel):
     """Shared plumbing for config-declared channels."""
 
@@ -117,6 +140,7 @@ class _DeclaredChannel(Channel):
             auth=str(auth),
             license=str(spec.get("license", "")),
             rate_rps=float(spec.get("rate_rps", 1.0) or 1.0),
+            hosts=_declared_hosts(spec),
             cs_authority=bool(spec.get("cs_authority", False)),
             sensitive_response=bool(spec.get("sensitive_response", False)),
             notes=str(spec.get("notes", "")),

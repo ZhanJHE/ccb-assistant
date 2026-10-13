@@ -57,6 +57,7 @@ class ArxivChannel(Channel):
         auth="none",
         license="arXiv non-exclusive licence (per-paper terms vary; many are CC-BY)",
         rate_rps=0.34,  # arXiv asks for >= 3 seconds between requests
+        hosts=("export.arxiv.org", "arxiv.org"),
         cs_authority=True,
         notes=(
             "Authoritative for CS/ML preprints and the LaTeX source. Relevance "

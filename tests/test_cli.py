@@ -345,7 +345,9 @@ class TestPayloadShapes(_LibraryFixture):
     # Ops whose shape varies between clean and partial/error outcomes; the fixture run
     # asserts the subset rule only. `repair` joins them because its declaration is a
     # union over its branches: a plain rebuild omits the --reidentify keys by design.
-    VARIABLE = {("get",), ("topics", "survey"), ("repair",)}
+    # `find` is a union too: `errors`/`warnings`/`merge_candidates`/`stopped_early` only
+    # appear when a channel failed, flagged a match, or the fan-out was capped.
+    VARIABLE = {("get",), ("find",), ("topics", "survey"), ("repair",)}
 
     ARGS: dict[tuple[str, ...], list[str]] = {
         ("find",): ["planter"],
