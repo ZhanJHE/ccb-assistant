@@ -318,7 +318,9 @@ names the reason rather than returning an empty result.
 
 ```bash
 ruff check src tests                        # lint (the rules live in pyproject.toml)
-python -m unittest discover -s tests -v     # 263 tests, no network, no dependencies
+python -m unittest discover -s tests -v     # 286 tests, no network, no dependencies
+python ccb.py install-skill                 # teach the agents in THIS project to use ccb
+ruff check src tests                        # lint (the rules live in pyproject.toml)
 python tools/probe_arxiv.py                 # reproduce a channel's live behaviour
 python tools/probe_mcp_source.py            # minimal MCP server used as a test fixture
 ```

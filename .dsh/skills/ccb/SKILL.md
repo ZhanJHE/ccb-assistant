@@ -5,7 +5,7 @@ whenToUse: "Use when the user asks to find, download, read, organize or re-verif
 license: MIT
 compatibility: "Needs network access for channel queries and corpus top-up (not for local reads). Python 3.10+ standard library only; PDF text extraction uses pdfplumber or pypdf when present. No credentials required — keyed channels degrade and say so. Optional keys raise rate limits only."
 metadata:
-  version: "0.3.0"
+  version: "0.4.0"
   tool: ccb
 allowed-tools: Read Bash Write
 ---

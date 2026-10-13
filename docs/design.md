@@ -336,6 +336,8 @@ ccb CLI (JSON)  ←── 确定层，可测试（<checkout>/ccb.py，免安装�
 
 课题生成刻意拆成 7 个 MCP 工具而非 1 个大工具：**中间有判断**，Agent 必须先读证据再选，选了才起草。
 
+除 tools 外，MCP 面还暴露 **prompts**（v0.4.0）：`ccb-literature-review`（选题编排）、`ccb-compare-papers`、`ccb-verify-claims` 三个模板，从 `ops.py` 的声明派生——每条模板都把措辞规则写进文本（必须引用锚点、never fill the gap from memory），由测试锁定。
+
 **实测的硬约束**：
 
 - agentskills.io 规范的超集写法（`name` ≤64 kebab-case、`description` ≤1024、可选 `license`/`compatibility`/`metadata`/`allowed-tools`）

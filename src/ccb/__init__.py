@@ -22,7 +22,7 @@ reads, so an agent that skips a step cannot desynchronise the store.
 
 from __future__ import annotations
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 from .core.model import ChannelRecord, Manifestation, WorkRecord
 from .core.util import utc_now

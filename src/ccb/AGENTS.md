@@ -17,4 +17,4 @@
   或 `mcp_server.py` 里手写第三份。
 - **契约是可执行的**：`contract.py` 里 `kind: command` 的每条命令都会被测试实际解析
   （`tests/test_contract.py`）。改了 flag 就要改契约。
-- 提交前：`ruff check src tests` + `python -m unittest discover -s tests`（当前 263 用例，无网络）。
+- 提交前：`ruff check src tests` + `python -m unittest discover -s tests`（当前 286 用例，无网络）。
