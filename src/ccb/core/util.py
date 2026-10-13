@@ -264,6 +264,28 @@ def normalize_arxiv_id(value: str) -> str:
     return out.strip()
 
 
+def normalize_url(url: str) -> str:
+    """Reduce a URL to a comparison key: no fragment, no trailing slash, lower scheme/host.
+
+    Hand-written instead of delegating to ``urllib.parse``: this module is declared pure
+    and the purity test forbids importing ``urllib`` here (see ``tests/test_purity.py``).
+    Only the shapes that reach us from channels are handled, and a value that is not a
+    URL at all is returned stripped rather than mangled.
+
+    The path keeps its case — ``10.1145/AbC`` and ``10.1145/abc`` can be different
+    resources — while scheme and host are case-insensitive by RFC and therefore folded.
+    """
+    if not url or not isinstance(url, str):
+        return ""
+    out = url.strip().split("#", 1)[0].rstrip()
+    if not out:
+        return ""
+    m = re.match(r"^([A-Za-z][A-Za-z0-9+.\-]*)://([^/?#\s]*)(.*)$", out)
+    if m:
+        out = f"{m.group(1).casefold()}://{m.group(2).casefold()}{m.group(3)}"
+    return out.rstrip("/")
+
+
 # --------------------------------------------------------------------------- #
 # JSON (serialisation only — the file writes live in core.files)
 # --------------------------------------------------------------------------- #

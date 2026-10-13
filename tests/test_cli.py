@@ -272,6 +272,37 @@ class TestInstallSkill(unittest.TestCase):
         self.assertIn("same directory", err)
 
 
+class TestCheckFiles(_LibraryFixture):
+    """`check-files` must compare like with like, on every platform."""
+
+    def test_a_referenced_pdf_is_not_an_orphan(self):
+        pdf = self.tmp / "tiny.pdf"
+        pdf.write_bytes(MINIMAL_PDF)
+        code, _, err = self.run_cli([
+            "add-file", str(pdf), "--title", "Tiny Planter", "--authors", "A",
+            "--year", "2020", "--doi", "10.1000/tiny.9",
+        ])
+        self.assertEqual(code, 0, err)
+        code, out, err = self.run_cli(["check-files"])
+        self.assertEqual(code, 0, err)
+        payload = json.loads(out)
+        self.assertGreaterEqual(payload["checked"], 1)
+        self.assertEqual(payload["mismatch"], [])
+        self.assertEqual(payload["missing"], [])
+        # Regression: an os.sep-joined reference compared against a "/"-joined scan made
+        # every referenced PDF look unreferenced on Windows (99 of 99 in a real library).
+        self.assertEqual(payload["orphans"], [],
+                         "the referenced PDF was reported as an orphan")
+
+    def test_a_genuinely_unreferenced_file_is_reported(self):
+        stray = self.root / "files" / "zz"
+        stray.mkdir(parents=True)
+        (stray / "deadbeef.pdf").write_bytes(MINIMAL_PDF)
+        code, out, err = self.run_cli(["check-files"])
+        self.assertEqual(code, 0, err)
+        self.assertEqual(json.loads(out)["orphans"], ["files/zz/deadbeef.pdf"])
+
+
 class TestAskOutcome(_LibraryFixture):
     """A coverage gap is an outcome, not a failed command."""
 
@@ -312,8 +343,9 @@ class TestPayloadShapes(_LibraryFixture):
     """
 
     # Ops whose shape varies between clean and partial/error outcomes; the fixture run
-    # asserts the subset rule only.
-    VARIABLE = {("get",), ("topics", "survey")}
+    # asserts the subset rule only. `repair` joins them because its declaration is a
+    # union over its branches: a plain rebuild omits the --reidentify keys by design.
+    VARIABLE = {("get",), ("topics", "survey"), ("repair",)}
 
     ARGS: dict[tuple[str, ...], list[str]] = {
         ("find",): ["planter"],

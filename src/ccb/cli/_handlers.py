@@ -8,7 +8,6 @@ A handler parses nothing but its arguments, delegates to a module, and returns
 from __future__ import annotations
 
 import json
-import os
 import shutil
 import sys
 from pathlib import Path
@@ -172,7 +171,14 @@ def cmd_doctor(ctx: Context) -> int:
 def cmd_repair(ctx: Context) -> int:
     report = ctx.library.repair()
     report["library_root"] = str(ctx.library.root)
-    return ctx.emit(report, EXIT_OK if report.get("index_ok") else EXIT_FAILED)
+    if ctx.args.reidentify:
+        # Explicit and separate from `repair`: re-deriving a work_id renames the record,
+        # and a rename is a migration, not a routine rebuild.
+        report.update(ctx.library.reidentify(dry_run=bool(ctx.args.dry_run)))
+    # `repair` reports what it could not fix under `problems`; it never claims a false
+    # index_ok, so "problems or failed records" is the whole failure condition.
+    code = EXIT_PARTIAL if (report.get("problems") or report.get("failed")) else EXIT_OK
+    return ctx.emit(report, code)
 
 
 def cmd_find(ctx: Context) -> int:
@@ -459,7 +465,11 @@ def cmd_check_files(ctx: Context) -> int:
             if not m.pdf_path:
                 continue
             report["checked"] += 1
-            known.add(m.pdf_path.replace("/", os.sep))
+            # Store the reference in the same form the scan produces. Comparing an
+            # os.sep-joined path against a "/"-joined one made every real PDF look
+            # unreferenced on Windows: the second condition was a no-op because the
+            # value had already had its backslashes replaced.
+            known.add(m.pdf_path.replace("\\", "/"))
             p = ctx.library.file_abs(m.pdf_path)
             if not p.exists():
                 report["missing"].append({"work_id": work.work_id, "path": m.pdf_path})
@@ -476,7 +486,7 @@ def cmd_check_files(ctx: Context) -> int:
         for p in ctx.library.files_dir.glob("**/*"):
             if p.is_file():
                 rel = str(p.relative_to(ctx.library.root)).replace("\\", "/")
-                if rel not in known and rel.replace(os.sep, "/") not in known:
+                if rel not in known:
                     report["orphans"].append(rel)
     code = EXIT_PARTIAL if (report["mismatch"] or report["missing"]) else EXIT_OK
     return ctx.emit(report, code)

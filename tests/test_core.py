@@ -19,7 +19,13 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from ccb.search.channels.openalex import uninvert  # noqa: E402
 from ccb.search.channels.crossref import clean_jats  # noqa: E402
-from ccb.core.ids import compute_dedup_keys, compute_work_id, parse_identifier  # noqa: E402
+from ccb.core.ids import (  # noqa: E402
+    compute_dedup_keys,
+    compute_work_id,
+    parse_identifier,
+    work_id_from_keys,
+)
+from ccb.core.files import write_json_atomic  # noqa: E402
 from ccb.core.model import ChannelRecord, add_claim, resolve_field  # noqa: E402
 from ccb.core.util import (  # noqa: E402
     arxiv_doi,
@@ -112,6 +118,48 @@ class TestWorkIdentity(unittest.TestCase):
     def test_arxiv_doi_helper(self):
         self.assertEqual(arxiv_doi("1706.03762v5"), "10.48550/arxiv.1706.03762")
         self.assertEqual(arxiv_doi(""), "")
+
+
+class TestIdentityPathNormalization(unittest.TestCase):
+    """Identity is decided on the *normalized* value, never on the raw one.
+
+    The bug this pins: the normalizers existed and were computed, but the key chain took
+    `ids[name]` verbatim, so one paper had as many work_ids as there were spellings of its
+    DOI — and 165 records in a real corpus drifted from their own recomputed identity.
+    """
+
+    def test_doi_casing_cannot_fork_identity(self):
+        upper, _ = compute_work_id(ids={"doi": "10.1109/ISIT50566.2022.9834539"})
+        lower, _ = compute_work_id(ids={"doi": "10.1109/isit50566.2022.9834539"})
+        self.assertEqual(upper, lower)
+        self.assertEqual(upper, "doi:10.1109/isit50566.2022.9834539")
+
+    def test_doi_url_form_cannot_fork_identity(self):
+        ident, _ = compute_work_id(ids={"doi": "https://doi.org/10.1109/AbC.2022"})
+        self.assertEqual(ident, "doi:10.1109/abc.2022")
+
+    def test_url_key_drops_fragment_and_folds_scheme_and_host(self):
+        ident, _ = compute_work_id(ids={"url": "HTTPS://Example.COM/Paper/#sec2"})
+        # The path keeps its case: two URLs differing in path case can be two resources.
+        self.assertEqual(ident, "url:https://example.com/Paper")
+
+    def test_arxiv_doi_still_ranks_as_arxiv(self):
+        self.assertEqual(compute_work_id(ids={"doi": "10.48550/arXiv.1706.03762"})[0],
+                         "arxiv:1706.03762")
+
+    def test_both_identity_entry_points_agree(self):
+        for ids in (
+            {"doi": "10.1109/AbC"},
+            {"arxiv": "arXiv:1706.03762v5"},
+            {"url": "HTTP://X.org/a/"},
+            {"doi": "10.48550/arXiv.1706.03762"},
+            {"doi": "10.1000/x", "arxiv": "1706.03762"},
+        ):
+            with self.subTest(ids=ids):
+                self.assertEqual(
+                    work_id_from_keys([f"{k}:{v}" for k, v in ids.items()]),
+                    compute_work_id(ids=ids),
+                )
 
 
 class TestNormalization(unittest.TestCase):
@@ -281,6 +329,63 @@ class TestLibrary(unittest.TestCase):
                        "arXiv:1706.03762v5"):
             with self.subTest(needle=needle):
                 self.assertIsNotNone(self.lib.resolve(needle))
+
+    def test_resolve_finds_a_title_keyed_work_by_fragment(self):
+        """The filename fallback must read the file, not reconstruct the id from its stem.
+
+        The stem is an escaped projection (`|` becomes `%7C`, `/` becomes `%2F`), so
+        feeding it back to `load()` re-derived a different shard and the lookup could never
+        hit — which is to say it never worked for any DOI or title-keyed record.
+        """
+        rec = ChannelRecord(channel="manual", title="Tiny Planter With Widgets",
+                            authors=["A Belay"], year=2014)
+        wid = self.lib.upsert_record(rec).work_id
+        self.assertTrue(wid.startswith("t:"), wid)
+        self.assertIn("%7C", self.lib.work_path(wid).name)
+        for fragment in ("tiny planter", "PLANTER WITH", "belay"):
+            with self.subTest(fragment=fragment):
+                hit = self.lib.resolve(fragment)
+                self.assertIsNotNone(hit, f"{fragment!r} should reach the record by filename")
+                self.assertEqual(hit.work_id, wid)
+
+    def test_one_work_created_event_per_creation(self):
+        """`ledger.count_events` is a self-check input, so it must not double-count."""
+        self.lib.upsert_record(self._rec())
+        self.assertEqual(self.lib.count_events("work_created"), 1)
+        self.lib.upsert_record(
+            self._rec(doi="10.1000/second", arxiv_id="", title="A Second Paper")
+        )
+        self.assertEqual(self.lib.count_events("work_created"), 2)
+        events = [e for e in self.lib.ledger() if e["event"] == "work_created"]
+        self.assertTrue(all("merge_candidates" in e for e in events),
+                        "the creation event still carries what the creation flagged")
+
+    def test_legacy_work_id_is_migrated_and_still_resolves(self):
+        """A record written before the identity path was normalized keeps working."""
+        legacy = ChannelRecord(channel="test", title="Legacy Record",
+                               doi="10.1109/AB.2020.1").to_work()
+        self.assertEqual(legacy.work_id, "doi:10.1109/ab.2020.1")
+        # Reconstitute exactly what the old code wrote: the raw DOI as the identity,
+        # the normalized one in the id map.
+        legacy.work_id = "doi:10.1109/AB.2020.1"
+        path = self.lib.work_path(legacy.work_id)
+        write_json_atomic(path, legacy.as_dict())
+        self.lib.reindex()
+        self.assertIsNotNone(self.lib.resolve("doi:10.1109/AB.2020.1"))
+
+        dry = self.lib.reidentify(dry_run=True)
+        self.assertEqual(dry["reidentified"], 1)
+        self.assertTrue(path.exists(), "a dry run must not touch the corpus")
+
+        out = self.lib.reidentify()
+        self.assertEqual(out["reidentified"], 1)
+        self.assertEqual(out["failed"], [])
+        self.assertFalse(path.exists(), "the stale file must be gone")
+        # The id a caller may already hold still resolves, to the surviving record.
+        still = self.lib.resolve("doi:10.1109/AB.2020.1")
+        self.assertIsNotNone(still)
+        self.assertEqual(still.work_id, "doi:10.1109/ab.2020.1")
+        self.assertEqual(self.lib.reidentify()["reidentified"], 0, "must be idempotent")
 
     def test_duplicate_is_flagged_not_silently_merged(self):
         # Near-identical titles from different sources without a shared id must be

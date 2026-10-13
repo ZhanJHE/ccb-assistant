@@ -21,6 +21,7 @@ from .util import (
     normalize_arxiv_id,
     normalize_doi,
     normalize_title,
+    normalize_url,
     short_hash,
     title_tokens,
 )
@@ -189,10 +190,17 @@ def compute_work_id(
             continue
         if name == "arxiv" and arxiv_id:
             return f"arxiv:{arxiv_id}", "arxiv"
-        value = ids.get(name)
+        # The *normalized* value wins, never the raw one a channel happened to send:
+        # identity was otherwise decided by which casing (or which prefix) arrived
+        # first, so one paper had as many work_ids as there were spellings of its DOI.
+        if name == "doi":
+            value = doi
+        elif name == "url":
+            value = normalize_url(ids.get(name) or "")
+        else:
+            value = ids.get(name)
         if value:
-            scheme = "arxiv" if name == "arxiv" else name
-            return f"{scheme}:{value}", name
+            return f"{name}:{value}", name
     fallback = _title_fallback_key(title, authors, year)
     if fallback:
         return f"t:{fallback}", "title"
@@ -200,24 +208,39 @@ def compute_work_id(
 
 
 def work_id_from_keys(keys: list[str]) -> tuple[str, str]:
-    """Compute the identity of a work from a list of `scheme:value` strings."""
+    """Compute the identity of a work from a list of `scheme:value` strings.
+
+    Values are normalized exactly the way ``compute_work_id`` normalizes them, so the two
+    entry points cannot disagree about who a paper is — the key chain is a shared
+    decision, not two implementations of one.
+    """
     best_rank = len(KEY_CHAIN)
     best: tuple[str, str] | None = None
     for key in keys:
         if ":" not in key:
             continue
         scheme, _, value = key.partition(":")
-        scheme = {"doi": "doi", "arxiv": "arxiv", "openreview": "openreview",
-                  "acl": "acl", "pmlr": "pmlr", "dblp": "dblp", "pmid": "pmid",
-                  "openalex": "openalex", "url": "url", "title": "title"}.get(scheme, scheme)
-        if scheme in KEY_CHAIN:
-            rank = KEY_CHAIN.index(scheme)
-            if rank < best_rank:
-                best_rank = rank
-                best = (f"{scheme}:{value}", scheme)
-    if best:
-        return best
-    return "", ""
+        if scheme not in KEY_CHAIN:
+            continue
+        if scheme == "doi":
+            value = normalize_doi(value)
+            if value.startswith("10.48550/arxiv."):
+                # A derived form of the arXiv id: recover the native id and rank it in the
+                # arXiv slot, exactly as `compute_work_id` does, so the two entry points
+                # cannot disagree about a preprint's identity.
+                scheme = "arxiv"
+                value = normalize_arxiv_id(value)
+        elif scheme == "arxiv":
+            value = normalize_arxiv_id(value)
+        elif scheme == "url":
+            value = normalize_url(value)
+        if not value:
+            continue
+        rank = KEY_CHAIN.index(scheme)
+        if rank < best_rank:
+            best_rank = rank
+            best = (f"{scheme}:{value}", scheme)
+    return best if best is not None else ("", "")
 
 
 def work_path_shard(work_id: str) -> str:

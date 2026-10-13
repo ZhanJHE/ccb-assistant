@@ -19,7 +19,7 @@ from .ids import (
     compute_work_id,
     work_id_from_keys,
 )
-from .util import normalize_arxiv_id, normalize_doi, utc_now
+from .util import normalize_arxiv_id, normalize_doi, normalize_url, utc_now
 
 SCHEMA_VERSION = 1
 
@@ -50,6 +50,7 @@ _ID_FIELDS = {
     "doi": normalize_doi,
     "arxiv_id": normalize_arxiv_id,
     "arxiv": normalize_arxiv_id,
+    "url": normalize_url,
 }
 
 # Which channel is trusted first when several disagree. Unlisted channels rank last.

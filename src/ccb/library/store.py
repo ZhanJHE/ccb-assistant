@@ -30,7 +30,7 @@ from pathlib import Path
 from typing import Any, Iterable, Iterator
 
 from .evidence import EvidenceStore
-from ..core.ids import work_path_shard
+from ..core.ids import compute_work_id, work_path_shard
 from ..core.paths import checkout_root
 from ..core.model import (
     ChannelRecord,
@@ -286,20 +286,32 @@ class Library:
         return w
 
     @_serialized
-    def save(self, work: WorkRecord, *, log_event: str = "work_saved") -> None:
+    def save(
+        self,
+        work: WorkRecord,
+        *,
+        log_event: str = "work_saved",
+        log_extra: dict[str, Any] | None = None,
+    ) -> None:
         """The single write path for the whole library.
 
         Every mutation goes through here so the three representations can never
         diverge: the work JSON (truth), the SQLite index (derived), and the ledger
         (audit). An agent cannot "forget" one of them because it never touches them
         individually — and re-running any command is idempotent.
+
+        ``log_extra`` carries event-specific detail (e.g. the merge candidates a creation
+        flagged) so that one mutation writes exactly one ledger event.
         """
         work.updated_at = utc_now()
         write_json_atomic(self.work_path(work.work_id), work.as_dict())
         self._work_cache[work.work_id] = work
         self._index.index_work(work)
         self._save_meta(works=self.count(), works_fingerprint=self._index.works_fingerprint())
-        self.log(log_event, {"work_id": work.work_id, "title": work.title()[:160]})
+        self.log(
+            log_event,
+            {"work_id": work.work_id, "title": work.title()[:160], **(log_extra or {})},
+        )
 
     def all_work_ids(self) -> list[str]:
         """Every work id in the library, read from the records themselves.
@@ -370,6 +382,62 @@ class Library:
         """Rebuild the query index from the JSON work files."""
         return self._index.reindex()
 
+    @_serialized
+    def reidentify(self, *, dry_run: bool = False) -> dict[str, Any]:
+        """Re-derive every work_id from its normalized id set, moving the file if it changed.
+
+        ``work_id`` is the identifier an agent hands back verbatim, so this never happens
+        implicitly: a record whose id was minted from a non-normalized value (an uppercase
+        DOI, a ``https://doi.org/...`` string) would otherwise acquire a different name the
+        moment anything recomputed it. The old id is appended to ``aliases`` and stays in
+        the derived index, so every previously quoted id still resolves.
+        """
+        moved: list[dict[str, str]] = []
+        failed: list[dict[str, str]] = []
+        for work in self.iter_works():
+            new_id, matched = compute_work_id(ids=dict(work.ids))
+            if not new_id or new_id == work.work_id:
+                continue
+            entry = {"from": work.work_id, "to": new_id}
+            if dry_run:
+                moved.append(entry)
+                continue
+            old_id = work.work_id
+            old_path = self.work_path(old_id)
+            if old_id not in work.aliases:
+                work.aliases.append(old_id)
+            work.work_id = new_id
+            work.matched_key = matched or work.matched_key
+            try:
+                self.save(work, log_event="work_reidentified")
+            except Exception as exc:  # a single unmovable record must not stop the run
+                failed.append({**entry, "error": f"{type(exc).__name__}: {exc}"})
+                continue
+            # Same ordering as `merge`: the new identity is on disk before the old file
+            # goes away, and a failed unlink is reported instead of swallowed.
+            try:
+                if old_path.exists():
+                    old_path.unlink()
+            except OSError as exc:
+                failed.append({**entry, "error": f"stale file kept: {exc}"})
+            self._work_cache.pop(old_id, None)
+            self._index.deindex_work(old_id, keep_aliases=True)
+            moved.append(entry)
+        if not dry_run and moved:
+            # The renames moved files, so the fingerprint recorded by the last `save` no
+            # longer describes the corpus; re-record it rather than letting the next
+            # command "discover" drift it just healed.
+            self._save_meta(
+                works=self.count(), works_fingerprint=self._index.works_fingerprint()
+            )
+        return {
+            "works_checked": self.count(),
+            "reidentified": len(moved),
+            "failed": failed,
+            "dry_run": dry_run,
+            "sample": moved[:10],
+        }
+
     # ------------------------------------------------------------------ #
     # Local-first resolution  ← the core of "don't redo the whole pipeline"
     # ------------------------------------------------------------------ #
@@ -424,12 +492,20 @@ class Library:
         if hit:
             return self.load(hit)
 
-        # 4. Slug/title fragment from the filename, as a last courtesy
+        # 4. Slug/title fragment from the filename, as a last courtesy.
+        #
+        # The file is read directly: the stem is a *lossy, escaped* projection of the id
+        # (`/`, `:` and `|` are percent-encoded), so feeding it back to `load()` made
+        # `work_path` re-derive a different shard and the lookup could never hit — dead
+        # for every DOI and every title-keyed record, which is most of them.
         for p in self.works_dir.glob(WORK_FILE_GLOB):
             if needle.casefold() in p.stem.casefold():
-                w = self.load(p.stem.replace("%3A", ":"), use_cache=False)
-                if w is not None:
-                    return w
+                try:
+                    d = read_json(p)
+                except Exception:
+                    continue
+                if isinstance(d, dict) and d.get("work_id"):
+                    return WorkRecord.from_dict(d)
         return None
 
     # ------------------------------------------------------------------ #
@@ -486,14 +562,13 @@ class Library:
                     )
                     return UpsertResult(existing.work_id, "enriched", added, [])
 
-        self.save(incoming, log_event="work_created")
         flagged = [c.as_dict() for c in candidates if c.score >= MERGE_CANDIDATE_JACCARD]
-        if record_event:
-            self.log(
-                "work_created",
-                {"work_id": incoming.work_id, "title": incoming.title()[:160],
-                 "merge_candidates": flagged},
-            )
+        # One creation, one ledger event: the candidates ride along on the event that
+        # `save` writes, rather than being logged a second time under the same name
+        # (which made "one work_created per work" false and quietly weakened the
+        # self-check that compares the two counts).
+        event_extra = {"merge_candidates": flagged} if record_event else None
+        self.save(incoming, log_event="work_created", log_extra=event_extra)
         return UpsertResult(incoming.work_id, "created", sorted(incoming.claims), flagged)
 
     def _absorb(self, target: WorkRecord, incoming: WorkRecord) -> list[str]:
