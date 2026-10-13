@@ -50,3 +50,18 @@ The `workflows` section of `python ccb.py contract` holds the exact step order f
 four things agents do most: answer a question from the corpus, find then read a topic,
 build a bibliography, and generate a research topic. Follow it; every step names its
 command so you do not have to choose.
+
+## Prompts (MCP) for the topic and idea stage
+
+Five prompt templates ride on the MCP face (`prompts/list`). Three run the literature
+flows above; two cover the stage after mining:
+
+- `ccb-idea-review` — before committing to an idea: three fresh-eyes sub-agents attack
+  it (reviewer / engineer / cold-water), then you re-verify every finding against the
+  corpus. This defends against single-session context contamination; the sub-agents
+  advise, they do not judge. The ceiling verdict is phrased by contribution type, not
+  by how polished the stitch is.
+- `ccb-topic-stitch` — build a paper candidate by deliberate stitching, with the
+  honesty rules baked in (most combinations fail; report all results; the
+  And-But-Therefore story must cite verified gap anchors — inventing a conflict is
+  fabrication).

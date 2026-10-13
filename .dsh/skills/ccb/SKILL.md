@@ -12,8 +12,8 @@ allowed-tools: Read Bash Write
 
 # ccb — three modules: search, library, topics
 
-`ccb` answers three questions: **"how do I get this paper"**, **"why am I downloading
-it again"**, and **"what should I work on next"**. The second one is why the library
+`ccb` answers three questions: **"how do I get this paper"**, **"why download it
+twice"**, and **"what should I work on next"**. The second is why the library
 exists; the third is why it is worth keeping.
 
 ## The rule that matters
@@ -24,8 +24,8 @@ and the audit ledger together. Ask the library first; only go to the network on 
 
 ## Call it like this
 
-The tool and the corpus it builds live in the **same directory** — you clone the repo
-and work in it:
+The tool and its corpus live in the **same directory** — clone the repo and
+work in it:
 
 ```bash
 CCB="python /path/to/ccb-assistant/ccb.py"   # the checkout's own entry point
@@ -104,8 +104,7 @@ $CCB topics venues --verify             # the CCF catalogue
 Rules:
 
 - **One topic per `draft`.** Its `dedup_key` is retired, so the same combination is
-  never proposed again. That is what stops repeated mining from producing the same
-  idea in new words.
+  never proposed again — re-mining cannot re-wrap one idea in new words.
 - **Compose every section from the anchors attached to it.** If a claim has no anchor,
   drop the claim. A reference may only come from `references` in the draft — never
   from memory.
@@ -178,9 +177,10 @@ gating live in `references/channels.md`.
 
 ## Full detail
 
-- `开发文档/for-agents.md` — written for agents: faces, context cost, rules
-- MCP face: 16 `ccb_*` tools — registration in `references/commands.md`
-- `references/commands.md` — every command and flag, with examples
+- `开发文档/for-agents.md` — faces, context cost, rules
+- MCP face: 16 tools + 5 prompts — `references/commands.md`
+- Prompts: `ccb-idea-review` (fresh-eyes attack before commit) · `ccb-topic-stitch` (sew + ABT story)
+- `references/commands.md` — every command and flag
 - `references/topics.md` — the operators, the scoring, the CCF estimate
 - `references/architecture.md` — the three modules, on-disk layout, local-first
 - `references/channels.md` — per-source contracts, measured behaviour, known traps

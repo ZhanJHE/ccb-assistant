@@ -117,7 +117,7 @@
 <nav id="side">
   <div class="brand">
     <h1>ccb — 项目讲解</h1>
-    <p>v0.4.0 · Python ≥3.10 · 零必需依赖 · 286 tests · 曾用名 lit（0.3.0 起全量改名，不留兼容层）</p>
+    <p>v0.4.0 · Python ≥3.10 · 零必需依赖 · 305 tests · 曾用名 lit（0.3.0 起全量改名，不留兼容层）</p>
   </div>
   <input id="filter" type="search" placeholder="过滤章节…" autocomplete="off">
   <div id="tabs" role="tablist">
@@ -181,7 +181,7 @@
 
   <div class="group" id="g5">
     <h2>质量</h2>
-    <a href="#q-tests">测试矩阵（286）</a>
+    <a href="#q-tests">测试矩阵（305）</a>
     <a href="#q-refactor">2026-10 大改造</a>
     <a href="#q-inv">不变量（14）</a>
     <a href="#q-no">刻意不做的事</a>
@@ -267,11 +267,11 @@ python ccb.py topics save &lt;topic_id&gt;
 │  ├─ mcp_server.py  contract.py
 │  └─ AGENTS.md          <span class="c">开发模式细则（触及该目录才注入）</span>
 ├─ .dsh/skills/ccb/      <span class="c">Agent Skill：SKILL.md + ccb.py 启动器 + references/</span>
-├─ tests/                <span class="c">12 个测试文件，286 用例，无网络无依赖</span>
+├─ tests/                <span class="c">12 个测试文件，305 用例，无网络无依赖</span>
 ├─ tools/                <span class="c">探针脚本（复现渠道行为）</span>
 ├─ .github/workflows/    <span class="c">CI：ruff + unittest，ubuntu/windows × 3.10/3.13</span>
-├─ docs/design.md        <span class="c">设计定稿</span>
-├─ 开发文档/              <span class="c">改造方案 + 本讲解</span>
+├─ 开发文档/              <span class="c">设计定稿 + for-agents + 改造方案 + 本讲解</span>
+├─ 用户文档/              <span class="c">★ 用户的科研资料（调研综述/选题方案/实验项目）</span>
 ├─ notes/                <span class="c">立项前的领域调研（决定做什么/不做什么）</span>
 └─ papers/               <span class="c">★ 使用者工作区：本地数据，不进 git</span>
 </pre>
@@ -739,9 +739,9 @@ manifestation  载体层：arXiv v1/v2、NeurIPS 正式版、OpenReview 投稿�
 <hr>
 
 <!-- ============================ 质量 ============================ -->
-<h2 class="sec" id="q-tests">测试矩阵（286）</h2>
+<h2 class="sec" id="q-tests">测试矩阵（305）</h2>
 
-<pre>python -m unittest discover -s tests -v     <span class="c"># 286 用例，无网络，无第三方依赖，~11 s</span>
+<pre>python -m unittest discover -s tests -v     <span class="c"># 305 用例，无网络，无第三方依赖，~11 s</span>
 python tools/probe_arxiv.py                 <span class="c"># 复现某渠道的真实线上行为</span>
 python tools/probe_mcp_source.py            <span class="c"># 最小 MCP server，作测试夹具</span></pre>
 
@@ -806,7 +806,7 @@ python tools/probe_mcp_source.py            <span class="c"># 最小 MCP server�
   <tr><td>C4</td><td><b>Agent 控制层 + 凭据</b></td><td>两层 AGENTS.md（根=模式分流，src/ccb=开发细则，按触达注入）；<code>channels</code> 输出 <code>credentials_missing</code>（required/optional + effect + note）与 <code>credential_guidance</code>（key 永不经对话传递）</td></tr>
   <tr><td>C5</td><td><b>core 纯/IO 分离 + cli 拆包</b></td><td>util 自称纯却含原子写盘 → <code>core/files.py</code>；<code>test_purity</code> 双向锁死。cli.py 997 行 → cli 包四模块；checkout 标记因 cli.py 变包而静默失效（<b>测试抓到</b>，已修）</td></tr>
   <tr><td>C6</td><td><b>工程基建</b></td><td>CI（ruff + unittest，双平台双版本）；版本单一来源（pyproject 动态读取 <code>ccb.__version__</code>）；ruff 0.17 本地执行清零（43 处：未用导入、死赋值、3 处注解未定义名）</td></tr>
-  <tr><td>＋</td><td><b>借鉴落地</b>（<a href="https://github.com/">同类项目调研</a>后六项，v0.4.0）</td><td>SKILL.md 措辞级反幻觉规则 + <code>whenToUse</code>；<code>docs/for-agents.md</code>（实测 MCP 面 token 成本，测试锁定）；<code>install-skill</code>；段落章节标注 + <code>ask --section</code>；证据 restricted 标记；MCP prompts 面（3 个模板）——详见《同类项目借鉴调研.md》</td></tr>
+  <tr><td>＋</td><td><b>借鉴落地</b>（<a href="https://github.com/">同类项目调研</a>后六项，v0.4.0）</td><td>SKILL.md 措辞级反幻觉规则 + <code>whenToUse</code>；<code>docs/for-agents.md</code>（实测 MCP 面 token 成本，测试锁定）；<code>install-skill</code>；段落章节标注 + <code>ask --section</code>；证据 restricted 标记；MCP prompts 面；方法论吸收（三视角子代理初审、学术裁缝+ABT 故事 → ccb-idea-review / ccb-topic-stitch）——详见《同类项目借鉴调研.md》</td></tr>
 </table>
 
 <div class="box ok">
@@ -825,7 +825,7 @@ python tools/probe_mcp_source.py            <span class="c"># 最小 MCP server�
 </table>
 
 <hr>
-<p class="dim">本文由 <code>ccb contract</code>、<code>ccb topics operators</code>、<code>ccb topics venues --verify</code>、渠道注册表实测输出与源码行号核对生成。数字为实测（286 用例 / 159 venue / 11 算子 / 23 CLI / 16 MCP / 3 MCP prompts）。2026-10-13 更新至 v0.4.0（全量改名 + 大改造 + 借鉴落地）。</p>
+<p class="dim">本文由 <code>ccb contract</code>、<code>ccb topics operators</code>、<code>ccb topics venues --verify</code>、渠道注册表实测输出与源码行号核对生成。数字为实测（286 用例 / 159 venue / 11 算子 / 23 CLI / 16 MCP / 5 MCP prompts）。2026-10-13 更新至 v0.4.0（全量改名 + 大改造 + 借鉴落地）。</p>
 
 </main>
 

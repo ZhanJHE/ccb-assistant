@@ -249,6 +249,26 @@ class TestPromptFace(unittest.TestCase):
         self.assertIn("not-covered", review.template)
         self.assertIn("never fill the gap from memory", review.template)
 
+    def test_the_review_prompt_demands_independence_and_reverification(self):
+        """The anti-hallucination core: sub-agents attack with fresh eyes, but the
+        main session re-verifies every finding before a verdict."""
+        review = next(p for p in ops.PROMPTS if p.name == "ccb-idea-review")
+        self.assertIn("fresh-eyes", review.template)
+        self.assertIn("never spawns further sub-agents", review.template)
+        self.assertIn("they do not judge", review.template)
+        self.assertIn("SPECULATIVE", review.template)
+        self.assertIn("not-found is not does-not-exist", review.template)
+        self.assertIn("CONTRIBUTION TYPE", review.template)
+
+    def test_the_stitch_prompt_demands_honest_stitching(self):
+        """The tailoring methodology with its honesty rules and anchored story."""
+        stitch = next(p for p in ops.PROMPTS if p.name == "ccb-topic-stitch")
+        self.assertIn("80% is normal", stitch.template)
+        self.assertIn("Report everything", stitch.template)
+        self.assertIn("And-But-Therefore", stitch.template)
+        self.assertIn("inventing a conflict is fabrication", stitch.template)
+        self.assertIn("contribution type", stitch.template)
+
 
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()

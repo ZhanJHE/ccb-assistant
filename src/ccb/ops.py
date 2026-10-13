@@ -528,6 +528,104 @@ PROMPTS: tuple[Prompt, ...] = (
             "5. End with an overall verdict and the exact anchors a reader should check."
         ),
     ),
+    Prompt(
+        name="ccb-idea-review",
+        description=(
+            "Adversarial pre-commit review of a topic draft or idea: three fresh-eyes "
+            "sub-agents attack it from reviewer / engineer / cold-water perspectives, "
+            "then every finding is re-verified against the corpus before a verdict. "
+            "Defends against single-session context contamination."
+        ),
+        arguments=(
+            Param(name="draft", required=True,
+                  help="the topic draft or idea text to review"),
+            Param(name="topic_id", required=False,
+                  help="a stored topic id from `ccb topics draft`, if one exists"),
+        ),
+        template=(
+            "Adversarially review this topic draft or idea before any commitment:\n"
+            "\"{draft}\"\n\n"
+            "Run three stages in order; do not merge them.\n\n"
+            "Stage 1 - fresh-eyes sub-review. The point is independence, not speed: "
+            "spawn THREE sub-agents in parallel (at most 4 concurrent; a sub-agent "
+            "never spawns further sub-agents). Each receives the draft text and "
+            "corpus anchors ONLY - never this session's own reasoning. Dispatch "
+            "shape for every sub-agent:\n"
+            "  [task] attack the draft from ONE assigned perspective\n"
+            "  [background] corpus anchors: run `ccb topics show {topic_id}` or "
+            "`ccb ask` first, and paste the anchors\n"
+            "  [boundary] judge only this draft; do not propose your own idea\n"
+            "  [output] verdict (keep / revise / kill) + top 3 findings, each "
+            "quoting the exact draft sentence it attacks\n"
+            "  [forbidden] invented facts, papers or numbers; padding\n"
+            "Perspectives: REVIEWER - is the novelty real? name the most dangerous "
+            "neighbour (a real, citable work) and the exact difference. ENGINEER - "
+            "what is the minimal runnable loop: hardware, data, cost, weeks. COLD "
+            "WATER - which single experiment could kill this outright?\n\n"
+            "Stage 2 - re-verify every finding yourself; the sub-agents advise, they "
+            "do not judge. For each claim check its premise against the corpus first "
+            "(`ccb ask`, `ccb cite`), then adopt, discount or reject it, quoting the "
+            "text you checked. Label any attack you could not verify as SPECULATIVE. "
+            "Novelty checks: not-found is not does-not-exist - say which queries you "
+            "ran.\n\n"
+            "Stage 3 - position with evidence, not vibes. `ccb topics rate {topic_id}` "
+            "(or estimate against `ccb topics venues --verify`) for the CCF band, and "
+            "state the CONTRIBUTION TYPE explicitly: a new failure mode, a relaxed "
+            "assumption, a measurement instrument, a formal result, or a system. "
+            "Adding a module to existing work is the weakest type - its ceiling is "
+            "set by the type, not by how well it is sewn.\n\n"
+            "Final output: one verdict per idea (keep / revise / kill), the ceiling "
+            "estimate with its basis, a kill criterion (one number, frozen now), and "
+            "the idea card's destination - the user's own research notes, not the "
+            "library. Every judgement cites a text you actually read."
+        ),
+    ),
+    Prompt(
+        name="ccb-topic-stitch",
+        description=(
+            "Build a paper candidate by deliberate stitching: pick a base, pool "
+            "modules, then write the And-But-Therefore story from verified gap "
+            "anchors - with the honesty rules that keep stitching publishable "
+            "(report all results, ceiling set by contribution type)."
+        ),
+        arguments=(
+            Param(name="direction", required=True,
+                  help="the research direction, e.g. 'cross-protocol encrypted "
+                       "traffic classification'"),
+        ),
+        template=(
+            "Build a paper candidate for \"{direction}\" by deliberate stitching - "
+            "and be honest about what that is.\n\n"
+            "1. Pick the base: from `ccb topics candidates` and stored records, "
+            "prefer works with available code; note its venue and what it already "
+            "claims.\n"
+            "2. Build the module pool: 8-12 candidate modules from the methods of "
+            "corpus records (attention, contrastive, domain adaptation, feature "
+            "fusion, ...). `ccb topics operators` ranks them by difficulty; a "
+            "homogeneous pool sews fast but reviewers have seen it all.\n"
+            "3. Sew with the honest rule: most combinations fail (80% is normal) and "
+            "a failure is a result, not an embarrassment. When something works only "
+            "under condition X, write the boundary condition - that is a "
+            "contribution, not a confession. Report everything: all seeds, all "
+            "datasets, negative results.\n"
+            "4. Ceiling check BEFORE writing: name the contribution type. If the "
+            "honest answer is 'a module added or a setting swapped', target CCF-C / "
+            "Q2 and write it that way - polishing cannot raise the ceiling; only the "
+            "contribution type can.\n"
+            "5. Story line, And-But-Therefore, every element anchored: And - what "
+            "the corpus already shows (cite `ccb topics gaps` or record anchors). "
+            "But - the conflict, which MUST come from verified gap anchors; "
+            "inventing a conflict is fabrication. Therefore - the contribution, "
+            "phrased as information gain for the reader.\n"
+            "6. Three experiments minimum: head-to-head against the strongest "
+            "baseline, ablation (remove each module), and an instance analysis of "
+            "the boundary condition.\n\n"
+            "Deliverable: a one-page candidate with the claim, the ABT story, the "
+            "experiment grid, the cost estimate and the frozen kill criterion. The "
+            "idea card goes to the user's research notes; the evidence stays in the "
+            "library."
+        ),
+    ),
 )
 
 
