@@ -54,6 +54,12 @@ _MIN_TERM_CHARS = 3
 _SHORT_ALLOWED = frozenset({"ai", "ml", "nlp", "ir", "db", "os", "se", "cv", "rl", "gnn"})
 
 
+# Words whose trailing "ies" is not a plural. Folding them invents a term that appears in
+# no paper ("series" -> "sery", "species" -> "specy"), and a concept nothing can match is
+# worse than an unfolded plural.
+_IES_EXCEPTIONS = frozenset({"series", "species", "superficies", "rabies"})
+
+
 def _singular(word: str) -> str:
     """A conservative plural fold that keeps a term readable."""
     w = word.casefold()
@@ -61,7 +67,7 @@ def _singular(word: str) -> str:
         return w
     if w.endswith(("ss", "us", "is", "ics", "as", "os")):
         return w
-    if w.endswith("ies") and len(w) > 4:
+    if w.endswith("ies") and len(w) > 4 and w not in _IES_EXCEPTIONS:
         return w[:-3] + "y"
     if w.endswith("s") and not w.endswith(("ses", "xes", "zes", "ches", "shes")):
         return w[:-1]
@@ -100,9 +106,17 @@ def extract_terms(text: str, *, max_n: int = 2) -> set[str]:
 
 
 def document_terms(*parts: str, max_n: int = 2) -> set[str]:
-    """Terms for one document, pooled over its title, abstract and so on."""
-    pooled = " . ".join(p for p in parts if p)
-    return extract_terms(pooled, max_n=max_n)
+    """Terms for one document, pooled over its title, abstract and so on.
+
+    Pooled per part and unioned. Joining the parts into one string made the last word of
+    the title adjacent to the first word of the abstract, so a document invented a
+    phrase ("molecule molecular") that no reader could ever find in it.
+    """
+    out: set[str] = set()
+    for part in parts:
+        if part:
+            out |= extract_terms(part, max_n=max_n)
+    return out
 
 
 def term_frequencies(

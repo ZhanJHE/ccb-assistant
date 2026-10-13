@@ -395,9 +395,10 @@ OPERATIONS: tuple[Operation, ...] = (
 )
 
 
-BY_NAME: dict[str, Operation] = {op.name: op for op in OPERATIONS if not op.group}
-BY_PATH: dict[str, Operation] = {op.path: op for op in OPERATIONS}
+# The MCP face, keyed by tool name: what `tools/call` is allowed to dispatch, so a name
+# that was never advertised cannot reach a handler by accident.
 BY_MCP: dict[str, Operation] = {op.mcp: op for op in OPERATIONS if op.mcp}
+BY_PATH: dict[str, Operation] = {op.path: op for op in OPERATIONS}
 
 # The parent subcommands: what they are called, and the attribute their handler reads.
 GROUP_INFO: dict[str, dict[str, str]] = {
@@ -650,13 +651,14 @@ PROMPTS: tuple[Prompt, ...] = (
 # emits a key outside the declaration, and never misses one on success.
 PAYLOAD_KEYS: dict[str, tuple[str, ...]] = {
     # -- library ------------------------------------------------------------ #
-    "channels": ("channels", "credential_guidance", "credentials_missing",
-                 "credentials_present", "note", "unavailable", "usable"),
+    "channels": ("channel", "channels", "credential_guidance", "credentials_missing",
+                 "credentials_present", "credentials_without_channel",
+                 "credentials_without_channel_note", "note", "unavailable", "usable"),
     "contract": ("invariants", "modules", "output", "payload_shapes", "purpose",
                  "routing", "tool", "workflows"),
     "doctor": ("channels_unavailable", "channels_usable", "checked_at", "extractors",
-               "index_ok", "library_root", "meta", "problems", "repaired",
-               "works_on_disk"),
+               "index_ok", "legacy_libraries", "library_root", "meta", "problems",
+               "repaired", "works_on_disk"),
     "repair": ("checked_at", "dry_run", "failed", "index_ok", "library_root",
                "problems", "reidentified", "repaired", "sample", "works_checked",
                "works_indexed", "works_on_disk"),
@@ -666,15 +668,16 @@ PAYLOAD_KEYS: dict[str, tuple[str, ...]] = {
     "get": ("actions", "errors", "message", "ok", "record", "source", "warnings",
             "work_id"),
     "ask": ("corpus", "grounded", "hits", "message", "note", "outcome", "query",
-            "skipped"),
+            "section", "skipped"),
     "index": ("count", "indexed", "skipped"),
     "cite": ("citation", "format", "note", "provenance", "unavailable_fields",
              "work_id"),
     "open": ("chars", "text", "title", "total_chars", "truncated", "work_id"),
-    "show": ("arxiv_id", "authors", "check_status", "claim_conflicts", "conflicts",
-             "doi", "field_sources", "has_fulltext", "has_pdf", "ids",
-             "manifestations", "manifestations_detail", "openreview_id", "pdf_path",
-             "title", "venue", "work_id", "year"),
+    "show": ("aliases", "arxiv_id", "authors", "check_notes", "check_status",
+             "claim_conflicts", "claims", "conflicts", "created_at", "doi",
+             "field_sources", "has_fulltext", "has_pdf", "ids", "manifestations",
+             "manifestations_detail", "matched_key", "openreview_id", "pdf_path",
+             "schema", "title", "updated_at", "venue", "work_id", "year"),
     "search-local": ("count", "hits", "query"),
     "library stats": ("evidence_snapshots", "index_present", "ledger_archived",
                       "ledger_events", "pdf_bytes", "pdf_mb", "pending_merges", "root",
@@ -688,20 +691,22 @@ PAYLOAD_KEYS: dict[str, tuple[str, ...]] = {
     "library merges": ("pending",),
     "check": ("at", "changed", "checked", "errors", "unchanged", "unverifiable"),
     "check-files": ("checked", "mismatch", "missing", "ok", "orphans"),
-    "export": ("entries", "format", "text"),
+    "export": ("entries", "format", "not_found", "path", "text"),
     "add-file": ("action", "bytes", "extraction", "merge_candidates", "sha256",
                  "stored_path", "work_id"),
     "extract": ("chars", "engine", "error", "ok", "pages", "pages_indexed",
                 "passages", "stored_path", "warnings", "work_id"),
-    "merge": ("drop", "fields", "keep", "merged"),
-    "evidence": ("count", "ids"),
-    "ledger": ("count", "events"),
+    "merge": ("drop", "fields", "keep", "merged", "reason"),
+    "evidence": ("count", "ev_id", "ids", "render"),
+    "ledger": ("archive", "archived", "compact", "compacted", "count", "events", "kept",
+               "reason"),
     "reindex": ("works",),
     "install-skill": ("files", "installed", "note"),
     # -- topics ------------------------------------------------------------- #
-    "topics survey": ("catalog", "ccf", "corpus", "found_via", "message", "notes",
-                      "query", "sufficient", "survey_id", "terms", "thresholds",
-                      "top_authors", "venues", "window", "works", "years"),
+    "topics survey": ("added", "catalog", "ccf", "channels_queried", "corpus", "errors",
+                      "found_via", "indexed", "message", "notes", "query", "sufficient",
+                      "survey_id", "terms", "thresholds", "top_authors", "venues",
+                      "warnings", "window", "works", "years"),
     "topics gaps": ("coverage", "declared_gaps", "error", "gap_kinds", "message",
                     "query", "sparse_pairs", "survey_id", "usable"),
     "topics candidates": ("candidates", "error", "excluded_as_mined", "generated",
@@ -710,19 +715,21 @@ PAYLOAD_KEYS: dict[str, tuple[str, ...]] = {
     "topics draft": ("candidate_id", "context", "corpus", "created_at", "dedup_keys",
                      "error", "evidence", "message", "next_steps", "operator",
                      "problem", "query", "references", "score", "score_basis",
-                     "sections", "status", "survey_id", "title_hint", "topic_id"),
+                     "score_scope", "sections", "status", "survey_id", "title_hint",
+                     "topic_id"),
     "topics rate": ("basis", "computed_at", "confidence", "disclaimer",
                     "error", "estimated_ccf", "message", "risks", "steps_down",
                     "target_venue", "target_venue_ccf", "topic_id", "upper_bound"),
     "topics save": ("error", "markdown", "markdown_path", "message", "topic_id",
                     "warnings"),
     "topics list": ("count", "mined_keys", "note", "topics"),
-    "topics show": ("candidate_id", "context", "corpus", "created_at", "dedup_keys",
-                    "error", "evidence", "markdown_path", "message", "next_steps",
-                    "operator", "problem", "query", "references", "score",
-                    "score_basis", "sections", "status", "survey_id", "title_hint",
-                    "topic_id"),
-    "topics venues": ("catalog", "count", "note", "query", "venues"),
+    "topics show": ("candidate_id", "committed_at", "context", "corpus", "created_at",
+                    "dedup_keys", "error", "evidence", "markdown", "markdown_path",
+                    "message", "next_steps", "operator", "problem", "query", "rating",
+                    "references", "score", "score_basis", "score_scope", "sections",
+                    "status", "survey_id", "title_hint", "topic_id", "updated_at"),
+    "topics venues": ("by_kind", "by_rank", "catalog", "count", "duplicates", "fields",
+                      "note", "ok", "problems", "query", "source", "venues"),
     "topics operators": ("difficulty_scale", "novelty_types", "operators"),
 }
 

@@ -35,7 +35,6 @@ from .util import (
 _DOI_RE = re.compile(r"10\.\d{4,9}/[^\s\"<>]+", re.IGNORECASE)
 _ARXIV_MODERN_RE = re.compile(r"\b(\d{4}\.\d{4,5})(v\d+)?\b")
 _ARXIV_LEGACY_RE = re.compile(r"\b([a-z-]+(?:\.[A-Z]{2})?/\d{7})(v\d+)?\b")
-_OPENREVIEW_RE = re.compile(r"\b([A-Za-z0-9_\-]{3,})\b")
 _PMID_RE = re.compile(r"\b(?:pmid:)?(\d{7,9})\b", re.IGNORECASE)
 
 

@@ -20,7 +20,7 @@ dependencies = []
 pdf = ["pdfplumber>=0.11", "pypdf>=4.0"]
 # Only needed for YAML channel declaration files.
 yaml = ["PyYAML>=6.0"]
-dev = ["pytest>=8.0", "ruff>=0.17"]
+dev = ["ruff>=0.17"]
 
 [project.scripts]
 ccb = "ccb.cli:main"

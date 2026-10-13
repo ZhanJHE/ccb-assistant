@@ -18,10 +18,9 @@ from __future__ import annotations
 import hashlib
 import json
 import sqlite3
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from ..core.files import read_json, write_json_atomic
+from ..core.files import read_json
 from ..core.util import utc_now
 
 if TYPE_CHECKING:  # avoid a hard import cycle; Library owns the records
@@ -548,7 +547,3 @@ def _fts_query(query: str) -> str:
     if not tokens:
         return '""'
     return " OR ".join(f'"{t}"*' for t in tokens[:12])
-
-
-def write_meta(meta_path: Path, meta: dict[str, Any]) -> None:
-    write_json_atomic(meta_path, meta)

@@ -343,11 +343,27 @@ class TestPayloadShapes(_LibraryFixture):
     """
 
     # Ops whose shape varies between clean and partial/error outcomes; the fixture run
-    # asserts the subset rule only. `repair` joins them because its declaration is a
-    # union over its branches: a plain rebuild omits the --reidentify keys by design.
-    # `find` is a union too: `errors`/`warnings`/`merge_candidates`/`stopped_early` only
-    # appear when a channel failed, flagged a match, or the fan-out was capped.
-    VARIABLE = {("get",), ("find",), ("topics", "survey"), ("repair",)}
+    # asserts the subset rule only. A union declaration (a branch that adds keys) cannot
+    # be equality-checked, so every op with a branch shape is listed here.
+    VARIABLE = {
+        ("ask",), ("channels",), ("doctor",), ("evidence",), ("export",), ("find",),
+        ("get",), ("ledger",), ("merge",), ("repair",), ("show",),
+        ("topics", "survey"), ("topics", "venues"),
+    }
+
+    # One extra argv per branch whose payload differs from the canonical run. Held to the
+    # subset rule, never to equality: the point is that no branch may invent a key the
+    # contract does not promise.
+    BRANCH_ARGS: dict[tuple[str, ...], list[list[str]]] = {
+        ("ask",): [["planter offload", "--section", "introduction"]],
+        ("channels",): [["arxiv"]],
+        ("evidence",): [["--id", "ev_not_a_real_id"]],
+        ("export",): [["--ids", "doi:10.1000/cli.1"]],
+        ("ledger",): [["--compact", "2"]],
+        ("merge",): [["doi:10.1000/cli.1", "doi:10.1000/cli.1"]],
+        ("show",): [["doi:10.1000/cli.1", "--raw"]],
+        ("topics", "venues"): [["--verify"]],
+    }
 
     ARGS: dict[tuple[str, ...], list[str]] = {
         ("find",): ["planter"],
@@ -444,6 +460,25 @@ class TestPayloadShapes(_LibraryFixture):
                         actual <= declared,
                         f"{path}: undeclared keys {sorted(actual - declared)}",
                     )
+                # Branch coverage: the canonical argv exercises one shape per operation,
+                # so an undeclared key on any other branch went unnoticed — which is how
+                # `channels <name>`, `show --raw` and the whole `topics survey` top-up
+                # drifted out of the contract. Each branch is run and held to the subset
+                # rule (equality is impossible for a union declaration by construction).
+                for extra in self.BRANCH_ARGS.get(tuple(path.split()), []):
+                    with self.subTest(command=f"{joined} {' '.join(extra)}"):
+                        bcode, bout, berr = self.run_cli(
+                            ["--offline", *path.split(), *extra]
+                        )
+                        self.assertNotIn("Traceback", berr)
+                        if not bout.strip():
+                            continue
+                        bactual = set(json.loads(bout).keys())
+                        self.assertTrue(
+                            bactual <= declared,
+                            f"{path} {' '.join(extra)}: undeclared keys "
+                            f"{sorted(bactual - declared)}",
+                        )
 
 
 if __name__ == "__main__":  # pragma: no cover

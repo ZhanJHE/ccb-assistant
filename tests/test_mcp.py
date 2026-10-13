@@ -115,8 +115,20 @@ class TestMcpProtocol(unittest.TestCase):
         self.assertEqual(resp["error"]["code"], METHOD_NOT_FOUND)
 
     def test_unknown_tool_is_an_error(self):
+        # The *method* (`tools/call`) exists; the tool name is a parameter, so an unknown
+        # one is an invalid parameter — the code the reference MCP SDK returns, and the
+        # one that tells a caller "resend with a listed name" rather than "no such method".
         err = _call(self.server, 4, "ccb_nonexistent", {})
-        self.assertEqual(err["code"], METHOD_NOT_FOUND)
+        self.assertEqual(err["code"], INVALID_PARAMS)
+
+    def test_a_tool_name_that_was_never_advertised_is_rejected(self):
+        """`tools/list` is the contract; dispatch must not accept more than it lists."""
+        listed = {t["name"] for t in tool_definitions()}
+        self.assertIn("ccb_contract", listed)
+        for name in ("contract", "ccb_contract_extra", "ccb_"):
+            with self.subTest(name=name):
+                err = _call(self.server, 9, name, {})
+                self.assertEqual(err["code"], INVALID_PARAMS)
 
     def test_missing_required_parameter_is_rejected_clearly(self):
         err = _call(self.server, 5, "ccb_get", {})

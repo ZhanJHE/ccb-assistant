@@ -232,14 +232,12 @@ def extract_text(
             fixed = _sentence_break_heuristic(text)
             fixed_q = assess_text_quality(fixed)
             if fixed_q.score > quality.score:
-                # Prefer a repaired version only if it actually measures better than
-                # every clean candidate on this page.
-                best_clean = max(c[2].score for c in candidates)
+                # Entry required `fixed_q.score > quality.score`, and `quality` was the best
+                # candidate, so a repaired page is by construction better than every clean
+                # one — the `if quality.score < best_clean` that used to sit here was dead.
                 text, quality = fixed, fixed_q
                 chosen_labels["space-repair"] = chosen_labels.get("space-repair", 0) + 1
                 repaired_pages += 1
-                if quality.score < best_clean:
-                    jammed_pages += 1
             else:
                 jammed_pages += 1
         else:
@@ -298,17 +296,6 @@ def _run_strategy(engine: str, variant: str, p: Path, *, max_pages: int) -> Extr
     if engine == "fitz":
         return _via_fitz(p, max_pages=max_pages, blocks=variant == "-blocks")
     raise ValueError(f"unknown engine {engine!r}")
-
-
-def _assess(text: str, pages: int, engine: str) -> Extraction:
-    warnings: list[str] = []
-    stripped = text.strip()
-    if stripped and len(stripped) < MIN_PLAUSIBLE_CHARS:
-        warnings.append(
-            "extracted text is suspiciously short; the PDF may be image-only or "
-            "mostly figures"
-        )
-    return Extraction(text, engine, pages=pages, warnings=tuple(warnings))
 
 
 def _via_pdfplumber(p: Path, *, max_pages: int = 0, layout: bool = False) -> Extraction:

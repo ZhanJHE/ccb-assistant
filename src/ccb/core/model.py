@@ -343,7 +343,7 @@ class WorkRecord:
         return any(m.fulltext_path for m in self.manifestations)
 
     def has_pdf(self) -> bool:
-        return any(m.pdf_path for m in self.manifests_with_pdf())
+        return bool(self.manifests_with_pdf())
 
     def manifests_with_pdf(self) -> list[Manifestation]:
         return [m for m in self.manifestations if m.pdf_path]

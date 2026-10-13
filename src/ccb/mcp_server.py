@@ -188,8 +188,14 @@ class McpServer:
                 work_id=work.work_id,
                 has_pdf=work.has_pdf(),
             )
-        head = int(args.get("head") or 20000)
         total = len(text)
+        # `head` defaults to 20000 here because an MCP result travels into a context
+        # window; 0 means "the whole text", exactly as the CLI's `--head 0` does. `or
+        # 20000` made an explicit 0 unreachable.
+        head_arg = args.get("head")
+        head = int(head_arg) if head_arg is not None else 20000
+        if head <= 0:
+            head = total
         return {
             "work_id": work.work_id,
             "title": work.title(),
@@ -211,9 +217,12 @@ class McpServer:
         elif fmt in ("csl", "json"):
             rendered = json.dumps(to_csl_json(work), ensure_ascii=False, indent=2)
         else:
-            from .library.cite import _plain
-
-            rendered = _plain(work)
+            # Same answer as the CLI, which exits 2 on an unsupported format: silently
+            # rendering plain text instead made the two faces disagree about one input.
+            raise McpToolError(
+                f"unsupported citation format {fmt!r}; use bibtex, ris or csl",
+                INVALID_PARAMS,
+            )
         return {
             "work_id": work.work_id,
             "format": fmt,
@@ -342,11 +351,16 @@ class McpServer:
         )
 
     def call_tool(self, name: str, args: dict[str, Any] | None) -> dict[str, Any]:
+        # Validated against the declared MCP face. `getattr` alone accepted any name that
+        # happened to match a `_tool_*` method — including the CLI spelling, which
+        # `tools/list` never advertises.
+        if name not in ops.BY_MCP:
+            raise McpToolError(f"unknown tool {name!r}", INVALID_PARAMS)
         handler: Callable[[dict[str, Any]], dict[str, Any]] | None = getattr(
-            self, f"_tool_{name.removeprefix('ccb_')}", None
+            self, f"_tool_{ops.BY_MCP[name].mcp_handler}", None
         )
         if handler is None:
-            raise McpToolError(f"unknown tool {name!r}", METHOD_NOT_FOUND)
+            raise McpToolError(f"tool {name!r} is declared but not implemented", INTERNAL_ERROR)
         return handler(args or {})
 
     def close(self) -> None:

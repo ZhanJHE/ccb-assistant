@@ -43,7 +43,7 @@ from ..core.model import (
     merge_identifiers,
 )
 from .index import WORK_FILE_GLOB, WorkIndex
-from .ledger import LEDGER_ARCHIVE_NAME, Ledger  # noqa: F401  (re-export)
+from .ledger import Ledger
 from .dedup import DedupEngine
 from .fulltext import FulltextStore
 from ..core.files import (

@@ -48,6 +48,24 @@ class TestForAgentsDoc(unittest.TestCase):
         self.assertIn("ccb-mcp.py", text)
         self.assertIn("contract", text)
 
+    def test_the_skill_body_stays_under_the_pruner_threshold(self):
+        """DSH trims a `skill` tool result above 8192 *rendered* characters.
+
+        Rendered means the YAML frontmatter is sliced off (that is what the loader does),
+        so that is what is measured here. The margin is deliberately small — the point is
+        that going over fails in this test rather than silently losing the tail of the
+        instructions an agent is supposed to follow.
+        """
+        raw = (ROOT / ".dsh" / "skills" / "ccb" / "SKILL.md").read_text(encoding="utf-8")
+        rendered = re.sub(r"^---\r?\n.*?\r?\n---(?:\r?\n|$)", "", raw, count=1,
+                          flags=re.S).strip()
+        self.assertTrue(rendered.startswith("#"), "the body should start with a heading")
+        self.assertLess(
+            len(rendered), 8192,
+            "the skill body is over the 8192-character pruner threshold — move bulk "
+            "content into references/",
+        )
+
 
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()
