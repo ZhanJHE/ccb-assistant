@@ -380,13 +380,6 @@ class TestLibrary(unittest.TestCase):
         stats = self.lib.stats()
         self.assertGreater(stats.get("ledger_archived", 0), 0)
 
-    def test_content_addressed_storage_dedupes_bytes(self):
-        d1, p1, n1 = self.lib.store_file(b"%PDF-1.4 same", ext="pdf")
-        d2, p2, n2 = self.lib.store_file(b"%PDF-1.4 same", ext="pdf")
-        self.assertEqual(d1, d2)
-        self.assertEqual(p1, p2)
-        self.assertEqual(n1, n2)
-
     def test_stats_and_all_work_ids_see_sharded_files(self):
         # Regression: a one-level glob reported an empty library for a two-level shard.
         self.lib.upsert_record(self._rec())
@@ -399,6 +392,7 @@ class TestLibrary(unittest.TestCase):
         )
         stored = self.lib.evidence.get(ev.ev_id)
         self.assertNotIn("SECRET", json.dumps(stored.as_dict()))
+
 
 
 class TestCitations(unittest.TestCase):
@@ -457,6 +451,110 @@ class TestDedupKeys(unittest.TestCase):
         k = compute_dedup_keys(title="T", doi="https://doi.org/10.1000/AbC", arxiv="1706.03762v5")
         self.assertEqual(k.doi, "10.1000/abc")
         self.assertEqual(k.arxiv, "1706.03762")
+
+
+
+class TestExtrasCarryThrough(unittest.TestCase):
+    """ChannelRecord.extras used to be silently dropped in to_work() — found during
+    the 论文学习 migration, where 775 user annotations vanished on ingest."""
+
+    def setUp(self):
+        import tempfile
+
+        from ccb.core.model import ChannelRecord
+        from ccb.library import Library
+
+        self._ChannelRecord = ChannelRecord
+        self.tmp = Path(tempfile.mkdtemp(prefix="ccb-extras-"))
+        self.lib = Library(self.tmp / "p")
+        self.lib.ensure()
+
+    def tearDown(self):
+        self.lib.close()
+        import shutil
+
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _rec(self, doi: str, title: str = "An Extras Survivor", **kw):
+        rec = self._ChannelRecord(
+            channel="manual", title=title, authors=["A One"], year=2020, doi=doi
+        )
+        for k, v in kw.items():
+            rec.extras[k] = v
+        return rec
+
+    def test_extras_survive_ingest_and_round_trip(self):
+        res = self.lib.upsert_record(
+            self._rec("10.1000/ext.1", user_note="the boundary is the contribution")
+        )
+        w = self.lib.load(res.work_id)
+        self.assertEqual(w.extras.get("user_note"), "the boundary is the contribution")
+        # And the on-disk JSON carries it (the round trip through as_dict/from_dict).
+        again = self.lib.load(res.work_id, use_cache=False)
+        self.assertEqual(again.extras.get("user_note"), "the boundary is the contribution")
+
+    def test_absorb_merges_extras_last_writer_wins(self):
+        res = self.lib.upsert_record(self._rec("10.1000/ext.2", user_note="v1"))
+        self.lib.upsert_record(self._rec("10.1000/ext.2", user_note="v2"))
+        self.assertEqual(self.lib.load(res.work_id).extras.get("user_note"), "v2")
+        # A later record without the key must not clobber what is there.
+        self.lib.upsert_record(self._rec("10.1000/ext.2", title="An Extras Survivor"))
+        self.assertEqual(self.lib.load(res.work_id).extras.get("user_note"), "v2")
+
+    def test_user_note_is_searchable(self):
+        self.lib.upsert_record(
+            self._rec("10.1000/ext.3", user_note="qzxwv boundary condition qzxwv")
+        )
+        hits = self.lib.search("qzxwv")
+        self.assertTrue(any(h["work_id"].startswith("w-") or h["work_id"] for h in hits),
+                        "the note must be retrievable through the index")
+
+    def test_cjk_note_is_searchable_by_substring(self):
+        """The default FTS5 tokenizer treats a run of CJK as one opaque token, so a
+        Chinese query could never match — 770 migrated notes were invisible. The
+        trigram tokenizer makes substring queries work."""
+        self.lib.upsert_record(
+            self._rec("10.1000/ext.5", user_note="故事线：现有方案同分布刷分，跨协议域崩（冲突素材已核实）")
+        )
+        hits = self.lib.search("跨协议域崩")
+        self.assertTrue(hits, "a CJK note must be findable by a CJK substring")
+
+    def test_two_char_cjk_query_falls_back_to_scan(self):
+        """Trigram needs ≥3 characters; a 2-char CJK query must still find the note
+        via the LIKE fallback instead of returning a false miss."""
+        self.lib.upsert_record(self._rec("10.1000/ext.6", user_note="需求整形削峰填谷"))
+        self.assertEqual(len(self.lib.search("削峰")), 1)
+
+    def test_old_index_shape_upgrades_itself(self):
+        """An index file from before the note column exists must rebuild, not break."""
+        self.lib.upsert_record(
+            self._rec("10.1000/ext.4", user_note="upgrademark qplkm")
+        )
+        # Demote the index to the pre-note shape, exactly like an old library's file.
+        conn = self.lib._index.connect()
+        conn.execute("DROP TABLE works_fts")
+        conn.execute(
+            "CREATE VIRTUAL TABLE works_fts USING fts5("
+            " work_id UNINDEXED, title, abstract, authors, venue)"
+        )
+        conn.commit()
+        conn.close()
+
+        from ccb.library import Library
+
+        reopened = Library(self.tmp / "p")
+        try:
+            hits = reopened.search("qplkm")
+            self.assertTrue(hits, "the upgrade path must rebuild the FTS table")
+        finally:
+            reopened.close()
+
+    def test_content_addressed_storage_dedupes_bytes(self):
+        d1, p1, n1 = self.lib.store_file(b"%PDF-1.4 same", ext="pdf")
+        d2, p2, n2 = self.lib.store_file(b"%PDF-1.4 same", ext="pdf")
+        self.assertEqual(d1, d2)
+        self.assertEqual(p1, p2)
+        self.assertEqual(n1, n2)
 
 
 if __name__ == "__main__":

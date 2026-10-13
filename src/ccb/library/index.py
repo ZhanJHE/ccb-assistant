@@ -42,6 +42,7 @@ class WorkIndex:
         # The consistency check runs at most once per process: it costs an O(n) stat
         # walk, which is fine before the first query of a command and wasteful after.
         self._checked = False
+        self._fts_needs_rebuild = False
 
     # ------------------------------------------------------------------ #
     # Connection and schema
@@ -90,8 +91,31 @@ class WorkIndex:
         )
         conn.execute(
             "CREATE VIRTUAL TABLE IF NOT EXISTS works_fts USING fts5("
-            " work_id UNINDEXED, title, abstract, authors, venue)"
+            " work_id UNINDEXED, title, abstract, authors, venue, note,"
+            " tokenize = 'trigram')"
         )
+        # An index file built before `note` (or before the trigram tokenizer) has an
+        # incompatible shape: without trigram, CJK text is one opaque token per run and
+        # Chinese queries can never match. The table is derived, so drop, recreate, and
+        # let the rebuild below repopulate it.
+        sql = (
+            conn.execute(
+                "SELECT sql FROM sqlite_master WHERE name = 'works_fts'"
+            ).fetchone()[0]
+            if conn.execute(
+                "SELECT 1 FROM sqlite_master WHERE name = 'works_fts'"
+            ).fetchone()
+            else ""
+        )
+        cols = {row[1] for row in conn.execute("PRAGMA table_info(works_fts)")}
+        if sql and ("note" not in cols or "trigram" not in sql):
+            conn.execute("DROP TABLE works_fts")
+            conn.execute(
+                "CREATE VIRTUAL TABLE works_fts USING fts5("
+                " work_id UNINDEXED, title, abstract, authors, venue, note,"
+                " tokenize = 'trigram')"
+            )
+            self._fts_needs_rebuild = True
         conn.commit()
 
     def _ensure(self) -> None:
@@ -105,6 +129,10 @@ class WorkIndex:
                 # plain CREATE-IF-NOT-EXISTS path so queries still work.
                 pass
         self.ensure_schema()
+        if self._fts_needs_rebuild:
+            # The FTS shape was upgraded under an old index file: repopulate once.
+            self._fts_needs_rebuild = False
+            self.reindex()
 
     # ------------------------------------------------------------------ #
     # Consistency: detect drift, repair what is safe
@@ -304,8 +332,16 @@ class WorkIndex:
             )
         conn.execute("DELETE FROM works_fts WHERE work_id = ?", (work.work_id,))
         conn.execute(
-            "INSERT INTO works_fts (work_id,title,abstract,authors,venue) VALUES (?,?,?,?,?)",
-            (work.work_id, work.title(), work.abstract(), " ".join(work.authors()), work.venue()),
+            "INSERT INTO works_fts (work_id,title,abstract,authors,venue,note)"
+            " VALUES (?,?,?,?,?,?)",
+            (
+                work.work_id,
+                work.title(),
+                work.abstract(),
+                " ".join(work.authors()),
+                work.venue(),
+                str(work.extras.get("user_note", "")),
+            ),
         )
         if commit:
             conn.commit()

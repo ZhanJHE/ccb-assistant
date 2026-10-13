@@ -276,6 +276,10 @@ class WorkRecord:
     check_status: str = ""  # "", "ok", "changed", "retracted", "gone"
     check_notes: str = ""
     schema: int = SCHEMA_VERSION
+    # Auxiliary, non-bibliographic data attached by a channel (user annotations,
+    # migration bookkeeping). Deliberately NOT claims: these have no field-level
+    # provenance and no conflict semantics - the newest value simply wins.
+    extras: dict[str, Any] = field(default_factory=dict)
 
     # ---------------- identity ---------------- #
 
@@ -409,6 +413,8 @@ class WorkRecord:
             out["check_status"] = self.check_status
         if self.check_notes:
             out["check_notes"] = self.check_notes
+        if self.extras:
+            out["extras"] = dict(sorted(self.extras.items()))
         return out
 
     @staticmethod
@@ -425,6 +431,7 @@ class WorkRecord:
         w.checked_at = d.get("checked_at", "")
         w.check_status = d.get("check_status", "")
         w.check_notes = d.get("check_notes", "")
+        w.extras = dict(d.get("extras") or {})
         for fname, clist in (d.get("claims") or {}).items():
             w.claims[fname] = [Claim.from_dict(c) for c in clist]
         w.manifestations = [Manifestation.from_dict(m) for m in d.get("manifestations", [])]
@@ -546,6 +553,9 @@ class ChannelRecord:
             if value in (None, "", []):
                 continue
             add_claim(w.claims, fname, value, src=self.channel, ev=self.ev)
+        # Auxiliary data rides along; dropping it here would silently discard user
+        # annotations on every ingest (found the hard way during the migration).
+        w.extras.update(self.extras)
         m = Manifestation(
             mid=compute_manifestation_id(
                 work_id=work_id,

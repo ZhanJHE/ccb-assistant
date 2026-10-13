@@ -23,6 +23,7 @@ from __future__ import annotations
 import functools
 import json
 import os
+import re
 import sqlite3
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -555,6 +556,13 @@ class Library:
                     added.append(fname)
         for m in incoming.manifestations:
             target.add_manifestation(m)
+        # Auxiliary (non-bibliographic) data: last writer wins per key. These are not
+        # claims - no provenance, no conflict semantics - so an update simply replaces.
+        for k, v in incoming.extras.items():
+            if v in (None, "", []) or target.extras.get(k) == v:
+                continue
+            target.extras[k] = v
+            added.append(f"extras.{k}")
         before = dict(target.ids)
         merge_identifiers(target, incoming.keys)
         id_changes = [k for k, v in target.ids.items() if before.get(k) != v]
@@ -801,7 +809,7 @@ class Library:
     ) -> list[dict[str, Any]]:
         """Search the local corpus. Falls back to a scan if the FTS index is unusable."""
         try:
-            return self._index.query(
+            rows = self._index.query(
                 query,
                 year_from=year_from,
                 year_to=year_to,
@@ -813,6 +821,12 @@ class Library:
         except sqlite3.OperationalError:
             # An unusable FTS table must not fail the query outright.
             return self._search_like(query, limit, year_from, year_to, venue, author, has_pdf)
+        if not rows and re.search(r"[\u4e00-\u9fff]{1,2}", query or ""):
+            # Trigram FTS cannot match CJK runs shorter than three characters (they
+            # carry no trigram). The LIKE scan can — pay for it only when a short CJK
+            # token is present and the index came back empty.
+            return self._search_like(query, limit, year_from, year_to, venue, author, has_pdf)
+        return rows
 
     def _search_like(
         self,
@@ -827,7 +841,10 @@ class Library:
         needle = query.casefold()
         out: list[dict[str, Any]] = []
         for w in self.iter_works():
-            if needle and needle not in (w.title() + " " + w.abstract()).casefold():
+            haystack = (
+                w.title() + " " + w.abstract() + " " + str(w.extras.get("user_note", ""))
+            ).casefold()
+            if needle and needle not in haystack:
                 continue
             if year_from is not None and (w.year() or 0) < year_from:
                 continue
