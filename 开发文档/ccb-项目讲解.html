@@ -117,7 +117,7 @@
 <nav id="side">
   <div class="brand">
     <h1>ccb — 项目讲解</h1>
-    <p>v0.2.0 · Python ≥3.10 · 零必需依赖 · 218 tests</p>
+    <p>v0.3.0 · Python ≥3.10 · 零必需依赖 · 263 tests · 曾用名 lit（0.3.0 起全量改名，不留兼容层）</p>
   </div>
   <input id="filter" type="search" placeholder="过滤章节…" autocomplete="off">
   <div id="tabs" role="tablist">
@@ -181,7 +181,8 @@
 
   <div class="group" id="g5">
     <h2>质量</h2>
-    <a href="#q-tests">测试矩阵（218）</a>
+    <a href="#q-tests">测试矩阵（263）</a>
+    <a href="#q-refactor">2026-10 大改造</a>
     <a href="#q-inv">不变量（14）</a>
     <a href="#q-no">刻意不做的事</a>
     <a href="#q-gap">已知缺口</a>
@@ -235,7 +236,7 @@ python ccb.py topics rate &lt;topic_id&gt; --venue NeurIPS
 python ccb.py topics save &lt;topic_id&gt;
 </pre>
 
-<p class="dim">全局 flag（<code>--pretty</code>/<code>--library</code>/<code>--offline</code>）必须写在<b>子命令之前</b>：<code>python ccb.py --pretty doctor</code> ✅ / <code>python ccb.py doctor --pretty</code> ❌。</p>
+<p class="dim">全局 flag（<code>--pretty</code>/<code>--library</code>/<code>--offline</code>）写在子命令<b>前后皆可</b>：<code>python ccb.py --pretty doctor</code> 与 <code>python ccb.py doctor --pretty</code> 等价。<code>export</code> 例外：默认输出 JSON，<code>--raw</code> 才输出引用原文（供重定向）。</p>
 
 <h2 class="sec" id="s-stack">技术栈与硬约束</h2>
 
@@ -254,25 +255,29 @@ python ccb.py topics save &lt;topic_id&gt;
 <pre>ccb-assistant/
 ├─ ccb.py                <span class="c">CLI 入口（免安装，注入 src/ 到 sys.path）</span>
 ├─ ccb-mcp.py            <span class="c">MCP 入口（stdio JSON-RPC，手写无 SDK）</span>
-├─ pyproject.toml        <span class="c">console_scripts: ccb / ccb-mcp（可选安装）</span>
+├─ AGENTS.md             <span class="c">Agent 开局路由：模式分流 + 禁止项 + 能力裁决（自动注入）</span>
+├─ pyproject.toml        <span class="c">console_scripts: ccb / ccb-mcp；版本从包内读取</span>
 ├─ src/ccb/
-│  ├─ core/              <span class="c">底座：模型、身份、规范化、抽取、路径</span>
+│  ├─ core/              <span class="c">底座：ids/model/util（纯）+ files/extract/paths（IO）</span>
 │  ├─ library/           <span class="c">持久语料：记录、快照、派生索引、检索、引用</span>
 │  ├─ search/            <span class="c">获取：渠道注册表 + 本地优先协议</span>
 │  ├─ topics/            <span class="c">选题：测绘、缺口、算子、打分、评级</span>
-│  ├─ cli.py  mcp_server.py  contract.py
-│  └─ {model,ids,util,extract,evidence,passages,cite,net,resolver,workindex}.py
-│                        <span class="c">过渡期 shim：旧导入路径的 sys.modules 别名</span>
+│  ├─ ops.py             <span class="c">★ 操作表：三面（CLI/MCP/契约）都从这里派生</span>
+│  ├─ cli/               <span class="c">CLI 包：_context / _handlers / _parser / _render</span>
+│  ├─ mcp_server.py  contract.py
+│  └─ AGENTS.md          <span class="c">开发模式细则（触及该目录才注入）</span>
 ├─ .dsh/skills/ccb/      <span class="c">Agent Skill：SKILL.md + ccb.py 启动器 + references/</span>
-├─ tests/                <span class="c">6 个测试文件，218 用例，无网络无依赖</span>
-├─ tools/                <span class="c">探针脚本（复现渠道行为）+ 一次性 codemod</span>
+├─ tests/                <span class="c">12 个测试文件，263 用例，无网络无依赖</span>
+├─ tools/                <span class="c">探针脚本（复现渠道行为）</span>
+├─ .github/workflows/    <span class="c">CI：ruff + unittest，ubuntu/windows × 3.10/3.13</span>
 ├─ docs/design.md        <span class="c">设计定稿</span>
+├─ 开发文档/              <span class="c">改造方案 + 本讲解</span>
 ├─ notes/                <span class="c">立项前的领域调研（决定做什么/不做什么）</span>
 └─ papers/               <span class="c">★ 使用者工作区：本地数据，不进 git</span>
 </pre>
 
 <div class="box">
-  <p><b>过渡期兼容</b>：<code>ccb.library</code>、<code>ccb.resolver</code>、<code>ccb.channels.*</code> 等旧路径是 <code>sys.modules</code> 别名，与规范路径是<b>同一个模块对象</b>，不会产生两份状态。<code>tests/test_modules.py</code> 用 <code>assertIs</code> 守住这一点。</p>
+  <p><b>没有兼容层</b>（0.3.0 起的刻意决定）：重组前的旧导入路径别名（<code>ccb.model</code>、<code>ccb.resolver</code>、<code>ccb.channels.*</code>）已删除，<code>import lit</code> 会直接 <code>ModuleNotFoundError</code>。<code>tests/test_naming.py</code> 守住这一点：旧 token 不得在任何源文件里重现，兼容别名不得被加回来。</p>
 </div>
 
 <hr>
@@ -734,18 +739,23 @@ manifestation  载体层：arXiv v1/v2、NeurIPS 正式版、OpenReview 投稿�
 <hr>
 
 <!-- ============================ 质量 ============================ -->
-<h2 class="sec" id="q-tests">测试矩阵（218）</h2>
+<h2 class="sec" id="q-tests">测试矩阵（263）</h2>
 
-<pre>python -m unittest discover -s tests -v     <span class="c"># 218 用例，无网络，无第三方依赖，~9 s</span>
+<pre>python -m unittest discover -s tests -v     <span class="c"># 263 用例，无网络，无第三方依赖，~11 s</span>
 python tools/probe_arxiv.py                 <span class="c"># 复现某渠道的真实线上行为</span>
 python tools/probe_mcp_source.py            <span class="c"># 最小 MCP server，作测试夹具</span></pre>
 
 <table>
   <tr><th>文件</th><th>覆盖</th></tr>
   <tr><td><code>test_core.py</code></td><td>身份推导、规范化、claim/provenance 语义、去重阈值、引用渲染、库完整性（含索引自愈、损坏文件上报、合并后别名可解析）</td></tr>
-  <tr><td><code>test_modules.py</code></td><td>模块 DAG、规范 API 可导入性、过渡期 shim 是同一对象</td></tr>
+  <tr><td><code>test_modules.py</code></td><td>模块 DAG、规范 API 可导入性（core ← library ← search ← topics）</td></tr>
+  <tr><td><code>test_naming.py</code></td><td>旧 token 全仓清零、旧包不可导入、无兼容别名、陷阱词完好、版本单一来源、skill 元数据一致</td></tr>
+  <tr><td><code>test_purity.py</code></td><td>core 纯/IO 分界：纯模块不得 import I/O、不得 open；每个 core 模块必须被分类；声明要与现实互证</td></tr>
   <tr><td><code>test_paths.py</code></td><td>库根解析链、checkout 探测、空库不误报、缺 PDF 的指令式错误</td></tr>
-  <tr><td><code>test_channels.py</code></td><td>四种渠道 kind（http/cli/mcp/manual）、声明式注册、凭据脱敏、门禁上报</td></tr>
+  <tr><td><code>test_channels.py</code></td><td>四种渠道 kind（http/cli/mcp/manual）、声明式注册、凭据脱敏、门禁上报、缺失凭据的 required/optional 分类</td></tr>
+  <tr><td><code>test_cli.py</code></td><td>★ 遍历<b>全部叶子命令</b>在空库/有作品两态下跑 --pretty（渲染器回归网）；全局 flag 两个位置等价；ask 的 outcome 语义</td></tr>
+  <tr><td><code>test_contract.py</code></td><td>★ 契约可执行：每条 <code>kind:command</code> 步骤被真实 argparse 接受；human 步骤不含 cmd</td></tr>
+  <tr><td><code>test_ops.py</code></td><td>★ 三面一致性：声明↔解析器互为镜像、MCP schema 参数来自同一张表、契约名单是派生的</td></tr>
   <tr><td><code>test_retrieval.py</code></td><td>段落切分、BM25 排序、质量评分、引用导出</td></tr>
   <tr><td><code>test_mcp.py</code></td><td>JSON-RPC 帧、CLI/MCP 一致性（parity）</td></tr>
   <tr><td><code>test_topics.py</code></td><td>CCF 目录匹配、术语抽取、缺口挖掘、算子选择、候选打分与确定性、草稿锚点不变量、评级可复算；并走 MCP 面跑完整序列</td></tr>
@@ -786,18 +796,36 @@ python tools/probe_mcp_source.py            <span class="c"># 最小 MCP server�
   <tr><td>无许可或非商用代码</td><td>调研发现多个此类条目；本项目不复制</td></tr>
 </table>
 
+<h2 class="sec" id="q-refactor">2026-10 大改造（六次提交）</h2>
+
+<table>
+  <tr><th>#</th><th>主题</th><th>消除的问题</th></tr>
+  <tr><td>C1</td><td><b>契约可执行 + 输出收口</b></td><td>契约里 2 条命令执行即 exit 2（<code>--json</code>/<code>--bibtex</code>）；<code>cmd</code> 字段混入人类步骤；<code>ask</code> 的覆盖缺口与"未找到"共用退出码；<code>--pretty</code> 渲染器猜形状崩溃；<code>merge</code> 未捕获 KeyError；<code>export</code> 默认输出非 JSON。护栏：<code>test_contract</code> + 遍历全部叶子命令的渲染回归网</td></tr>
+  <tr><td>C2</td><td><b>操作注册表</b>（<code>ops.py</code>）</td><td>加一个操作要改 5–6 处、且 MCP schema 与派发靠命名约定维持一致。现在一张表派生三面；16 个 schema 与重构前逐字节一致（这是验证手段，不只是测试）</td></tr>
+  <tr><td>C3</td><td><b>全量改名 lit → ccb</b></td><td>产品名（CCB Assistant/查查呗论文）与实现名两套并存；改名后目录/仓库/包/命令/工具前缀/环境变量一致。<b>零兼容层</b>：shim、codemod、旧 <code>.lit/</code> 库全部删除；<code>test_naming</code> 守住</td></tr>
+  <tr><td>C4</td><td><b>Agent 控制层 + 凭据</b></td><td>两层 AGENTS.md（根=模式分流，src/ccb=开发细则，按触达注入）；<code>channels</code> 输出 <code>credentials_missing</code>（required/optional + effect + note）与 <code>credential_guidance</code>（key 永不经对话传递）</td></tr>
+  <tr><td>C5</td><td><b>core 纯/IO 分离 + cli 拆包</b></td><td>util 自称纯却含原子写盘 → <code>core/files.py</code>；<code>test_purity</code> 双向锁死。cli.py 997 行 → cli 包四模块；checkout 标记因 cli.py 变包而静默失效（<b>测试抓到</b>，已修）</td></tr>
+  <tr><td>C6</td><td><b>工程基建</b></td><td>CI（ruff + unittest，双平台双版本）；版本单一来源（pyproject 动态读取 <code>ccb.__version__</code>）；lint 规则 declared</td></tr>
+</table>
+
+<div class="box ok">
+  <p><b>共同点</b>：每一项都配了"让漂移自动失败"的测试——契约可执行、三面互证、命名清零、纯度双向、渲染回归网。<b>教训</b>：C5 的 checkout 标记回归不是读代码读出来的，是测试跑出来的；没测的那层最先烂。</p>
+</div>
+
 <h2 class="sec" id="q-gap">已知缺口</h2>
 
 <table>
   <tr><th>项</th><th>现状</th><th>影响</th></tr>
-  <tr><td><code>--pretty</code> 位置</td><td>必须写在子命令之前；<code>ccb doctor --pretty</code> 报用法错</td><td>文档已按正确写法写；CLI 未放宽。修法：每个子解析器加一份并与全局值合并</td></tr>
+  <tr><td>ruff 未在本机执行</td><td>规则已声明、CI 已接入，但本机未安装 ruff（装依赖需确认）</td><td>首次 CI 运行会报告 lint 结果；本地要跑需 <code>pip install ruff</code></td></tr>
+  <tr><td>覆盖率门槛未设</td><td>CI 未接 coverage；基线未测量</td><td>当前以"遍历全部叶子命令"的回归网替代；门槛需先测基线</td></tr>
+  <tr><td>输出 TypedDict 未铺开</td><td>计划中的类型化契约（37 个操作的载荷）尚未落地</td><td>渲染器已不再猜形状（records_key 声明制），风险已压低</td></tr>
   <tr><td>README 渠道表 vs 注册表</td><td>README 列了 <code>unpaywall</code>/<code>doaj</code>/<code>core</code>/<code>semantic_scholar</code>，默认注册表未注册它们</td><td>以 <code>ccb doctor</code> 为准；需要时在 <code>channels.yaml</code> 声明</td></tr>
-  <tr><td>旧 <code>.ccb/</code> 库</td><td>默认目录名与锚点变更后，旧库不会被读取；<code>doctor</code> 会报出并给迁移提示</td><td>不自动搬移（静默移动用户数据比多一行提示更糟）</td></tr>
   <tr><td>大目录树上的 <code>topics</code></td><td>按语料规模归一化打分；超大语料时挖掘耗时随全文量线性增长</td><td>先 <code>survey</code> 判断 <code>sufficient</code>，不足则停</td></tr>
+  <tr><td>长期项（只留接口）</td><td><code>evidence/</code> 无界增长；<code>doctor</code> 名为报告却写指纹；Windows 下 SQLite 句柄需显式关闭</td><td>均为运维性问题，非正确性问题</td></tr>
 </table>
 
 <hr>
-<p class="dim">本文由 <code>ccb contract</code>、<code>ccb topics operators</code>、<code>ccb topics venues --verify</code>、渠道注册表实测输出与源码行号核对生成。数字为实测（218 用例 / 159 venue / 11 算子 / 23 CLI / 16 MCP）。</p>
+<p class="dim">本文由 <code>ccb contract</code>、<code>ccb topics operators</code>、<code>ccb topics venues --verify</code>、渠道注册表实测输出与源码行号核对生成。数字为实测（263 用例 / 159 venue / 11 算子 / 23 CLI / 16 MCP）。2026-10-13 更新至 v0.3.0（全量改名 + 六次大改造）。</p>
 
 </main>
 

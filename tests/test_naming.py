@@ -28,10 +28,14 @@ SKIP_DIRS = {".git", "papers", "__pycache__", ".mypy_cache", ".pytest_cache",
              ".ruff_cache", ".venv", "venv"}
 TEXT_SUFFIXES = {".py", ".md", ".html", ".toml", ".txt", ".yaml", ".yml", ".csv"}
 
-# A line may name the old token in order to forbid it — that is the rule being stated, not
-# a violation of it. The exemption is line-scoped so the rest of the same file is still
-# checked for stale paths and package names.
-FORBID_CLAUSE = re.compile(r"不要新增|[Nn]ever add|no compatibility|零兼容")
+# A line may name the old token in order to forbid it or to *describe the rename* —
+# a changelog that cannot say what something used to be called cannot explain the change.
+# The exemption is line-scoped so the rest of the same file is still checked for stale
+# paths and package names.
+FORBID_CLAUSE = re.compile(
+    r"不要新增|[Nn]ever add|no compatibility|没有兼容层|零兼容|全量改名|曾用名|历史快照"
+    r"|[Rr]enamed|改名"
+)
 
 
 def _files():

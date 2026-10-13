@@ -1,4 +1,9 @@
-# ccb — search, library, topics: three modules over one shared floor
+# CCB Assistant（查查呗论文）— search, library, topics: three modules over one shared floor
+
+> **Breaking change in 0.3.0.** The tool was renamed from `lit` to `ccb`: the package, the
+> CLI, the MCP entry point, all 16 tool names and all environment variables carry the new
+> name, and **no compatibility layer is kept** — update any `lit` invocation, `LIT_*`
+> environment variable or MCP registration you still have.
 
 `ccb` answers three questions that most literature tooling answers separately and badly:
 
@@ -309,7 +314,7 @@ names the reason rather than returning an empty result.
 ## Development
 
 ```bash
-python -m unittest discover -s tests -v     # 218 tests, no network, no dependencies
+python -m unittest discover -s tests -v     # 263 tests, no network, no dependencies
 python tools/probe_arxiv.py                 # reproduce a channel's live behaviour
 python tools/probe_mcp_source.py            # minimal MCP server used as a test fixture
 ```
