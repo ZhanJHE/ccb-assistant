@@ -1,0 +1,2194 @@
+{
+ "in-net-ml": [
+  {
+   "title": "DIDA: Distributed In-Network Intelligent Data Plane for Machine Learning Applications",
+   "year": 2025,
+   "venue": "IEEE Transactions on Network and Service Management",
+   "citations": 2,
+   "doi": "10.1109/TNSM.2025.3548477",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TNSM.2025.3548477"
+  },
+  {
+   "title": "MAP4: A Pragmatic Framework for In-Network Machine Learning Traffic Classification",
+   "year": 2022,
+   "venue": "IEEE Transactions on Network and Service Management",
+   "citations": 30,
+   "doi": "10.1109/TNSM.2022.3212913",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TNSM.2022.3212913"
+  },
+  {
+   "title": "Serene: Handling the Effects of Stragglers in In-Network Machine Learning Aggregation",
+   "year": 2023,
+   "venue": "IEEE/IFIP Network Operations and Management Symposium",
+   "citations": 3,
+   "doi": "10.1109/NOMS56928.2023.10154363",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/NOMS56928.2023.10154363"
+  },
+  {
+   "title": "In-Network AR/CG Traffic Classification Entirely Deployed in the Programmable Data Plane: Unlocking RTP Features and L4S Integration",
+   "year": 2025,
+   "venue": "IEEE Conference on Network Softwarization",
+   "citations": 5,
+   "doi": "10.1109/NetSoft64993.2025.11080610",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/NetSoft64993.2025.11080610"
+  },
+  {
+   "title": "The case for native multi-node in-network machine learning",
+   "year": 2022,
+   "venue": "NativeNI@CoNEXT",
+   "citations": 4,
+   "doi": "10.1145/3565009.3569524",
+   "arxiv": null,
+   "url": "https://doi.org/10.1145/3565009.3569524"
+  },
+  {
+   "title": "Quark: Implementing Convolutional Neural Networks Entirely on Programmable Data Plane",
+   "year": 2025,
+   "venue": "IEEE Conference on Computer Communications",
+   "citations": 18,
+   "doi": "10.1109/INFOCOM55648.2025.11044654",
+   "arxiv": "2501.15100",
+   "url": "https://doi.org/10.1109/INFOCOM55648.2025.11044654"
+  },
+  {
+   "title": "HALIDS: a Hardware-Assisted Machine Learning IDS for in-Network Monitoring",
+   "year": 2024,
+   "venue": "Traffic Monitoring and Analysis",
+   "citations": 4,
+   "doi": "10.23919/TMA62044.2024.10559083",
+   "arxiv": null,
+   "url": "https://doi.org/10.23919/TMA62044.2024.10559083"
+  },
+  {
+   "title": "ML-NIC: accelerating machine learning inference using smart network interface cards",
+   "year": 2025,
+   "venue": "Frontiers Comput. Sci.",
+   "citations": 6,
+   "doi": "10.3389/fcomp.2024.1493399",
+   "arxiv": null,
+   "url": "https://doi.org/10.3389/fcomp.2024.1493399"
+  },
+  {
+   "title": "P4httpGuard: detection and prevention of slow-rate DDoS attacks using machine learning techniques in P4 switch",
+   "year": 2024,
+   "venue": "Cluster Computing",
+   "citations": 17,
+   "doi": "10.1007/s10586-024-04407-5",
+   "arxiv": null,
+   "url": "https://doi.org/10.1007/s10586-024-04407-5"
+  },
+  {
+   "title": "Flow-Level Bandwidth Allocation on P4 Tofino Switch with In-Network DRL Inference",
+   "year": 2025,
+   "venue": "Digital Signal Processing and Signal Processing Education Workshop",
+   "citations": 4,
+   "doi": "10.1109/ICAIIC64266.2025.10920802",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ICAIIC64266.2025.10920802"
+  },
+  {
+   "title": "Toward Fingerprinting Encrypted C2 Traffic in the Data Plane",
+   "year": 2025,
+   "venue": "Global Communications Conference",
+   "citations": 1,
+   "doi": "10.1109/GLOBECOM59602.2025.11432425",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/GLOBECOM59602.2025.11432425"
+  },
+  {
+   "title": "Shesha: Opportunistic In-network Acceleration of Asynchronous Distributed Reinforcement Learning",
+   "year": 2025,
+   "venue": "Proceedings of the ACM on Networking",
+   "citations": 0,
+   "doi": "10.1145/3830394",
+   "arxiv": "2507.05876",
+   "url": "https://doi.org/10.1145/3830394"
+  },
+  {
+   "title": "A Machine Learning-Based Toolbox for P4 Programmable Data-Planes",
+   "year": 2024,
+   "venue": "IEEE Transactions on Network and Service Management",
+   "citations": 17,
+   "doi": "10.1109/TNSM.2024.3402074",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TNSM.2024.3402074"
+  },
+  {
+   "title": "Real‐Time Encrypted Traffic Classification in Programmable Networks with P4 and Machine Learning",
+   "year": 2025,
+   "venue": "International Journal of Network Management",
+   "citations": 5,
+   "doi": "10.1002/nem.2320",
+   "arxiv": null,
+   "url": "https://doi.org/10.1002/nem.2320"
+  },
+  {
+   "title": "An FPGA Integrated Programmable Switch Architecture for Data Plane DNN Inference",
+   "year": 2026,
+   "venue": "IEEE Transactions on Networking",
+   "citations": 0,
+   "doi": "10.1109/TON.2026.3725793",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TON.2026.3725793"
+  }
+ ],
+ "cls": [
+  {
+   "title": "Deep packet: a novel approach for encrypted traffic classification using deep learning",
+   "year": 2017,
+   "venue": "Soft Computing - A Fusion of Foundations, Methodologies and Applications",
+   "citations": 1139,
+   "doi": "10.1007/s00500-019-04030-2",
+   "arxiv": "1709.02656",
+   "url": "https://doi.org/10.1007/s00500-019-04030-2"
+  },
+  {
+   "title": "Trustworthy deep learning for encrypted traffic classification",
+   "year": 2025,
+   "venue": "Soft Computing - A Fusion of Foundations, Methodologies and Applications",
+   "citations": 9,
+   "doi": "10.1007/s00500-025-10462-w",
+   "arxiv": null,
+   "url": "https://doi.org/10.1007/s00500-025-10462-w"
+  },
+  {
+   "title": "ATVITSC: A Novel Encrypted Traffic Classification Method Based on Deep Learning",
+   "year": 2024,
+   "venue": "IEEE Transactions on Information Forensics and Security",
+   "citations": 69,
+   "doi": "10.1109/TIFS.2024.3433446",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TIFS.2024.3433446"
+  },
+  {
+   "title": "A Novel Multimodal Deep Learning Framework for Encrypted Traffic Classification",
+   "year": 2023,
+   "venue": "IEEE/ACM Transactions on Networking",
+   "citations": 107,
+   "doi": "10.1109/TNET.2022.3215507",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TNET.2022.3215507"
+  },
+  {
+   "title": "Deep learning and pre-training technology for encrypted traffic classification: A comprehensive review",
+   "year": 2024,
+   "venue": "Neurocomputing",
+   "citations": 59,
+   "doi": "10.1016/j.neucom.2024.128444",
+   "arxiv": null,
+   "url": "https://doi.org/10.1016/j.neucom.2024.128444"
+  },
+  {
+   "title": "Research on Encrypted Traffic Classification Technology Based on Improved Deep Learning Networks",
+   "year": 2025,
+   "venue": "2025 IEEE 7th International Conference on Power, Intelligent Computing and Systems (ICPICS)",
+   "citations": 0,
+   "doi": "10.1109/ICPICS66386.2025.11347380",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ICPICS66386.2025.11347380"
+  },
+  {
+   "title": "Research on Encrypted Traffic Classification and Sparse Traffic Recognition Based on Feature Extraction and Deep Learning",
+   "year": 2025,
+   "venue": "Asia Pacific Economic and Management Review",
+   "citations": 0,
+   "doi": "10.62177/apemr.v2i5.632",
+   "arxiv": null,
+   "url": "https://doi.org/10.62177/apemr.v2i5.632"
+  },
+  {
+   "title": "Mobile Encrypted Traffic Classification Using Deep Learning: Experimental Evaluation, Lessons Learned, and Challenges",
+   "year": 2019,
+   "venue": "IEEE Transactions on Network and Service Management",
+   "citations": 482,
+   "doi": "10.1109/TNSM.2019.2899085",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TNSM.2019.2899085"
+  },
+  {
+   "title": "Research on Deep Learning-Based Network Communication Encrypted Traffic Classification Methods",
+   "year": 2025,
+   "venue": "2025 7th International Conference on Machine Learning, Big Data and Business Intelligence (MLBDBI)",
+   "citations": 0,
+   "doi": "10.1109/MLBDBI67855.2025.11331423",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/MLBDBI67855.2025.11331423"
+  },
+  {
+   "title": "DISTILLER: Encrypted traffic classification via multimodal multitask deep learning",
+   "year": 2021,
+   "venue": "Journal of Network and Computer Applications",
+   "citations": 189,
+   "doi": "10.1016/J.JNCA.2021.102985",
+   "arxiv": null,
+   "url": "https://doi.org/10.1016/J.JNCA.2021.102985"
+  },
+  {
+   "title": "Deep learning for encrypted traffic classification in the face of data drift: An empirical study",
+   "year": 2023,
+   "venue": "Comput. Networks",
+   "citations": 63,
+   "doi": "10.1016/j.comnet.2023.109648",
+   "arxiv": null,
+   "url": "https://doi.org/10.1016/j.comnet.2023.109648"
+  },
+  {
+   "title": "Deep Learning for Encrypted Traffic Classification: An Overview",
+   "year": 2018,
+   "venue": "IEEE Communications Magazine",
+   "citations": 553,
+   "doi": "10.1109/MCOM.2019.1800819",
+   "arxiv": "1810.07906",
+   "url": "https://doi.org/10.1109/MCOM.2019.1800819"
+  },
+  {
+   "title": "$Deep-Full-Range$ : A Deep Learning Based Network Encrypted Traffic Classification and Intrusion Detection Framework",
+   "year": 2019,
+   "venue": "IEEE Access",
+   "citations": 224,
+   "doi": "10.1109/ACCESS.2019.2908225",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ACCESS.2019.2908225"
+  },
+  {
+   "title": "CBS: A Deep Learning Approach for Encrypted Traffic Classification With Mixed Spatio-Temporal and Statistical Features",
+   "year": 2023,
+   "venue": "IEEE Access",
+   "citations": 23,
+   "doi": "10.1109/ACCESS.2023.3343189",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ACCESS.2023.3343189"
+  },
+  {
+   "title": "Toward effective mobile encrypted traffic classification through deep learning",
+   "year": 2020,
+   "venue": "Neurocomputing",
+   "citations": 133,
+   "doi": "10.1016/j.neucom.2020.05.036",
+   "arxiv": null,
+   "url": "https://doi.org/10.1016/j.neucom.2020.05.036"
+  }
+ ],
+ "pred": [
+  {
+   "title": "Deep Learning on Network Traffic Prediction: Recent Advances, Analysis, and Future Directions",
+   "year": 2025,
+   "venue": "ACM Computing Surveys",
+   "citations": 113,
+   "doi": "10.1145/3703447",
+   "arxiv": null,
+   "url": "https://doi.org/10.1145/3703447"
+  },
+  {
+   "title": "Advanced Network Traffic Prediction Using Deep Learning Techniques: A Comparative Study of SVR, LSTM, GRU, and Bidirectional LSTM Models",
+   "year": 2025,
+   "venue": "ITM Web of Conferences",
+   "citations": 13,
+   "doi": "10.1051/itmconf/20257003021",
+   "arxiv": null,
+   "url": "https://doi.org/10.1051/itmconf/20257003021"
+  },
+  {
+   "title": "Spatio-temporal Graph Convolutional Neural Network: A Deep Learning Framework for Traffic Forecasting",
+   "year": 2017,
+   "venue": "International Joint Conference on Artificial Intelligence",
+   "citations": 5549,
+   "doi": "10.24963/ijcai.2018/505",
+   "arxiv": "1709.04875",
+   "url": "https://doi.org/10.24963/ijcai.2018/505"
+  },
+  {
+   "title": "Intelligent Prediction of Urban Road Network Carrying Capacity and Traffic Flow Based on Deep Learning",
+   "year": 2025,
+   "venue": "IEEE Transactions on Vehicular Technology",
+   "citations": 16,
+   "doi": "10.1109/TVT.2024.3356519",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TVT.2024.3356519"
+  },
+  {
+   "title": "Deep Learning Based Traffic Prediction Method for Digital Twin Network",
+   "year": 2023,
+   "venue": "Cognitive Computation",
+   "citations": 42,
+   "doi": "10.1007/s12559-023-10136-5",
+   "arxiv": null,
+   "url": "https://doi.org/10.1007/s12559-023-10136-5"
+  },
+  {
+   "title": "A Hybrid Deep Learning Method Based on CEEMDAN and Attention Mechanism for Network Traffic Prediction",
+   "year": 2023,
+   "venue": "IEEE Access",
+   "citations": 14,
+   "doi": "10.1109/ACCESS.2023.3268437",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ACCESS.2023.3268437"
+  },
+  {
+   "title": "A Deep Learning Approach for Network-wide Dynamic Traffic Prediction during Hurricane Evacuation",
+   "year": 2022,
+   "venue": "Transportation Research Part C: Emerging Technologies",
+   "citations": 42,
+   "doi": "10.1016/j.trc.2023.104126",
+   "arxiv": "2202.12505",
+   "url": "https://doi.org/10.1016/j.trc.2023.104126"
+  },
+  {
+   "title": "Deep Learning-Based Network Traffic Prediction for Secure Backbone Networks in Internet of Vehicles",
+   "year": 2022,
+   "venue": "ACM Trans. Internet Techn.",
+   "citations": 23,
+   "doi": "10.1145/3433548",
+   "arxiv": null,
+   "url": "https://doi.org/10.1145/3433548"
+  },
+  {
+   "title": "A feature extraction and deep learning approach for network traffic volume prediction considering detector reliability",
+   "year": 2023,
+   "venue": "Comput. Aided Civ. Infrastructure Eng.",
+   "citations": 20,
+   "doi": "10.1111/mice.13062",
+   "arxiv": null,
+   "url": "https://doi.org/10.1111/mice.13062"
+  },
+  {
+   "title": "Long-Term Traffic Prediction Using Deep Learning Long Short-Term Memory",
+   "year": 2025,
+   "venue": "Smart Cities",
+   "citations": 22,
+   "doi": "10.3390/smartcities8040126",
+   "arxiv": null,
+   "url": "https://doi.org/10.3390/smartcities8040126"
+  },
+  {
+   "title": "Digital Twin for Transportation Big Data: A Reinforcement Learning-Based Network Traffic Prediction Approach",
+   "year": 2024,
+   "venue": "IEEE transactions on intelligent transportation systems (Print)",
+   "citations": 68,
+   "doi": "10.1109/TITS.2022.3232518",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TITS.2022.3232518"
+  },
+  {
+   "title": "A Novel Method for Improved Network Traffic Prediction Using Enhanced Deep Reinforcement Learning Algorithm",
+   "year": 2022,
+   "venue": "Italian National Conference on Sensors",
+   "citations": 23,
+   "doi": "10.3390/s22135006",
+   "arxiv": null,
+   "url": "https://doi.org/10.3390/s22135006"
+  },
+  {
+   "title": "Time-Varying-Aware Network Traffic Prediction Via Deep Learning in IIoT",
+   "year": 2022,
+   "venue": "IEEE Transactions on Industrial Informatics",
+   "citations": 24,
+   "doi": "10.1109/TII.2022.3163558",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TII.2022.3163558"
+  },
+  {
+   "title": "A deep learning method based on an attention mechanism for wireless network traffic prediction",
+   "year": 2020,
+   "venue": "Ad hoc networks",
+   "citations": 113,
+   "doi": "10.1016/j.adhoc.2020.102258",
+   "arxiv": null,
+   "url": "https://doi.org/10.1016/j.adhoc.2020.102258"
+  },
+  {
+   "title": "Prediction of Network Traffic in Wireless Mesh Networks using Hybrid Deep Learning Model",
+   "year": 2022,
+   "venue": "IEEE Access",
+   "citations": 34,
+   "doi": "10.1109/ACCESS.2022.3140646",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ACCESS.2022.3140646"
+  }
+ ],
+ "ids": [
+  {
+   "title": "Preparing Network Intrusion Detection Deep Learning Models with Minimal Data Using Adversarial Domain Adaptation",
+   "year": 2020,
+   "venue": "ACM Asia Conference on Computer and Communications Security",
+   "citations": 75,
+   "doi": "10.1145/3320269.3384718",
+   "arxiv": null,
+   "url": "https://doi.org/10.1145/3320269.3384718"
+  },
+  {
+   "title": "An optimized LSTM-based deep learning model for anomaly network intrusion detection",
+   "year": 2025,
+   "venue": "Scientific Reports",
+   "citations": 144,
+   "doi": "10.1038/s41598-025-85248-z",
+   "arxiv": null,
+   "url": "https://doi.org/10.1038/s41598-025-85248-z"
+  },
+  {
+   "title": "A deep learning/machine learning approach for anomaly based network intrusion detection",
+   "year": 2025,
+   "venue": "Frontiers Artif. Intell.",
+   "citations": 44,
+   "doi": "10.3389/frai.2025.1625891",
+   "arxiv": null,
+   "url": "https://doi.org/10.3389/frai.2025.1625891"
+  },
+  {
+   "title": "A Deep Learning Approach to Network Intrusion Detection",
+   "year": 2018,
+   "venue": "IEEE Transactions on Emerging Topics in Computational Intelligence",
+   "citations": 1571,
+   "doi": "10.1109/TETCI.2017.2772792",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TETCI.2017.2772792"
+  },
+  {
+   "title": "Network-based intrusion detection using deep learning technique",
+   "year": 2025,
+   "venue": "Scientific Reports",
+   "citations": 56,
+   "doi": "10.1038/s41598-025-08770-0",
+   "arxiv": null,
+   "url": "https://doi.org/10.1038/s41598-025-08770-0"
+  },
+  {
+   "title": "Deep learning for network security: an Attention-CNN-LSTM model for accurate intrusion detection",
+   "year": 2025,
+   "venue": "Scientific Reports",
+   "citations": 80,
+   "doi": "10.1038/s41598-025-07706-y",
+   "arxiv": null,
+   "url": "https://doi.org/10.1038/s41598-025-07706-y"
+  },
+  {
+   "title": "A Hybrid CNN-GRU Deep Learning Model for IoT Network Intrusion Detection",
+   "year": 2025,
+   "venue": "J. Sens. Actuator Networks",
+   "citations": 27,
+   "doi": "10.3390/jsan14050096",
+   "arxiv": null,
+   "url": "https://doi.org/10.3390/jsan14050096"
+  },
+  {
+   "title": "Enhanced anomaly network intrusion detection using an improved snow ablation optimizer with dimensionality reduction and hybrid deep learning model",
+   "year": 2025,
+   "venue": "Scientific Reports",
+   "citations": 21,
+   "doi": "10.1038/s41598-025-97398-1",
+   "arxiv": null,
+   "url": "https://doi.org/10.1038/s41598-025-97398-1"
+  },
+  {
+   "title": "An Extensive Review of Machine Learning and Deep Learning Techniques on Network Intrusion Detection for IoT",
+   "year": 2025,
+   "venue": "Transactions on Emerging Telecommunications Technologies",
+   "citations": 36,
+   "doi": "10.1002/ett.70064",
+   "arxiv": null,
+   "url": "https://doi.org/10.1002/ett.70064"
+  },
+  {
+   "title": "Deep learning-driven methods for network-based intrusion detection systems: A systematic review",
+   "year": 2025,
+   "venue": "ICT express",
+   "citations": 117,
+   "doi": "10.1016/j.icte.2025.01.005",
+   "arxiv": null,
+   "url": "https://doi.org/10.1016/j.icte.2025.01.005"
+  },
+  {
+   "title": "HIDS-RPL: A Hybrid Deep Learning-Based Intrusion Detection System for RPL in Internet of Medical Things Network",
+   "year": 2025,
+   "venue": "IEEE Access",
+   "citations": 34,
+   "doi": "10.1109/ACCESS.2025.3545918",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ACCESS.2025.3545918"
+  },
+  {
+   "title": "A Comparative Study of Using Deep Learning Algorithms in Network Intrusion Detection",
+   "year": 2024,
+   "venue": "IEEE Access",
+   "citations": 77,
+   "doi": "10.1109/ACCESS.2024.3389096",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ACCESS.2024.3389096"
+  },
+  {
+   "title": "Network intrusion detection system: A systematic study of machine learning and deep learning approaches",
+   "year": 2020,
+   "venue": "Transactions on Emerging Telecommunications Technologies",
+   "citations": 1160,
+   "doi": "10.1002/ett.4150",
+   "arxiv": null,
+   "url": "https://doi.org/10.1002/ett.4150"
+  },
+  {
+   "title": "A Deep Learning Approach for Network Intrusion Detection System",
+   "year": 2016,
+   "venue": "EAI Endorsed Trans. Security Safety",
+   "citations": 1288,
+   "doi": "10.4108/eai.3-12-2015.2262516",
+   "arxiv": null,
+   "url": "https://doi.org/10.4108/eai.3-12-2015.2262516"
+  },
+  {
+   "title": "Dugat-LSTM: Deep learning based network intrusion detection system using chaotic optimization strategy",
+   "year": 2024,
+   "venue": "Expert systems with applications",
+   "citations": 140,
+   "doi": "10.1016/j.eswa.2023.123027",
+   "arxiv": null,
+   "url": "https://doi.org/10.1016/j.eswa.2023.123027"
+  }
+ ],
+ "anom": [
+  {
+   "title": "Anomaly Detection in Network Traffic Using Advanced Machine Learning Techniques",
+   "year": 2025,
+   "venue": "IEEE Access",
+   "citations": 53,
+   "doi": "10.1109/ACCESS.2025.3526988",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ACCESS.2025.3526988"
+  },
+  {
+   "title": "Anomaly Detection Model in Network Security Situational Awareness Based on Machine Learning: Limitation, Techniques, and Future Trends",
+   "year": 2025,
+   "venue": "IEEE Access",
+   "citations": 24,
+   "doi": "10.1109/ACCESS.2025.3589620",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ACCESS.2025.3589620"
+  },
+  {
+   "title": "Machine Learning and Deep Learning Techniques for Internet of Things Network Anomaly Detection—Current Research Trends",
+   "year": 2024,
+   "venue": "Italian National Conference on Sensors",
+   "citations": 148,
+   "doi": "10.3390/s24061968",
+   "arxiv": null,
+   "url": "https://doi.org/10.3390/s24061968"
+  },
+  {
+   "title": "Cloud Network Anomaly Detection Using Machine and Deep Learning Techniques— Recent Research Advancements",
+   "year": 2024,
+   "venue": "IEEE Access",
+   "citations": 71,
+   "doi": "10.1109/ACCESS.2024.3390844",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ACCESS.2024.3390844"
+  },
+  {
+   "title": "Machine Learning-Based Network Anomaly Detection: Design, Implementation, and Evaluation",
+   "year": 2024,
+   "venue": "Applied Informatics",
+   "citations": 56,
+   "doi": "10.3390/ai5040143",
+   "arxiv": null,
+   "url": "https://doi.org/10.3390/ai5040143"
+  },
+  {
+   "title": "Network anomaly detection and security defense technology based on machine learning: A review",
+   "year": 2024,
+   "venue": "Computers & electrical engineering",
+   "citations": 35,
+   "doi": "10.1016/j.compeleceng.2024.109581",
+   "arxiv": null,
+   "url": "https://doi.org/10.1016/j.compeleceng.2024.109581"
+  },
+  {
+   "title": "Advancements in Anomaly Detection Techniques in Network Traffic: The Role of Artificial Intelligence and Machine Learning",
+   "year": 2024,
+   "venue": "Journal of Scientific Research and Technology",
+   "citations": 16,
+   "doi": "10.61808/jsrt114",
+   "arxiv": null,
+   "url": "https://doi.org/10.61808/jsrt114"
+  },
+  {
+   "title": "Machine Learning in Network Anomaly Detection: A Survey",
+   "year": 2021,
+   "venue": "IEEE Access",
+   "citations": 155,
+   "doi": "10.1109/ACCESS.2021.3126834",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ACCESS.2021.3126834"
+  },
+  {
+   "title": "IoT Network Anomaly Detection in Smart Homes Using Machine Learning",
+   "year": 2023,
+   "venue": "IEEE Access",
+   "citations": 54,
+   "doi": "10.1109/ACCESS.2023.3325929",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ACCESS.2023.3325929"
+  },
+  {
+   "title": "A deep learning/machine learning approach for anomaly based network intrusion detection",
+   "year": 2025,
+   "venue": "Frontiers Artif. Intell.",
+   "citations": 44,
+   "doi": "10.3389/frai.2025.1625891",
+   "arxiv": null,
+   "url": "https://doi.org/10.3389/frai.2025.1625891"
+  },
+  {
+   "title": "A hybrid ensemble machine learning model for detecting APT attacks based on network behavior anomaly detection",
+   "year": 2023,
+   "venue": "Concurrency and Computation",
+   "citations": 49,
+   "doi": "10.1002/cpe.7865",
+   "arxiv": null,
+   "url": "https://doi.org/10.1002/cpe.7865"
+  },
+  {
+   "title": "Anomaly detection in NetFlow network traffic using supervised machine learning algorithms",
+   "year": 2023,
+   "venue": "Journal of Industrial Information Integration",
+   "citations": 64,
+   "doi": "10.1016/j.jii.2023.100466",
+   "arxiv": null,
+   "url": "https://doi.org/10.1016/j.jii.2023.100466"
+  },
+  {
+   "title": "Performance of Machine Learning Techniques in Anomaly Detection with Basic Feature Selection Strategy - A Network Intrusion Detection System",
+   "year": 2022,
+   "venue": "Journal of Advances in Information Technology",
+   "citations": 66,
+   "doi": "10.12720/jait.13.1.36-44",
+   "arxiv": null,
+   "url": "https://doi.org/10.12720/jait.13.1.36-44"
+  },
+  {
+   "title": "Comparative Study on Supervised versus Semi-supervised Machine Learning for Anomaly Detection of In-vehicle CAN Network",
+   "year": 2022,
+   "venue": "2022 IEEE 25th International Conference on Intelligent Transportation Systems (ITSC)",
+   "citations": 26,
+   "doi": "10.1109/ITSC55140.2022.9922235",
+   "arxiv": "2207.10286",
+   "url": "https://doi.org/10.1109/ITSC55140.2022.9922235"
+  },
+  {
+   "title": "Two-tier network anomaly detection model: a machine learning approach",
+   "year": 2017,
+   "venue": "Journal of Intelligence and Information Systems",
+   "citations": 157,
+   "doi": "10.1007/s10844-015-0388-x",
+   "arxiv": null,
+   "url": "https://doi.org/10.1007/s10844-015-0388-x"
+  }
+ ],
+ "cc": [
+  {
+   "title": "Classic Meets Modern: a Pragmatic Learning-Based Congestion Control for the Internet",
+   "year": 2020,
+   "venue": "Conference on Applications, Technologies, Architectures, and Protocols for Computer Communication",
+   "citations": 318,
+   "doi": "10.1145/3387514.3405892",
+   "arxiv": null,
+   "url": "https://doi.org/10.1145/3387514.3405892"
+  },
+  {
+   "title": "Achieving Fairness Generalizability for Learning-based Congestion Control with Jury",
+   "year": 2025,
+   "venue": "European Conference on Computer Systems",
+   "citations": 13,
+   "doi": "10.1145/3689031.3696065",
+   "arxiv": null,
+   "url": "https://doi.org/10.1145/3689031.3696065"
+  },
+  {
+   "title": "Astraea: Towards Fair and Efficient Learning-based Congestion Control",
+   "year": 2024,
+   "venue": "European Conference on Computer Systems",
+   "citations": 40,
+   "doi": "10.1145/3627703.3650069",
+   "arxiv": "2403.01798",
+   "url": "https://doi.org/10.1145/3627703.3650069"
+  },
+  {
+   "title": "EchoCC: Refining Learning-Based Congestion Control With WordBook",
+   "year": 2025,
+   "venue": "IEEE Transactions on Networking",
+   "citations": 2,
+   "doi": "10.1109/TON.2025.3566495",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TON.2025.3566495"
+  },
+  {
+   "title": "DACC: Data Augmentation for Learning-based Congestion Control",
+   "year": 2025,
+   "venue": "IEEE Conference on Computer Communications",
+   "citations": 1,
+   "doi": "10.1109/INFOCOM55648.2025.11044755",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/INFOCOM55648.2025.11044755"
+  },
+  {
+   "title": "Reinforcement Learning Based Congestion Control Technique for Wireless Mesh Networks",
+   "year": 2025,
+   "venue": "International Journal of Networked and Distributed Computing (IJNDC)",
+   "citations": 7,
+   "doi": "10.1007/s44227-025-00061-4",
+   "arxiv": null,
+   "url": "https://doi.org/10.1007/s44227-025-00061-4"
+  },
+  {
+   "title": "Reinforcement Learning-based Congestion Control: A Systematic Evaluation of Fairness, Efficiency and Responsiveness",
+   "year": 2024,
+   "venue": "IEEE Conference on Computer Communications",
+   "citations": 17,
+   "doi": "10.1109/INFOCOM52122.2024.10621288",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/INFOCOM52122.2024.10621288"
+  },
+  {
+   "title": "A Reinforcement Learning-Based Congestion Control Approach for V2V Communication in VANET",
+   "year": 2023,
+   "venue": "Applied Sciences",
+   "citations": 32,
+   "doi": "10.3390/app13063640",
+   "arxiv": null,
+   "url": "https://doi.org/10.3390/app13063640"
+  },
+  {
+   "title": "ReCoCo: Reinforcement learning-based Congestion control for Real-time applications",
+   "year": 2023,
+   "venue": "International Conference on High Performance Switching and Routing",
+   "citations": 10,
+   "doi": "10.1109/HPSR57248.2023.10147986",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/HPSR57248.2023.10147986"
+  },
+  {
+   "title": "Implementability improvement of deep reinforcement learning based congestion control in cellular network",
+   "year": 2023,
+   "venue": "Comput. Networks",
+   "citations": 10,
+   "doi": "10.1016/j.comnet.2023.109874",
+   "arxiv": null,
+   "url": "https://doi.org/10.1016/j.comnet.2023.109874"
+  },
+  {
+   "title": "Learning-Based Congestion Control Assisted by Recurrent Neural Networks for Real-Time Communication",
+   "year": 2023,
+   "venue": "International Symposium on Computers and Communications",
+   "citations": 4,
+   "doi": "10.1109/ISCC58397.2023.10218019",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ISCC58397.2023.10218019"
+  },
+  {
+   "title": "Muses: Enabling Lightweight Learning-Based Congestion Control for Mobile Devices",
+   "year": 2022,
+   "venue": "IEEE Conference on Computer Communications",
+   "citations": 12,
+   "doi": "10.1109/INFOCOM48880.2022.9796880",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/INFOCOM48880.2022.9796880"
+  },
+  {
+   "title": "Deep Reinforcement Learning-Based Congestion Control for File Transfer over QUIC",
+   "year": 2024,
+   "venue": "IEEE Region International Conference on Computational Technologies in Electrical and Electronics Engineering",
+   "citations": 0,
+   "doi": "10.1109/SIBIRCON63777.2024.10758499",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/SIBIRCON63777.2024.10758499"
+  },
+  {
+   "title": "Zygos: A Reward Correction Mechanism for Reinforcement Learning-based Congestion Control",
+   "year": 2024,
+   "venue": "International Conference on Mobile Ad-hoc and Sensor Networks",
+   "citations": 0,
+   "doi": "10.1109/MSN63567.2024.00014",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/MSN63567.2024.00014"
+  },
+  {
+   "title": "Deep Reinforcement Learning based Congestion Control for V2X Communication",
+   "year": 2021,
+   "venue": "IEEE International Symposium on Personal, Indoor and Mobile Radio Communications",
+   "citations": 14,
+   "doi": "10.1109/PIMRC50174.2021.9569259",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/PIMRC50174.2021.9569259"
+  }
+ ],
+ "cc-rl": [
+  {
+   "title": "Reinforcement Learning for Datacenter Congestion Control",
+   "year": 2021,
+   "venue": "AAAI Conference on Artificial Intelligence",
+   "citations": 50,
+   "doi": "10.1145/3512798.3512815",
+   "arxiv": "2102.09337",
+   "url": "https://doi.org/10.1145/3512798.3512815"
+  },
+  {
+   "title": "Implementing Reinforcement Learning Datacenter Congestion Control in NVIDIA NICs",
+   "year": 2022,
+   "venue": "IEEE/ACM International Symposium on Cluster, Cloud and Internet Computing",
+   "citations": 11,
+   "doi": "10.1109/CCGrid57682.2023.00039",
+   "arxiv": "2207.02295",
+   "url": "https://doi.org/10.1109/CCGrid57682.2023.00039"
+  },
+  {
+   "title": "NCC: Neighbor-aware Congestion Control based on Reinforcement Learning for Datacenter Networks",
+   "year": 2022,
+   "venue": "International Conference on Parallel Processing",
+   "citations": 2,
+   "doi": "10.1145/3545008.3545074",
+   "arxiv": null,
+   "url": "https://doi.org/10.1145/3545008.3545074"
+  },
+  {
+   "title": "Hierarchical Adaptive Learning-Based Congestion Control With Low Training Overhead for Datacenter Networks",
+   "year": 2025,
+   "venue": "IEEE Transactions on Network and Service Management",
+   "citations": 1,
+   "doi": "10.1109/TNSM.2025.3589637",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TNSM.2025.3589637"
+  },
+  {
+   "title": "Lightweight Automatic ECN Tuning Based on Deep Reinforcement Learning With Ultra-Low Overhead in Datacenter Networks",
+   "year": 2024,
+   "venue": "IEEE Transactions on Network and Service Management",
+   "citations": 9,
+   "doi": "10.1109/TNSM.2024.3450596",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TNSM.2024.3450596"
+  },
+  {
+   "title": "Iroko: A Framework to Prototype Reinforcement Learning for Data Center Traffic Control",
+   "year": 2018,
+   "venue": "arXiv.org",
+   "citations": 37,
+   "doi": null,
+   "arxiv": "1812.09975",
+   "url": "https://arxiv.org/abs/1812.09975"
+  },
+  {
+   "title": "RILNET: A Reinforcement Learning Based Load Balancing Approach for Datacenter Networks",
+   "year": 2018,
+   "venue": "International Conference on Machine Learning for Networking",
+   "citations": 18,
+   "doi": "10.1007/978-3-030-19945-6_4",
+   "arxiv": null,
+   "url": "https://doi.org/10.1007/978-3-030-19945-6_4"
+  },
+  {
+   "title": "BBQ: Dynamic-Buffer-Driven Automatic ECN Tunning in Datacenter",
+   "year": 2024,
+   "venue": "International Workshop on Quality of Service",
+   "citations": 9,
+   "doi": "10.1109/IWQoS61813.2024.10682919",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/IWQoS61813.2024.10682919"
+  },
+  {
+   "title": "ACC: automatic ECN tuning for high-speed datacenter networks",
+   "year": 2021,
+   "venue": "Conference on Applications, Technologies, Architectures, and Protocols for Computer Communication",
+   "citations": 115,
+   "doi": "10.1145/3452296.3472927",
+   "arxiv": null,
+   "url": "https://doi.org/10.1145/3452296.3472927"
+  },
+  {
+   "title": "ACC: automatic ECN tuning for high-speed datacenter networks",
+   "year": 2021,
+   "venue": "Conference on Applications, Technologies, Architectures, and Protocols for Computer Communication",
+   "citations": 40,
+   "doi": "10.1145/3452296.3472927",
+   "arxiv": null,
+   "url": "https://doi.org/10.1145/3452296.3472927"
+  },
+  {
+   "title": "Performance Evaluation of DQN-Based Reinforcement Learning Congestion Control in Mobile Multi-Hop Wireless Networks",
+   "year": 2025,
+   "venue": "International Conference on Modeling, Analysis and Simulation of Wireless and Mobile Systems",
+   "citations": 1,
+   "doi": "10.1109/MSWiM67937.2025.11308763",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/MSWiM67937.2025.11308763"
+  },
+  {
+   "title": "A Reinforcement Learning Congestion Control Algorithm for Smart Grid Networks",
+   "year": 2024,
+   "venue": "IEEE Access",
+   "citations": 16,
+   "doi": "10.1109/ACCESS.2024.3405334",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ACCESS.2024.3405334"
+  },
+  {
+   "title": "PBQ-Enhanced QUIC: QUIC with Deep Reinforcement Learning Congestion Control Mechanism",
+   "year": 2023,
+   "venue": "Entropy",
+   "citations": 13,
+   "doi": "10.3390/e25020294",
+   "arxiv": null,
+   "url": "https://doi.org/10.3390/e25020294"
+  },
+  {
+   "title": "Mutant: Learning Congestion Control from Existing Protocols via Online Reinforcement Learning",
+   "year": 2025,
+   "venue": "Symposium on Networked Systems Design and Implementation",
+   "citations": 24,
+   "doi": null,
+   "arxiv": null,
+   "url": null
+  },
+  {
+   "title": "A Multi-Agent Reinforcement Learning Congestion Control Protocol for Wireless Networks",
+   "year": 2026,
+   "venue": "IEEE Open Journal of the Communications Society",
+   "citations": 0,
+   "doi": "10.1109/OJCOMS.2026.3730744",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/OJCOMS.2026.3730744"
+  }
+ ],
+ "llm-net": [
+  {
+   "title": "On the Convergence of Large Language Model Optimizer for Black-Box Network Management",
+   "year": 2025,
+   "venue": "IEEE Transactions on Communications",
+   "citations": 6,
+   "doi": "10.1109/TCOMM.2025.3592598",
+   "arxiv": "2507.02689",
+   "url": "https://doi.org/10.1109/TCOMM.2025.3592598"
+  },
+  {
+   "title": "Hierarchical Debate-Based Large Language Model (LLM) for Complex Task Planning of 6G Network Management",
+   "year": 2025,
+   "venue": "arXiv.org",
+   "citations": 2,
+   "doi": "10.48550/arXiv.2506.06519",
+   "arxiv": "2506.06519",
+   "url": "https://doi.org/10.48550/arXiv.2506.06519"
+  },
+  {
+   "title": "MSADM: Large Language Model (LLM) Assisted End-to-End Network Health Management Based on Multi-Scale Semanticization",
+   "year": 2024,
+   "venue": "IEEE Transactions on Mobile Computing",
+   "citations": 19,
+   "doi": "10.1109/TMC.2026.3668817",
+   "arxiv": "2406.08305",
+   "url": "https://doi.org/10.1109/TMC.2026.3668817"
+  },
+  {
+   "title": "CoLLMLight: Cooperative Large Language Model Agents for Network-Wide Traffic Signal Control",
+   "year": 2025,
+   "venue": "arXiv.org",
+   "citations": 18,
+   "doi": "10.48550/arXiv.2503.11739",
+   "arxiv": "2503.11739",
+   "url": "https://doi.org/10.48550/arXiv.2503.11739"
+  },
+  {
+   "title": "Towards Intent-Based Network Management: Large Language Models for Intent Extraction in 5G Core Networks",
+   "year": 2024,
+   "venue": "International Workshop on the Design of Reliable Communication Networks",
+   "citations": 79,
+   "doi": "10.1109/DRCN60692.2024.10539172",
+   "arxiv": "2403.02238",
+   "url": "https://doi.org/10.1109/DRCN60692.2024.10539172"
+  },
+  {
+   "title": "Use of large language models as clinical decision support tools for management pancreatic adenocarcinoma using National Comprehensive Cancer Network guidelines",
+   "year": 2025,
+   "venue": "Surgery",
+   "citations": 18,
+   "doi": "10.1016/j.surg.2025.109267",
+   "arxiv": null,
+   "url": "https://doi.org/10.1016/j.surg.2025.109267"
+  },
+  {
+   "title": "OFCnetLLM: Large Language Model for Network Monitoring and Alertness",
+   "year": 2025,
+   "venue": "ACM SIGMETRICS Performance Evaluation Review",
+   "citations": 7,
+   "doi": "10.1145/3764944.3764957",
+   "arxiv": "2507.22711",
+   "url": "https://doi.org/10.1145/3764944.3764957"
+  },
+  {
+   "title": "Intent-Based Autonomous Network Framework Guided by Large Language Model",
+   "year": 2025,
+   "venue": "IEEE Transactions on Automation Science and Engineering",
+   "citations": 8,
+   "doi": "10.1109/TASE.2025.3610906",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TASE.2025.3610906"
+  },
+  {
+   "title": "FDALLM+: A Functional Data Analysis-Driven Large-Language Model Framework for Network Traffic Prediction",
+   "year": 2025,
+   "venue": "IEEE Internet of Things Journal",
+   "citations": 4,
+   "doi": "10.1109/JIOT.2025.3604332",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/JIOT.2025.3604332"
+  },
+  {
+   "title": "Large Language Model-Enhanced Intent-Driven Management and Orchestration for 6G Networks",
+   "year": 2025,
+   "venue": "2025 IEEE 102nd Vehicular Technology Conference (VTC2025-Fall)",
+   "citations": 1,
+   "doi": "10.1109/VTC2025-Fall65116.2025.11310708",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/VTC2025-Fall65116.2025.11310708"
+  },
+  {
+   "title": "Large Language Model-Empowered Intent-Driven Network Configuration Generator",
+   "year": 2025,
+   "venue": "2025 IEEE 102nd Vehicular Technology Conference (VTC2025-Fall)",
+   "citations": 2,
+   "doi": "10.1109/VTC2025-Fall65116.2025.11310185",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/VTC2025-Fall65116.2025.11310185"
+  },
+  {
+   "title": "Partitioning Prompts for Higher Efficacy in Network Design with Large Language Model",
+   "year": 2025,
+   "venue": "International Conference on High Performance Switching and Routing",
+   "citations": 1,
+   "doi": "10.1109/HPSR64165.2025.11038889",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/HPSR64165.2025.11038889"
+  },
+  {
+   "title": "Spatial-Temporal Large Language Model for Traffic Prediction",
+   "year": 2024,
+   "venue": "International Conference on Mobile Data Management",
+   "citations": 233,
+   "doi": "10.1109/MDM61037.2024.00025",
+   "arxiv": "2401.10134",
+   "url": "https://doi.org/10.1109/MDM61037.2024.00025"
+  },
+  {
+   "title": "InvAgent: A Large Language Model based Multi-Agent System for Inventory Management in Supply Chains",
+   "year": 2024,
+   "venue": "arXiv.org",
+   "citations": 26,
+   "doi": "10.48550/arXiv.2407.11384",
+   "arxiv": "2407.11384",
+   "url": "https://doi.org/10.48550/arXiv.2407.11384"
+  },
+  {
+   "title": "LINKs: Large Language Model Integrated Management for 6G Empowered Digital Twin NetworKs",
+   "year": 2024,
+   "venue": "2024 IEEE 100th Vehicular Technology Conference (VTC2024-Fall)",
+   "citations": 20,
+   "doi": "10.1109/VTC2024-Fall63153.2024.10757470",
+   "arxiv": "2412.19811",
+   "url": "https://doi.org/10.1109/VTC2024-Fall63153.2024.10757470"
+  }
+ ],
+ "netagent": [
+  {
+   "title": "Self-Organizing Agent Network for LLM-based Workflow Automation",
+   "year": 2025,
+   "venue": "arXiv.org",
+   "citations": 12,
+   "doi": "10.48550/arXiv.2508.13732",
+   "arxiv": "2508.13732",
+   "url": "https://doi.org/10.48550/arXiv.2508.13732"
+  },
+  {
+   "title": "Multi-Agent Design for LLM-assisted Network Management",
+   "year": 2025,
+   "venue": "Optical Fiber Communications Conference and Exhibition",
+   "citations": 14,
+   "doi": "10.1364/ofc.2025.w1a.4",
+   "arxiv": null,
+   "url": "https://doi.org/10.1364/ofc.2025.w1a.4"
+  },
+  {
+   "title": "Cross-Domain Query Translation for Network Troubleshooting: A Multi-Agent LLM Framework with Privacy Preservation and Self-Reflection",
+   "year": 2026,
+   "venue": "2026 Joint European Conference on Networks and Communications & 6G Summit (EuCNC/6G Summit)",
+   "citations": 1,
+   "doi": "10.1109/EuCNC/6GSummit68295.2026.11577467",
+   "arxiv": "2604.13353",
+   "url": "https://doi.org/10.1109/EuCNC/6GSummit68295.2026.11577467"
+  },
+  {
+   "title": "CyberSleuth: Autonomous Blue-Team LLM Agent for Web Attack Forensics",
+   "year": 2025,
+   "venue": "arXiv.org",
+   "citations": 5,
+   "doi": "10.48550/arXiv.2508.20643",
+   "arxiv": "2508.20643",
+   "url": "https://doi.org/10.48550/arXiv.2508.20643"
+  },
+  {
+   "title": "NFVAgent: A Retrieval-Augmented LLM Agent for Resilient NFV Failure Recovery",
+   "year": 2025,
+   "venue": "Conference on Network and Service Management",
+   "citations": 1,
+   "doi": "10.23919/CNSM67658.2025.11297536",
+   "arxiv": null,
+   "url": "https://doi.org/10.23919/CNSM67658.2025.11297536"
+  },
+  {
+   "title": "Cross-Domain Orchestration with Multi-Agent LLM Framework for Enhanced Task Automation",
+   "year": 2025,
+   "venue": "Optical Fiber Communications Conference and Exhibition",
+   "citations": 3,
+   "doi": "10.1364/ofc.2025.m3z.10",
+   "arxiv": null,
+   "url": "https://doi.org/10.1364/ofc.2025.m3z.10"
+  },
+  {
+   "title": "A Network Arena for Benchmarking AI Agents on Network Troubleshooting",
+   "year": 2025,
+   "venue": "arXiv.org",
+   "citations": 15,
+   "doi": "10.48550/arXiv.2512.16381",
+   "arxiv": "2512.16381",
+   "url": "https://doi.org/10.48550/arXiv.2512.16381"
+  },
+  {
+   "title": "NetGent: Agent-Based Automation of Network Application Workflows",
+   "year": 2025,
+   "venue": "arXiv.org",
+   "citations": 4,
+   "doi": "10.48550/arXiv.2509.00625",
+   "arxiv": "2509.00625",
+   "url": "https://doi.org/10.48550/arXiv.2509.00625"
+  },
+  {
+   "title": "SADE: Symptom-Aware Diagnostic Escalation for LLM-Based Network Troubleshooting",
+   "year": 2026,
+   "venue": "IEEE Conference on Local Computer Networks",
+   "citations": 3,
+   "doi": "10.48550/arXiv.2605.04530",
+   "arxiv": "2605.04530",
+   "url": "https://doi.org/10.48550/arXiv.2605.04530"
+  },
+  {
+   "title": "LLM-Assisted Network Automation Based on Agentic AI Architectures",
+   "year": 2025,
+   "venue": "Advanced Photonics Congress (IPR, Networks, NOMA, SOLITH, SPPCom)",
+   "citations": 0,
+   "doi": "10.1364/networks.2025.nem2c.1",
+   "arxiv": null,
+   "url": "https://doi.org/10.1364/networks.2025.nem2c.1"
+  },
+  {
+   "title": "A YANG-Grounded LLM Agent Supporting Multi-Vendor OpenROADM Optical Transport Networks",
+   "year": 2026,
+   "venue": "Conference on Applications, Technologies, Architectures, and Protocols for Computer Communication",
+   "citations": 1,
+   "doi": "10.1145/3789240.3822606",
+   "arxiv": null,
+   "url": "https://doi.org/10.1145/3789240.3822606"
+  },
+  {
+   "title": "Toward Agentic Optical Networks: A Vision of LLM Agent-Driven Autonomous Lifecycle Management",
+   "year": 2026,
+   "venue": "",
+   "citations": 0,
+   "doi": null,
+   "arxiv": "2609.32226",
+   "url": "https://arxiv.org/abs/2609.32226"
+  },
+  {
+   "title": "Deceptive Misuse of Low-Code Platforms: Visualizing the Performance of Disruptive Cyber Effects from Human and LLM Agent Attackers",
+   "year": 2026,
+   "venue": "AAAI Summer Symposia",
+   "citations": 0,
+   "doi": "10.1609/aaaiss.v9i1.42943",
+   "arxiv": null,
+   "url": "https://doi.org/10.1609/aaaiss.v9i1.42943"
+  },
+  {
+   "title": "LLM-Based AI Agent for VNF Deployment in OpenStack Environment",
+   "year": 2025,
+   "venue": "IEEE/IFIP Network Operations and Management Symposium",
+   "citations": 7,
+   "doi": "10.1109/NOMS57970.2025.11073607",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/NOMS57970.2025.11073607"
+  },
+  {
+   "title": "Toward Efficient LLM Agents for Emulator-Based Network Experiment Automation",
+   "year": 2026,
+   "venue": "Asia-Pacific Workshop on Networking",
+   "citations": 0,
+   "doi": "10.1145/3820441.3821240",
+   "arxiv": null,
+   "url": "https://doi.org/10.1145/3820441.3821240"
+  }
+ ],
+ "aiops": [
+  {
+   "title": "AIOps for Reliability: Evaluating Large Language Models for Automated Root Cause Analysis in Chaos Engineering",
+   "year": 2025,
+   "venue": "International Conference on Conceptual Structures",
+   "citations": 9,
+   "doi": "10.1007/978-3-031-97564-6_25",
+   "arxiv": null,
+   "url": "https://doi.org/10.1007/978-3-031-97564-6_25"
+  },
+  {
+   "title": "A Framework For Real-Time Root Cause Analysis In Connected Vehicle Iot Data Streams Using Aiops",
+   "year": 2025,
+   "venue": "International Journal of Emerging Trends in Computer Science and Information Technology",
+   "citations": 0,
+   "doi": "10.63282/3050-9246.ijetcsit-v6i1p117",
+   "arxiv": null,
+   "url": "https://doi.org/10.63282/3050-9246.ijetcsit-v6i1p117"
+  },
+  {
+   "title": "Automated Root Cause Analysis in Distributed Cloud Environments: An Unsupervised AIOps Approach Using BigQuery ML",
+   "year": 2026,
+   "venue": "International Journal of Computational and Experimental Science and Engineering",
+   "citations": 1,
+   "doi": "10.22399/ijcesen.4996",
+   "arxiv": null,
+   "url": "https://doi.org/10.22399/ijcesen.4996"
+  },
+  {
+   "title": "RCAgentOps: Evidence-Grounded LLM Agents for Root Cause Analysis in AIOPs",
+   "year": 2026,
+   "venue": "2026 5th International Conference on Artificial Intelligence, Internet of Things and Cloud Computing Technology (AIoTC)",
+   "citations": 0,
+   "doi": "10.1109/AIoTC71250.2026.11689122",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/AIoTC71250.2026.11689122"
+  },
+  {
+   "title": "KubeAIOps: An AIOps Framework for Proactive Anomaly and Incident Detection and Root Cause Analysis in Kubernetes",
+   "year": 2026,
+   "venue": "2026 6th International Conference on Intelligent Technologies (CONIT)",
+   "citations": 0,
+   "doi": "10.1109/CONIT69683.2026.11621638",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/CONIT69683.2026.11621638"
+  },
+  {
+   "title": "A Survey of Anomaly Detection and Root Cause Analysis Techniques for Artificial Intelligence for IT Operations (AIOps) in Large-Scale Software Systems",
+   "year": 2026,
+   "venue": "2026 6th International Conference on Artificial Intelligence and Industrial Technology Applications (AIITA)",
+   "citations": 0,
+   "doi": "10.1109/AIITA69518.2026.11567316",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/AIITA69518.2026.11567316"
+  },
+  {
+   "title": "TriCalRAG: A Three-Strategy, Retrieval-Augmented Benchmark for On-Premise LLM-Based Root Cause Analysis in AIOps",
+   "year": 2026,
+   "venue": "",
+   "citations": 1,
+   "doi": null,
+   "arxiv": "2609.14762",
+   "url": "https://arxiv.org/abs/2609.14762"
+  },
+  {
+   "title": "Graph-Augmented Multi-Agent Robust Root Cause Analysis in AIOps",
+   "year": 2026,
+   "venue": "Computers, Materials &amp; Continua",
+   "citations": 2,
+   "doi": "10.32604/cmc.2026.077908",
+   "arxiv": null,
+   "url": "https://doi.org/10.32604/cmc.2026.077908"
+  },
+  {
+   "title": "Breaking the Cycle of Recurring Failures: Generative AI and Root Cause Analysis in Legacy Banking Systems",
+   "year": 2025,
+   "venue": "2025 IEEE/ACM International Workshop on Cloud Intelligence & AIOps (AIOps)",
+   "citations": 1,
+   "doi": "10.1109/AIOps66738.2025.00010",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/AIOps66738.2025.00010"
+  },
+  {
+   "title": "Research on fault diagnosis and root cause analysis based on full stack observability",
+   "year": 2025,
+   "venue": "arXiv.org",
+   "citations": 2,
+   "doi": "10.48550/arXiv.2509.12231",
+   "arxiv": "2509.12231",
+   "url": "https://doi.org/10.48550/arXiv.2509.12231"
+  },
+  {
+   "title": "TAMO:Fine-Grained Root Cause Analysis via Tool-Assisted LLM Agent with Multi-Modality Observation Data",
+   "year": 2025,
+   "venue": "arXiv.org",
+   "citations": 2,
+   "doi": "10.48550/arXiv.2504.20462",
+   "arxiv": null,
+   "url": "https://doi.org/10.48550/arXiv.2504.20462"
+  },
+  {
+   "title": "PyRCA: A Library for Metric-based Root Cause Analysis",
+   "year": 2023,
+   "venue": "arXiv.org",
+   "citations": 9,
+   "doi": "10.48550/arXiv.2306.11417",
+   "arxiv": "2306.11417",
+   "url": "https://doi.org/10.48550/arXiv.2306.11417"
+  },
+  {
+   "title": "Progressing from Anomaly Detection to Automated Log Labeling and Pioneering Root Cause Analysis",
+   "year": 2023,
+   "venue": "2023 IEEE International Conference on Data Mining Workshops (ICDMW)",
+   "citations": 3,
+   "doi": "10.1109/ICDMW60847.2023.00160",
+   "arxiv": "2312.14748",
+   "url": "https://doi.org/10.1109/ICDMW60847.2023.00160"
+  },
+  {
+   "title": "TriCalRAG: A Three-Strategy, Retrieval-Augmented Benchmark for On-Premise LLM-Based Root Cause Analysis in AIOps",
+   "year": null,
+   "venue": "",
+   "citations": 0,
+   "doi": null,
+   "arxiv": null,
+   "url": null
+  },
+  {
+   "title": "Root Cause Analysis Method Based on Large Language Models with Residual Connection Structures",
+   "year": 2026,
+   "venue": "arXiv.org",
+   "citations": 1,
+   "doi": "10.48550/arXiv.2602.08804",
+   "arxiv": "2602.08804",
+   "url": "https://doi.org/10.48550/arXiv.2602.08804"
+  }
+ ],
+ "te-rl": [
+  {
+   "title": "An adaptive traffic signal control scheme with Proximal Policy Optimization based on deep reinforcement learning for a single intersection",
+   "year": 2025,
+   "venue": "Engineering applications of artificial intelligence",
+   "citations": 38,
+   "doi": "10.1016/j.engappai.2025.110440",
+   "arxiv": null,
+   "url": "https://doi.org/10.1016/j.engappai.2025.110440"
+  },
+  {
+   "title": "Deep reinforcement learning-based air traffic flow coordination in flow-centric airspace",
+   "year": 2025,
+   "venue": "Advanced Engineering Informatics",
+   "citations": 14,
+   "doi": "10.1016/j.aei.2025.103342",
+   "arxiv": null,
+   "url": "https://doi.org/10.1016/j.aei.2025.103342"
+  },
+  {
+   "title": "Design of a Hybrid Intelligent Traffic Signal Control System Using Nearest Neighbor Algorithm and Deep Reinforcement Learning with SUMO Simulator",
+   "year": 2025,
+   "venue": "Journal of Research in Engineering and Computer Sciences",
+   "citations": 7,
+   "doi": "10.63002/jrecs.303.983",
+   "arxiv": null,
+   "url": "https://doi.org/10.63002/jrecs.303.983"
+  },
+  {
+   "title": "Energy management and optimization for fuel cell vehicles incorporating deep reinforcement learning and traffic light information",
+   "year": 2025,
+   "venue": "Proceedings of the Institution of mechanical engineers. Part D, journal of automobile engineering",
+   "citations": 1,
+   "doi": "10.1177/09544070251313670",
+   "arxiv": null,
+   "url": "https://doi.org/10.1177/09544070251313670"
+  },
+  {
+   "title": "A dueling double deep Q-network with style-based recalibration module for traffic light optimization in deep reinforcement learning",
+   "year": 2025,
+   "venue": "Proceedings of the Institution of mechanical engineers. Part D, journal of automobile engineering",
+   "citations": 2,
+   "doi": "10.1177/09544070241310057",
+   "arxiv": null,
+   "url": "https://doi.org/10.1177/09544070241310057"
+  },
+  {
+   "title": "A survey on deep reinforcement learning approaches for traffic signal control",
+   "year": 2024,
+   "venue": "Engineering applications of artificial intelligence",
+   "citations": 104,
+   "doi": "10.1016/j.engappai.2024.108100",
+   "arxiv": null,
+   "url": "https://doi.org/10.1016/j.engappai.2024.108100"
+  },
+  {
+   "title": "MP-PPO:A Deep Reinforcement Learning Model for Industrial IoT Malicious Traffic Data Detection",
+   "year": 2025,
+   "venue": "2025 5th International Conference on Computer, Internet of Things and Control Engineering (CITCE)",
+   "citations": 0,
+   "doi": "10.1109/CITCE67565.2025.11360043",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/CITCE67565.2025.11360043"
+  },
+  {
+   "title": "Real-Time Urban Traffic Management with AI and Deep Reinforcement Learning in Kolkata",
+   "year": 2025,
+   "venue": "2025 International Conference on Emerging Engineering Technologies and Applications (IC-EETA)",
+   "citations": 0,
+   "doi": "10.1109/ic-eeta66496.2025.11547956",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ic-eeta66496.2025.11547956"
+  },
+  {
+   "title": "Integration of Visible Light Communication and Deep Reinforcement Learning to Enhance Urban Traffic Management",
+   "year": 2025,
+   "venue": "2025 9th International Young Engineers Forum on Electrical and Computer Engineering (YEF-ECE)",
+   "citations": 0,
+   "doi": "10.1109/YEF-ECE66503.2025.11117529",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/YEF-ECE66503.2025.11117529"
+  },
+  {
+   "title": "Traffic Congestion Pricing Mechanism Based on Deep Reinforcement Learning",
+   "year": 2025,
+   "venue": "Frontiers in Traffic and Transportation Engineering",
+   "citations": 0,
+   "doi": "10.23977/ftte.2025.050105",
+   "arxiv": null,
+   "url": "https://doi.org/10.23977/ftte.2025.050105"
+  },
+  {
+   "title": "Probabilistic Graph Models: A Key to Boosting Deep Reinforcement Learning in Urban Traffic Networks",
+   "year": 2025,
+   "venue": "International Conference on Computer and Automation Engineering",
+   "citations": 0,
+   "doi": "10.1109/ICCAE64891.2025.10980562",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ICCAE64891.2025.10980562"
+  },
+  {
+   "title": "Smart Pedestrian-Vehicle Signal Light: A Policy Gradient-Based Deep Reinforcement Learning Model for Single-Intersection Traffic Signal Control",
+   "year": 2025,
+   "venue": "2025 5th International Conference on Neural Networks, Information and Communication Engineering (NNICE)",
+   "citations": 0,
+   "doi": "10.1109/NNICE64954.2025.11064433",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/NNICE64954.2025.11064433"
+  },
+  {
+   "title": "A Deep Reinforcement Learning Framework for Real-Time Vehicle Routing with Dynamic Traffic Conditions",
+   "year": 2025,
+   "venue": "2025 IEEE International Conference on Recent Advances in Systems Science and Engineering (RASSE)",
+   "citations": 0,
+   "doi": "10.1109/RASSE64831.2025.11315346",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/RASSE64831.2025.11315346"
+  },
+  {
+   "title": "Parameterized-action based deep reinforcement learning for intelligent traffic signal control",
+   "year": 2025,
+   "venue": "Engineering applications of artificial intelligence",
+   "citations": 9,
+   "doi": "10.1016/j.engappai.2025.111422",
+   "arxiv": null,
+   "url": "https://doi.org/10.1016/j.engappai.2025.111422"
+  },
+  {
+   "title": "Traffic signal control based on deep reinforcement learning using state fusion and trend reward",
+   "year": 2025,
+   "venue": "Engineering applications of artificial intelligence",
+   "citations": 9,
+   "doi": "10.1016/j.engappai.2025.111701",
+   "arxiv": null,
+   "url": "https://doi.org/10.1016/j.engappai.2025.111701"
+  }
+ ],
+ "gnn-net": [
+  {
+   "title": "DistTGL: Distributed Memory-Based Temporal Graph Neural Network Training",
+   "year": 2023,
+   "venue": "International Conference for High Performance Computing, Networking, Storage and Analysis",
+   "citations": 29,
+   "doi": "10.1145/3581784.3607056",
+   "arxiv": "2307.07649",
+   "url": "https://doi.org/10.1145/3581784.3607056"
+  },
+  {
+   "title": "Tango: Rethinking Quantization for Graph Neural Network Training on GPUs",
+   "year": 2023,
+   "venue": "International Conference for High Performance Computing, Networking, Storage and Analysis",
+   "citations": 14,
+   "doi": "10.1145/3581784.3607037",
+   "arxiv": "2308.00890",
+   "url": "https://doi.org/10.1145/3581784.3607037"
+  },
+  {
+   "title": "WholeGraph: A Fast Graph Neural Network Training Framework with Multi-GPU Distributed Shared Memory Architecture",
+   "year": 2022,
+   "venue": "International Conference for High Performance Computing, Networking, Storage and Analysis",
+   "citations": 29,
+   "doi": "10.1109/SC41404.2022.00059",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/SC41404.2022.00059"
+  },
+  {
+   "title": "Reducing Communication in Graph Neural Network Training",
+   "year": 2020,
+   "venue": "International Conference for High Performance Computing, Networking, Storage and Analysis",
+   "citations": 128,
+   "doi": "10.1109/SC41405.2020.00074",
+   "arxiv": "2005.03300",
+   "url": "https://doi.org/10.1109/SC41405.2020.00074"
+  },
+  {
+   "title": "FeatGraph: A Flexible and Efficient Backend for Graph Neural Network Systems",
+   "year": 2020,
+   "venue": "International Conference for High Performance Computing, Networking, Storage and Analysis",
+   "citations": 97,
+   "doi": "10.1109/SC41405.2020.00075",
+   "arxiv": "2008.11359",
+   "url": "https://doi.org/10.1109/SC41405.2020.00075"
+  },
+  {
+   "title": "ASFGNN: Automated separated-federated graph neural network",
+   "year": 2020,
+   "venue": "Peer-to-Peer Networking and Applications",
+   "citations": 89,
+   "doi": "10.1007/s12083-021-01074-w",
+   "arxiv": "2011.03248",
+   "url": "https://doi.org/10.1007/s12083-021-01074-w"
+  },
+  {
+   "title": "RouteNet-Fermi: Network Modeling With Graph Neural Networks",
+   "year": 2022,
+   "venue": "IEEE/ACM Transactions on Networking",
+   "citations": 110,
+   "doi": "10.1109/TNET.2023.3269983",
+   "arxiv": "2212.12070",
+   "url": "https://doi.org/10.1109/TNET.2023.3269983"
+  },
+  {
+   "title": "Unveiling the potential of Graph Neural Networks for network modeling and optimization in SDN",
+   "year": 2019,
+   "venue": "ACM SIGCOMM Symposium on Software Defined Networking Research",
+   "citations": 224,
+   "doi": "10.1145/3314148.3314357",
+   "arxiv": "1901.08113",
+   "url": "https://doi.org/10.1145/3314148.3314357"
+  },
+  {
+   "title": "Scalable and Consistent Graph Neural Networks for Distributed Mesh-based Data-driven Modeling",
+   "year": 2024,
+   "venue": "SC24-W: Workshops of the International Conference for High Performance Computing, Networking, Storage and Analysis",
+   "citations": 6,
+   "doi": "10.1109/SCW63240.2024.00146",
+   "arxiv": "2410.01657",
+   "url": "https://doi.org/10.1109/SCW63240.2024.00146"
+  },
+  {
+   "title": "Graph Neural Networks for Communication Networks: Context, Use Cases and Opportunities",
+   "year": 2021,
+   "venue": "IEEE Network",
+   "citations": 115,
+   "doi": "10.1109/MNET.123.2100773",
+   "arxiv": "2112.14792",
+   "url": "https://doi.org/10.1109/MNET.123.2100773"
+  },
+  {
+   "title": "Graph Neural Network-based C-RAN Monitoring for Beyond 5G Non-Terrestrial Networks",
+   "year": 2024,
+   "venue": "IEEE International Workshop on Metrology for AeroSpace",
+   "citations": 7,
+   "doi": "10.1109/MetroAeroSpace61015.2024.10591610",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/MetroAeroSpace61015.2024.10591610"
+  },
+  {
+   "title": "A Graph Neural Network-Based Digital Twin for Network Slicing Management",
+   "year": 2022,
+   "venue": "IEEE Transactions on Industrial Informatics",
+   "citations": 184,
+   "doi": "10.1109/tii.2020.3047843",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/tii.2020.3047843"
+  },
+  {
+   "title": "The Quantum Graph Recurrent Neural Network",
+   "year": 2023,
+   "venue": "2023 Second International Conference On Smart Technologies For Smart Nation (SmartTechCon)",
+   "citations": 6,
+   "doi": "10.1109/SmartTechCon57526.2023.10391361",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/SmartTechCon57526.2023.10391361"
+  },
+  {
+   "title": "Deep reinforcement learning meets graph neural networks: Exploring a routing optimization use case",
+   "year": 2019,
+   "venue": "Computer Communications",
+   "citations": 312,
+   "doi": "10.1016/j.comcom.2022.09.029",
+   "arxiv": "1910.07421",
+   "url": "https://doi.org/10.1016/j.comcom.2022.09.029"
+  },
+  {
+   "title": "DeepInf: Social Influence Prediction with Deep Learning",
+   "year": 2018,
+   "venue": "Knowledge Discovery and Data Mining",
+   "citations": 636,
+   "doi": "10.1145/3219819.3220077",
+   "arxiv": "1807.05560",
+   "url": "https://doi.org/10.1145/3219819.3220077"
+  }
+ ],
+ "survey": [
+  {
+   "title": "A comprehensive survey on machine learning for networking: evolution, applications and research opportunities",
+   "year": 2018,
+   "venue": "Journal of Internet Services and Applications",
+   "citations": 980,
+   "doi": "10.1186/s13174-018-0087-2",
+   "arxiv": null,
+   "url": "https://doi.org/10.1186/s13174-018-0087-2"
+  },
+  {
+   "title": "Machine Learning for Computer Systems and Networking: A Survey",
+   "year": 2022,
+   "venue": "ACM Computing Surveys",
+   "citations": 27,
+   "doi": "10.1145/3523057",
+   "arxiv": null,
+   "url": "https://doi.org/10.1145/3523057"
+  },
+  {
+   "title": "Machine Learning for Networking: Workflow, Advances and Opportunities",
+   "year": 2017,
+   "venue": "IEEE Network",
+   "citations": 430,
+   "doi": "10.1109/MNET.2017.1700200",
+   "arxiv": "1709.08339",
+   "url": "https://doi.org/10.1109/MNET.2017.1700200"
+  },
+  {
+   "title": "Unsupervised Machine Learning for Networking: Techniques, Applications and Research Challenges",
+   "year": 2017,
+   "venue": "IEEE Access",
+   "citations": 444,
+   "doi": "10.1109/ACCESS.2019.2916648",
+   "arxiv": "1709.06599",
+   "url": "https://doi.org/10.1109/ACCESS.2019.2916648"
+  },
+  {
+   "title": "A Study of Predicting Social Networking Sites(SNS) Media Disorder Survey Data Using a Machine Learning Approach",
+   "year": 2025,
+   "venue": "2025 International Conference on Multi-Agent Systems for Collaborative Intelligence (ICMSCI)",
+   "citations": 0,
+   "doi": "10.1109/ICMSCI62561.2025.10893898",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ICMSCI62561.2025.10893898"
+  },
+  {
+   "title": "In-Network Machine Learning Using Programmable Network Devices: A Survey",
+   "year": 2024,
+   "venue": "IEEE Communications Surveys and Tutorials",
+   "citations": 88,
+   "doi": "10.1109/COMST.2023.3344351",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/COMST.2023.3344351"
+  },
+  {
+   "title": "Federated Machine Learning: Survey, Multi-Level Classification, Desirable Criteria and Future Directions in Communication and Networking Systems",
+   "year": 2021,
+   "venue": "IEEE Communications Surveys and Tutorials",
+   "citations": 439,
+   "doi": "10.1109/COMST.2021.3058573",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/COMST.2021.3058573"
+  },
+  {
+   "title": "A Survey of Machine Learning Techniques Applied to Software Defined Networking (SDN): Research Issues and Challenges",
+   "year": 2019,
+   "venue": "IEEE Communications Surveys and Tutorials",
+   "citations": 535,
+   "doi": "10.1109/COMST.2018.2866942",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/COMST.2018.2866942"
+  },
+  {
+   "title": "Machine Learning based intrusion detection systems for connected autonomous vehicles: A survey",
+   "year": 2023,
+   "venue": "Peer-to-Peer Networking and Applications",
+   "citations": 46,
+   "doi": "10.1007/s12083-023-01508-7",
+   "arxiv": null,
+   "url": "https://doi.org/10.1007/s12083-023-01508-7"
+  },
+  {
+   "title": "Applications of Machine Learning in Networking: A Survey of Current Issues and Future Challenges",
+   "year": 2021,
+   "venue": "IEEE Access",
+   "citations": 55,
+   "doi": "10.1109/ACCESS.2021.3069210",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ACCESS.2021.3069210"
+  },
+  {
+   "title": "A Survey of Networking Applications Applying the Software Defined Networking Concept Based on Machine Learning",
+   "year": 2019,
+   "venue": "IEEE Access",
+   "citations": 140,
+   "doi": "10.1109/ACCESS.2019.2928564",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ACCESS.2019.2928564"
+  },
+  {
+   "title": "A survey on cognitive radio network attack mitigation using machine learning and blockchain",
+   "year": 2023,
+   "venue": "EURASIP Journal on Wireless Communications and Networking",
+   "citations": 17,
+   "doi": "10.1186/s13638-023-02290-z",
+   "arxiv": null,
+   "url": "https://doi.org/10.1186/s13638-023-02290-z"
+  },
+  {
+   "title": "CPS data streams analytics based on machine learning for Cloud and Fog Computing: A survey",
+   "year": 2019,
+   "venue": "Future generations computer systems",
+   "citations": 107,
+   "doi": "10.1016/j.future.2018.06.042",
+   "arxiv": null,
+   "url": "https://doi.org/10.1016/j.future.2018.06.042"
+  },
+  {
+   "title": "Investigating the Prospect of Leveraging Blockchain and Machine Learning to Secure Vehicular Networks: A Survey",
+   "year": 2022,
+   "venue": "IEEE transactions on intelligent transportation systems (Print)",
+   "citations": 107,
+   "doi": "10.1109/tits.2020.3019101",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/tits.2020.3019101"
+  },
+  {
+   "title": "Machine-Learning-Assisted Security and Privacy Provisioning for Edge Computing: A Survey",
+   "year": 2022,
+   "venue": "IEEE Internet of Things Journal",
+   "citations": 90,
+   "doi": "10.1109/jiot.2021.3098051",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/jiot.2021.3098051"
+  }
+ ],
+ "dt": [
+  {
+   "title": "Network Digital Twin for 6G and Beyond: An End-to-End View Across Multi-Domain Network Ecosystems",
+   "year": 2025,
+   "venue": "IEEE Open Journal of the Communications Society",
+   "citations": 58,
+   "doi": "10.1109/OJCOMS.2025.3599866",
+   "arxiv": "2506.01609",
+   "url": "https://doi.org/10.1109/OJCOMS.2025.3599866"
+  },
+  {
+   "title": "Network Digital Twin Toward Networking, Telecommunications, and Traffic Engineering: A Survey",
+   "year": 2025,
+   "venue": "IEEE Access",
+   "citations": 37,
+   "doi": "10.1109/ACCESS.2025.3531947",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ACCESS.2025.3531947"
+  },
+  {
+   "title": "Network Digital Twin for 5G-Enabled Mobile Robots",
+   "year": 2025,
+   "venue": "IEEE Wireless Communications and Networking Conference",
+   "citations": 11,
+   "doi": "10.1109/WCNC61545.2025.10978546",
+   "arxiv": "2502.02253",
+   "url": "https://doi.org/10.1109/WCNC61545.2025.10978546"
+  },
+  {
+   "title": "Network Digital Twin: Context, Enabling Technologies, and Opportunities",
+   "year": 2022,
+   "venue": "IEEE Communications Magazine",
+   "citations": 181,
+   "doi": "10.1109/MCOM.001.2200012",
+   "arxiv": "2205.14206",
+   "url": "https://doi.org/10.1109/MCOM.001.2200012"
+  },
+  {
+   "title": "Wireless Network Digital Twin for 6G: Generative AI as a Key Enabler",
+   "year": 2023,
+   "venue": "IEEE wireless communications",
+   "citations": 138,
+   "doi": "10.1109/MWC.002.2300564",
+   "arxiv": "2311.17451",
+   "url": "https://doi.org/10.1109/MWC.002.2300564"
+  },
+  {
+   "title": "AI-Native Network Digital Twin for Intelligent Network Management in 6G",
+   "year": 2024,
+   "venue": "IEEE Network",
+   "citations": 18,
+   "doi": "10.1109/MNET.2025.3628267",
+   "arxiv": "2410.01584",
+   "url": "https://doi.org/10.1109/MNET.2025.3628267"
+  },
+  {
+   "title": "An Efficient Data-Driven Traffic Prediction Framework for Network Digital Twin",
+   "year": 2024,
+   "venue": "IEEE Network",
+   "citations": 17,
+   "doi": "10.1109/MNET.2023.3335952",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/MNET.2023.3335952"
+  },
+  {
+   "title": "6G autonomous radio access network empowered by artificial intelligence and network digital twin",
+   "year": 2024,
+   "venue": "Frontiers of Information Technology & Electronic Engineering",
+   "citations": 17,
+   "doi": "10.1631/FITEE.2400569",
+   "arxiv": null,
+   "url": "https://doi.org/10.1631/FITEE.2400569"
+  },
+  {
+   "title": "On the Design of a Network Digital Twin for the Radio Access Network in 5G and Beyond",
+   "year": 2023,
+   "venue": "Italian National Conference on Sensors",
+   "citations": 43,
+   "doi": "10.3390/s23031197",
+   "arxiv": null,
+   "url": "https://doi.org/10.3390/s23031197"
+  },
+  {
+   "title": "Design of an AI-driven Network Digital Twin for advanced 5G-6G network management",
+   "year": 2024,
+   "venue": "IEEE/IFIP Network Operations and Management Symposium",
+   "citations": 11,
+   "doi": "10.1109/NOMS59830.2024.10575106",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/NOMS59830.2024.10575106"
+  },
+  {
+   "title": "Learning a Network Digital Twin as a Hybrid System",
+   "year": 2025,
+   "venue": "arXiv.org",
+   "citations": 0,
+   "doi": "10.48550/arXiv.2511.00291",
+   "arxiv": "2511.00291",
+   "url": "https://doi.org/10.48550/arXiv.2511.00291"
+  },
+  {
+   "title": "Self-Maintained Network Digital Twin for Human-Centric Wireless Metaverse",
+   "year": 2024,
+   "venue": "IEEE Network",
+   "citations": 8,
+   "doi": "10.1109/MNET.2023.3337644",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/MNET.2023.3337644"
+  },
+  {
+   "title": "B5GEMINI: AI-Driven Network Digital Twin",
+   "year": 2022,
+   "venue": "Italian National Conference on Sensors",
+   "citations": 50,
+   "doi": "10.3390/s22114106",
+   "arxiv": null,
+   "url": "https://doi.org/10.3390/s22114106"
+  },
+  {
+   "title": "Framework for the development of a Network Digital Twin",
+   "year": 2024,
+   "venue": "IEEE/IFIP Network Operations and Management Symposium",
+   "citations": 2,
+   "doi": "10.1109/NOMS59830.2024.10575882",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/NOMS59830.2024.10575882"
+  },
+  {
+   "title": "Deep Learning-Based Modeling of 5G Core Control Plane for 5G Network Digital Twin",
+   "year": 2023,
+   "venue": "IEEE Transactions on Cognitive Communications and Networking",
+   "citations": 18,
+   "doi": "10.1109/TCCN.2023.3324634",
+   "arxiv": "2302.06980",
+   "url": "https://doi.org/10.1109/TCCN.2023.3324634"
+  }
+ ],
+ "prog-ml": [
+  {
+   "title": "Showcasing In-Switch Machine Learning Inference",
+   "year": 2023,
+   "venue": "IEEE Conference on Network Softwarization",
+   "citations": 0,
+   "doi": "10.1109/NetSoft57336.2023.10175464",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/NetSoft57336.2023.10175464"
+  },
+  {
+   "title": "ML-NIC: accelerating machine learning inference using smart network interface cards",
+   "year": 2025,
+   "venue": "Frontiers Comput. Sci.",
+   "citations": 6,
+   "doi": "10.3389/fcomp.2024.1493399",
+   "arxiv": null,
+   "url": "https://doi.org/10.3389/fcomp.2024.1493399"
+  },
+  {
+   "title": "Henna: hierarchical machine learning inference in programmable switches",
+   "year": 2022,
+   "venue": "NativeNI@CoNEXT",
+   "citations": 30,
+   "doi": "10.1145/3565009.3569520",
+   "arxiv": null,
+   "url": "https://doi.org/10.1145/3565009.3569520"
+  },
+  {
+   "title": "A Machine Learning-Based Toolbox for P4 Programmable Data-Planes",
+   "year": 2024,
+   "venue": "IEEE Transactions on Network and Service Management",
+   "citations": 17,
+   "doi": "10.1109/TNSM.2024.3402074",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TNSM.2024.3402074"
+  },
+  {
+   "title": "FENIX: Enabling In-Network DNN Inference with FPGA-Enhanced Programmable Switches",
+   "year": 2025,
+   "venue": "arXiv.org",
+   "citations": 12,
+   "doi": "10.48550/arXiv.2507.14891",
+   "arxiv": "2507.14891",
+   "url": "https://doi.org/10.48550/arXiv.2507.14891"
+  },
+  {
+   "title": "An FPGA Integrated Programmable Switch Architecture for Data Plane DNN Inference",
+   "year": 2026,
+   "venue": "IEEE Transactions on Networking",
+   "citations": 0,
+   "doi": "10.1109/TON.2026.3725793",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TON.2026.3725793"
+  },
+  {
+   "title": "Jewel: Resource-Efficient Joint Packet and Flow Level Inference in Programmable Switches",
+   "year": 2024,
+   "venue": "IEEE Conference on Computer Communications",
+   "citations": 34,
+   "doi": "10.1109/INFOCOM52122.2024.10621365",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/INFOCOM52122.2024.10621365"
+  },
+  {
+   "title": "Practical and General-Purpose Flow-Level Inference With Random Forests in Programmable Switches",
+   "year": 2025,
+   "venue": "IEEE Transactions on Networking",
+   "citations": 4,
+   "doi": "10.1109/TON.2025.3564465",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TON.2025.3564465"
+  },
+  {
+   "title": "Flowrest: Practical Flow-Level Inference in Programmable Switches with Random Forests",
+   "year": 2023,
+   "venue": "IEEE Conference on Computer Communications",
+   "citations": 76,
+   "doi": "10.1109/INFOCOM53939.2023.10229100",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/INFOCOM53939.2023.10229100"
+  },
+  {
+   "title": "MAT4PM: Machine Learning-Guided Adaptive Threshold Control for P4-Based Monitoring in SDNs",
+   "year": 2026,
+   "venue": "IEEE Transactions on Network and Service Management",
+   "citations": 1,
+   "doi": "10.1109/TNSM.2026.3677416",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TNSM.2026.3677416"
+  },
+  {
+   "title": "The case for native multi-node in-network machine learning",
+   "year": 2022,
+   "venue": "NativeNI@CoNEXT",
+   "citations": 4,
+   "doi": "10.1145/3565009.3569524",
+   "arxiv": null,
+   "url": "https://doi.org/10.1145/3565009.3569524"
+  },
+  {
+   "title": "Quark: Implementing Convolutional Neural Networks Entirely on Programmable Data Plane",
+   "year": 2025,
+   "venue": "IEEE Conference on Computer Communications",
+   "citations": 18,
+   "doi": "10.1109/INFOCOM55648.2025.11044654",
+   "arxiv": "2501.15100",
+   "url": "https://doi.org/10.1109/INFOCOM55648.2025.11044654"
+  },
+  {
+   "title": "Demonstrating Distributed Inference in the User Plane with DUNE",
+   "year": 2025,
+   "venue": "Conference on Computer Communications Workshops",
+   "citations": 0,
+   "doi": "10.1109/INFOCOMWKSHPS65812.2025.11153008",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/INFOCOMWKSHPS65812.2025.11153008"
+  },
+  {
+   "title": "iGuard: Efficient Isolation Forest Design for Malicious Traffic Detection in Programmable Switches",
+   "year": 2024,
+   "venue": "Conference on Emerging Network Experiment and Technology",
+   "citations": 7,
+   "doi": "10.1145/3680121.3697807",
+   "arxiv": null,
+   "url": "https://doi.org/10.1145/3680121.3697807"
+  },
+  {
+   "title": "Towards Real-Time Intrusion Detection in P4-Programmable 5G User Plane Functions",
+   "year": 2024,
+   "venue": "IEEE International Conference on Network Protocols",
+   "citations": 3,
+   "doi": "10.1109/ICNP61940.2024.10858543",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ICNP61940.2024.10858543"
+  }
+ ],
+ "ibn": [
+  {
+   "title": "Empowering a lightweight large language model agent for intent-based networking: harnessing curriculum learning and LoRA fine-tuning",
+   "year": 2026,
+   "venue": "Science China Information Sciences",
+   "citations": 0,
+   "doi": "10.1007/s11432-025-5015-4",
+   "arxiv": null,
+   "url": "https://doi.org/10.1007/s11432-025-5015-4"
+  },
+  {
+   "title": "Clinical Intent-Based Networking Automation: A Large-Language-Model-Enhanced Framework for Healthcare Infrastructure Management",
+   "year": 2026,
+   "venue": "IEEE Internet of Things Journal",
+   "citations": 0,
+   "doi": "10.1109/JIOT.2025.3640674",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/JIOT.2025.3640674"
+  },
+  {
+   "title": "Towards Intent-Based Network Management: Large Language Models for Intent Extraction in 5G Core Networks",
+   "year": 2024,
+   "venue": "International Workshop on the Design of Reliable Communication Networks",
+   "citations": 79,
+   "doi": "10.1109/DRCN60692.2024.10539172",
+   "arxiv": "2403.02238",
+   "url": "https://doi.org/10.1109/DRCN60692.2024.10539172"
+  },
+  {
+   "title": "Integrating LLMs with NetBox and Netmiko for Vendor-Agnostic Intent-Based Networking",
+   "year": 2025,
+   "venue": "IEEE/IFIP Network Operations and Management Symposium",
+   "citations": 4,
+   "doi": "10.1109/NOMS57970.2025.11073741",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/NOMS57970.2025.11073741"
+  },
+  {
+   "title": "Efficient Asynchronous Federated Evaluation with Strategy Similarity Awareness for Intent-Based Networking in Industrial Internet of Things",
+   "year": 2025,
+   "venue": "arXiv.org",
+   "citations": 2,
+   "doi": "10.48550/arXiv.2512.20627",
+   "arxiv": "2512.20627",
+   "url": "https://doi.org/10.48550/arXiv.2512.20627"
+  },
+  {
+   "title": "Intent‐Based Network Configuration Using Large Language Models",
+   "year": 2024,
+   "venue": "International Journal of Network Management",
+   "citations": 35,
+   "doi": "10.1002/nem.2313",
+   "arxiv": null,
+   "url": "https://doi.org/10.1002/nem.2313"
+  },
+  {
+   "title": "Prompt Engineering Based Generative AI as a Service (GAIaaS) for Intent-Based Networking",
+   "year": 2025,
+   "venue": "IEEE/IFIP Network Operations and Management Symposium",
+   "citations": 2,
+   "doi": "10.1109/NOMS57970.2025.11073676",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/NOMS57970.2025.11073676"
+  },
+  {
+   "title": "Agentic AI Empowered Intent-Based Networking for 6G",
+   "year": 2026,
+   "venue": "arXiv.org",
+   "citations": 18,
+   "doi": "10.48550/arXiv.2601.06640",
+   "arxiv": "2601.06640",
+   "url": "https://doi.org/10.48550/arXiv.2601.06640"
+  },
+  {
+   "title": "Intent-Based Networking for Vehicular Service Deployment",
+   "year": 2026,
+   "venue": "International Conference on Smart Communications and Networking",
+   "citations": 0,
+   "doi": "10.1109/SmartNets69662.2026.11604658",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/SmartNets69662.2026.11604658"
+  },
+  {
+   "title": "Large Language Model-Empowered Resource Allocation in Intent-Driven Wireless Networks",
+   "year": 2026,
+   "venue": "IEEE Transactions on Cognitive Communications and Networking",
+   "citations": 2,
+   "doi": "10.1109/TCCN.2026.3663570",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TCCN.2026.3663570"
+  },
+  {
+   "title": "Intent-Driven Optimization of MANET Routing Using a Large Language Model",
+   "year": 2026,
+   "venue": "2026 9th International Balkan Conference on Communications and Networking (Balkancom)",
+   "citations": 0,
+   "doi": "10.1109/BalkanCom71095.2026.11605048",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/BalkanCom71095.2026.11605048"
+  },
+  {
+   "title": "LLMMR: A Large Language Model-Guided Mixture-of-Experts Framework for Intent-Aware Routing in LEO Satellite Networks",
+   "year": 2026,
+   "venue": "IEEE Transactions on Cognitive Communications and Networking",
+   "citations": 0,
+   "doi": "10.1109/TCCN.2026.3726556",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TCCN.2026.3726556"
+  },
+  {
+   "title": "LLNet: An Intent-Driven Approach to Instructing Softwarized Network Devices Using a Small Language Model",
+   "year": 2025,
+   "venue": "IEEE Transactions on Network and Service Management",
+   "citations": 31,
+   "doi": "10.1109/TNSM.2025.3570017",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/TNSM.2025.3570017"
+  },
+  {
+   "title": "Agentic AI-Based Joint Computing and Networking via Mixture of Experts and Large Language Models",
+   "year": 2026,
+   "venue": "arXiv.org",
+   "citations": 1,
+   "doi": "10.48550/arXiv.2605.02911",
+   "arxiv": "2605.02911",
+   "url": "https://doi.org/10.48550/arXiv.2605.02911"
+  },
+  {
+   "title": "Evaluating Large Language Models for Optimized Intent Translation and Contradiction Detection Using KNN in IBN",
+   "year": 2025,
+   "venue": "IEEE Access",
+   "citations": 11,
+   "doi": "10.1109/ACCESS.2025.3534880",
+   "arxiv": null,
+   "url": "https://doi.org/10.1109/ACCESS.2025.3534880"
+  }
+ ]
+}

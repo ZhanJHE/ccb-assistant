@@ -19,7 +19,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from ccb.mcp_server import tool_definitions  # noqa: E402
 
-DOC = ROOT / "docs" / "for-agents.md"
+DOC = ROOT / "开发文档" / "for-agents.md"
 
 
 class TestForAgentsDoc(unittest.TestCase):

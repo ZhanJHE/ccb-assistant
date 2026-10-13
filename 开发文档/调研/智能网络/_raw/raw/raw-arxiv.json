@@ -1,0 +1,3670 @@
+{
+ "cls-traffic": [
+  {
+   "id": "arXiv:2610.04784",
+   "title": "RepTC: Representation-Aware Optimization for Efficient Traffic Classification on Edge IoT Devices",
+   "year": "2026-10-03",
+   "authors": [
+    "Adel Chehade",
+    "Edoardo Ragusa",
+    "Paolo Gastaldo"
+   ],
+   "url": "https://arxiv.org/abs/2610.04784v1",
+   "pdf": "https://arxiv.org/pdf/2610.04784v1"
+  },
+  {
+   "id": "arXiv:2610.00376",
+   "title": "A First Glance at Jev for Network Traffic Classification: Accuracy, Processing Time, and Cost",
+   "year": "2026-09-30",
+   "authors": [
+    "Shenghe Xu",
+    "Lifan Mei"
+   ],
+   "url": "https://arxiv.org/abs/2610.00376v1",
+   "pdf": "https://arxiv.org/pdf/2610.00376v1"
+  },
+  {
+   "id": "arXiv:2609.32242",
+   "title": "Curv-Tail: Lightweight Long-Tailed Encrypted Traffic Classification with Discrete Packet-Length Encoding and Lorentz Prototypes",
+   "year": "2026-09-26",
+   "authors": [
+    "Yankun Wang",
+    "Jun-Jie Huang",
+    "Lin Liu"
+   ],
+   "url": "https://arxiv.org/abs/2609.32242v1",
+   "pdf": "https://arxiv.org/pdf/2609.32242v1"
+  },
+  {
+   "id": "arXiv:2609.32168",
+   "title": "A Priority-Aware Dual-Channel Feature Fusion Method for Urban Rail Service Traffic Classification",
+   "year": "2026-09-26",
+   "authors": [
+    "Xinpeng Liu",
+    "Junhui Zhao",
+    "Zhengyuan Wu"
+   ],
+   "url": "https://arxiv.org/abs/2609.32168v1",
+   "pdf": "https://arxiv.org/pdf/2609.32168v1"
+  },
+  {
+   "id": "arXiv:2609.23521",
+   "title": "Feature Suppression and Differential Privacy for Residential Traffic Classification: A Two-Home Federated Study",
+   "year": "2026-09-20",
+   "authors": [
+    "Márton Pál Lipcsey-Magyar",
+    "Adrian Pekar"
+   ],
+   "url": "https://arxiv.org/abs/2609.23521v1",
+   "pdf": "https://arxiv.org/pdf/2609.23521v1"
+  },
+  {
+   "id": "arXiv:2609.17014",
+   "title": "Beyond Measurement Metrics: A Human-Centered Framework for Semantic Validation of Network Traffic Classification",
+   "year": "2026-09-15",
+   "authors": [
+    "Igor Cherepanov",
+    "David Sessler",
+    "Alex Ulmer"
+   ],
+   "url": "https://arxiv.org/abs/2609.17014v1",
+   "pdf": "https://arxiv.org/pdf/2609.17014v1"
+  },
+  {
+   "id": "arXiv:2608.30745",
+   "title": "TDDM-Melatt: A Decoupled Memory and Diffusion Framework for Generalizable Encrypted Traffic Classification",
+   "year": "2026-08-31",
+   "authors": [
+    "Ze Chen",
+    "Qiming Yu",
+    "Zijia Song"
+   ],
+   "url": "https://arxiv.org/abs/2608.30745v2",
+   "pdf": "https://arxiv.org/pdf/2608.30745v2"
+  },
+  {
+   "id": "arXiv:2608.30000",
+   "title": "Matched-View Cross-Domain Evaluation of WireGuard VPN Traffic Classification Using Early-Flow Fingerprints",
+   "year": "2026-08-30",
+   "authors": [
+    "Yasameen Sajid Razooqi",
+    "Adrian Pekar"
+   ],
+   "url": "https://arxiv.org/abs/2608.30000v1",
+   "pdf": "https://arxiv.org/pdf/2608.30000v1"
+  },
+  {
+   "id": "arXiv:2608.21874",
+   "title": "Pruned Traffic Trees: Native Semantic Compression with a Protocol-Structured Model Family for Encrypted Traffic Classification",
+   "year": "2026-08-22",
+   "authors": [
+    "Yuantu Luo",
+    "Jun Tao",
+    "Xiangyu Xu"
+   ],
+   "url": "https://arxiv.org/abs/2608.21874v1",
+   "pdf": "https://arxiv.org/pdf/2608.21874v1"
+  },
+  {
+   "id": "arXiv:2608.15504",
+   "title": "PERO: Efficient Robust Post-Training Foundation Models for Encrypted Traffic Classification",
+   "year": "2026-08-16",
+   "authors": [
+    "Wumei Du",
+    "Jiarong Wen",
+    "Kaiyu Zhang"
+   ],
+   "url": "https://arxiv.org/abs/2608.15504v1",
+   "pdf": "https://arxiv.org/pdf/2608.15504v1"
+  },
+  {
+   "id": "arXiv:2606.29909",
+   "title": "Traffic-CBM: A Structurally Interpretable Multimodal Framework for Encrypted Traffic Classification",
+   "year": "2026-06-29",
+   "authors": [
+    "Honglei Jin",
+    "Wenshuo Chen",
+    "Shaofeng Liang"
+   ],
+   "url": "https://arxiv.org/abs/2606.29909v2",
+   "pdf": "https://arxiv.org/pdf/2606.29909v2"
+  },
+  {
+   "id": "arXiv:2606.17746",
+   "title": "FlowCLIP: Contrastive Pretraining Using Domain Names for Encrypted Traffic Classification",
+   "year": "2026-06-16",
+   "authors": [
+    "Eun Hun Choi"
+   ],
+   "url": "https://arxiv.org/abs/2606.17746v4",
+   "pdf": "https://arxiv.org/pdf/2606.17746v4"
+  },
+  {
+   "id": "arXiv:2605.17575",
+   "title": "UniAlign: A Model-Agnostic Framework for Robust Network Traffic Classification under Distribution Shifts",
+   "year": "2026-05-17",
+   "authors": [
+    "Tongze Wang",
+    "Xiaohui Xie",
+    "Wenduo Wang"
+   ],
+   "url": "https://arxiv.org/abs/2605.17575v1",
+   "pdf": "https://arxiv.org/pdf/2605.17575v1"
+  },
+  {
+   "id": "arXiv:2605.11034",
+   "title": "MambaNetBurst: Direct Byte-level Network Traffic Classification without Tokenization or Pretraining",
+   "year": "2026-05-11",
+   "authors": [
+    "Gayan K. Kulatilleke",
+    "Siamak Layeghy",
+    "Mahsa Baktashmotlagh"
+   ],
+   "url": "https://arxiv.org/abs/2605.11034v1",
+   "pdf": "https://arxiv.org/pdf/2605.11034v1"
+  },
+  {
+   "id": "arXiv:2603.29537",
+   "title": "Mean Masked Autoencoder with Flow-Mixing for Encrypted Traffic Classification",
+   "year": "2026-03-31",
+   "authors": [
+    "Xiao Liu",
+    "Xiaowei Fu",
+    "Fuxiang Huang"
+   ],
+   "url": "https://arxiv.org/abs/2603.29537v1",
+   "pdf": "https://arxiv.org/pdf/2603.29537v1"
+  },
+  {
+   "id": "arXiv:2603.29520",
+   "title": "TrafficMoE: Heterogeneity-aware Mixture of Experts for Encrypted Traffic Classification",
+   "year": "2026-03-31",
+   "authors": [
+    "Qing He",
+    "Xiaowei Fu",
+    "Lei Zhang"
+   ],
+   "url": "https://arxiv.org/abs/2603.29520v1",
+   "pdf": "https://arxiv.org/pdf/2603.29520v1"
+  },
+  {
+   "id": "arXiv:2603.16748",
+   "title": "Fine-Grained Network Traffic Classification with Contextual QoS Profiling",
+   "year": "2026-03-17",
+   "authors": [
+    "Huiwen Zhang",
+    "Feng Ye"
+   ],
+   "url": "https://arxiv.org/abs/2603.16748v1",
+   "pdf": "https://arxiv.org/pdf/2603.16748v1"
+  },
+  {
+   "id": "arXiv:2603.10051",
+   "title": "Where Do Flow Semantics Reside? A Protocol-Native Tabular Pretraining Paradigm for Encrypted Traffic Classification",
+   "year": "2026-03-09",
+   "authors": [
+    "Sizhe Huang",
+    "Zitong Li",
+    "Shujie Yang"
+   ],
+   "url": "https://arxiv.org/abs/2603.10051v2",
+   "pdf": "https://arxiv.org/pdf/2603.10051v2"
+  },
+  {
+   "id": "arXiv:2601.22494",
+   "title": "Nethira: A Heterogeneity-aware Hierarchical Pre-trained Model for Network Traffic Classification",
+   "year": "2026-01-30",
+   "authors": [
+    "Chungang Lin",
+    "Weiyao Zhang",
+    "Haitong Luo"
+   ],
+   "url": "https://arxiv.org/abs/2601.22494v1",
+   "pdf": "https://arxiv.org/pdf/2601.22494v1"
+  },
+  {
+   "id": "arXiv:2601.21792",
+   "title": "NetMamba+: A Framework of Pre-trained Models for Efficient and Accurate Network Traffic Classification",
+   "year": "2026-01-29",
+   "authors": [
+    "Tongze Wang",
+    "Xiaohui Xie",
+    "Wenduo Wang"
+   ],
+   "url": "https://arxiv.org/abs/2601.21792v1",
+   "pdf": "https://arxiv.org/pdf/2601.21792v1"
+  },
+  {
+   "id": "arXiv:2601.10180",
+   "title": "Bias in the Shadows: Explore Shortcuts in Encrypted Network Traffic Classification",
+   "year": "2026-01-15",
+   "authors": [
+    "Chuyi Wang",
+    "Xiaohui Xie",
+    "Tongze Wang"
+   ],
+   "url": "https://arxiv.org/abs/2601.10180v1",
+   "pdf": "https://arxiv.org/pdf/2601.10180v1"
+  },
+  {
+   "id": "arXiv:2601.04089",
+   "title": "Tutorial on Flow-Based Network Traffic Classification Using Machine Learning",
+   "year": "2026-01-07",
+   "authors": [
+    "Adrian Pekar",
+    "Richard Plny",
+    "Karel Hynek"
+   ],
+   "url": "https://arxiv.org/abs/2601.04089v1",
+   "pdf": "https://arxiv.org/pdf/2601.04089v1"
+  },
+  {
+   "id": "arXiv:2512.21116",
+   "title": "Synecdoche: Efficient and Accurate In-Network Traffic Classification via Direct Packet Sequential Pattern Matching",
+   "year": "2025-12-24",
+   "authors": [
+    "Minyuan Xiao",
+    "Yunchun Li",
+    "Yuchen Zhao"
+   ],
+   "url": "https://arxiv.org/abs/2512.21116v2",
+   "pdf": "https://arxiv.org/pdf/2512.21116v2"
+  },
+  {
+   "id": "arXiv:2512.15753",
+   "title": "TAO-Net: Two-stage Adaptive OOD Classification Network for Fine-grained Encrypted Traffic Classification",
+   "year": "2025-12-11",
+   "authors": [
+    "Zihao Wang",
+    "Wei Peng",
+    "Junming Zhang"
+   ],
+   "url": "https://arxiv.org/abs/2512.15753v1",
+   "pdf": "https://arxiv.org/pdf/2512.15753v1"
+  },
+  {
+   "id": "arXiv:2512.02276",
+   "title": "Adversarial Robustness of Traffic Classification under Resource Constraints: Input Structure Matters",
+   "year": "2025-12-01",
+   "authors": [
+    "Adel Chehade",
+    "Edoardo Ragusa",
+    "Paolo Gastaldo"
+   ],
+   "url": "https://arxiv.org/abs/2512.02276v1",
+   "pdf": "https://arxiv.org/pdf/2512.02276v1"
+  }
+ ],
+ "cls-encrypted": [
+  {
+   "id": "arXiv:2609.32242",
+   "title": "Curv-Tail: Lightweight Long-Tailed Encrypted Traffic Classification with Discrete Packet-Length Encoding and Lorentz Prototypes",
+   "year": "2026-09-26",
+   "authors": [
+    "Yankun Wang",
+    "Jun-Jie Huang",
+    "Lin Liu"
+   ],
+   "url": "https://arxiv.org/abs/2609.32242v1",
+   "pdf": "https://arxiv.org/pdf/2609.32242v1"
+  },
+  {
+   "id": "arXiv:2609.31141",
+   "title": "Unknown-Traffic Detection, Calibration and Shortcut Reliance in Distilled Encrypted-Traffic Classifiers over One Year",
+   "year": "2026-09-25",
+   "authors": [
+    "Mahmoud Abbasi"
+   ],
+   "url": "https://arxiv.org/abs/2609.31141v1",
+   "pdf": "https://arxiv.org/pdf/2609.31141v1"
+  },
+  {
+   "id": "arXiv:2609.06322",
+   "title": "Inevitability of Encrypted Traffic Side-Channel Leakage in the Multi-Class Setting",
+   "year": "2026-09-06",
+   "authors": [
+    "Guangjie Liu",
+    "Guang Cheng",
+    "Weiwei Liu"
+   ],
+   "url": "https://arxiv.org/abs/2609.06322v1",
+   "pdf": "https://arxiv.org/pdf/2609.06322v1"
+  },
+  {
+   "id": "arXiv:2609.02140",
+   "title": "SoK: Where Do Flow Labels Come From? Auditing Label Provenance in Encrypted Traffic Benchmarks",
+   "year": "2026-09-02",
+   "authors": [
+    "Sizhe Huang",
+    "Shujie Yang"
+   ],
+   "url": "https://arxiv.org/abs/2609.02140v1",
+   "pdf": "https://arxiv.org/pdf/2609.02140v1"
+  },
+  {
+   "id": "arXiv:2608.30745",
+   "title": "TDDM-Melatt: A Decoupled Memory and Diffusion Framework for Generalizable Encrypted Traffic Classification",
+   "year": "2026-08-31",
+   "authors": [
+    "Ze Chen",
+    "Qiming Yu",
+    "Zijia Song"
+   ],
+   "url": "https://arxiv.org/abs/2608.30745v2",
+   "pdf": "https://arxiv.org/pdf/2608.30745v2"
+  },
+  {
+   "id": "arXiv:2608.22683",
+   "title": "The Colossus with Feet of Clay: Debunking Encrypted Traffic Classifiers under PQC Evolution",
+   "year": "2026-08-24",
+   "authors": [
+    "Bingzhen Li",
+    "Lingjia Meng",
+    "Runhan Song"
+   ],
+   "url": "https://arxiv.org/abs/2608.22683v1",
+   "pdf": "https://arxiv.org/pdf/2608.22683v1"
+  },
+  {
+   "id": "arXiv:2608.21874",
+   "title": "Pruned Traffic Trees: Native Semantic Compression with a Protocol-Structured Model Family for Encrypted Traffic Classification",
+   "year": "2026-08-22",
+   "authors": [
+    "Yuantu Luo",
+    "Jun Tao",
+    "Xiangyu Xu"
+   ],
+   "url": "https://arxiv.org/abs/2608.21874v1",
+   "pdf": "https://arxiv.org/pdf/2608.21874v1"
+  },
+  {
+   "id": "arXiv:2608.15504",
+   "title": "PERO: Efficient Robust Post-Training Foundation Models for Encrypted Traffic Classification",
+   "year": "2026-08-16",
+   "authors": [
+    "Wumei Du",
+    "Jiarong Wen",
+    "Kaiyu Zhang"
+   ],
+   "url": "https://arxiv.org/abs/2608.15504v1",
+   "pdf": "https://arxiv.org/pdf/2608.15504v1"
+  },
+  {
+   "id": "arXiv:2608.09852",
+   "title": "Generative AI for Encrypted Traffic Analysis: Synthetic Dataset Generation and Classifier Evaluation",
+   "year": "2026-08-10",
+   "authors": [
+    "Harshil Patel",
+    "Himanshu Garg",
+    "Aswani Kumar Cherukuri"
+   ],
+   "url": "https://arxiv.org/abs/2608.09852v1",
+   "pdf": "https://arxiv.org/pdf/2608.09852v1"
+  },
+  {
+   "id": "arXiv:2609.19036",
+   "title": "Structural Decomposability of Encrypted Traffic Side-Channel Leakage",
+   "year": "2026-07-20",
+   "authors": [
+    "Guangjie Liu",
+    "Guang Cheng",
+    "Weiwei Liu"
+   ],
+   "url": "https://arxiv.org/abs/2609.19036v1",
+   "pdf": "https://arxiv.org/pdf/2609.19036v1"
+  },
+  {
+   "id": "arXiv:2607.17889",
+   "title": "Rate-Distortion Function for Encrypted Traffic Side-Channel Defense",
+   "year": "2026-07-20",
+   "authors": [
+    "Guangjie Liu",
+    "Guang Cheng",
+    "Weiwei Liu"
+   ],
+   "url": "https://arxiv.org/abs/2607.17889v1",
+   "pdf": "https://arxiv.org/pdf/2607.17889v1"
+  },
+  {
+   "id": "arXiv:2606.29909",
+   "title": "Traffic-CBM: A Structurally Interpretable Multimodal Framework for Encrypted Traffic Classification",
+   "year": "2026-06-29",
+   "authors": [
+    "Honglei Jin",
+    "Wenshuo Chen",
+    "Shaofeng Liang"
+   ],
+   "url": "https://arxiv.org/abs/2606.29909v2",
+   "pdf": "https://arxiv.org/pdf/2606.29909v2"
+  },
+  {
+   "id": "arXiv:2606.17746",
+   "title": "FlowCLIP: Contrastive Pretraining Using Domain Names for Encrypted Traffic Classification",
+   "year": "2026-06-16",
+   "authors": [
+    "Eun Hun Choi"
+   ],
+   "url": "https://arxiv.org/abs/2606.17746v4",
+   "pdf": "https://arxiv.org/pdf/2606.17746v4"
+  },
+  {
+   "id": "arXiv:2606.04517",
+   "title": "Treat Traffic Like Trees: A Semantic-Preserving Hierarchical Graph-Based Expert Framework for Encrypted Traffic Analysis",
+   "year": "2026-06-03",
+   "authors": [
+    "Yuantu Luo",
+    "Jun Tao",
+    "Linxiao Yu"
+   ],
+   "url": "https://arxiv.org/abs/2606.04517v1",
+   "pdf": "https://arxiv.org/pdf/2606.04517v1"
+  },
+  {
+   "id": "arXiv:2605.31277",
+   "title": "GETA: Generalized Encrypted Traffic Analysis",
+   "year": "2026-05-29",
+   "authors": [
+    "Ransika Gunasekara",
+    "Rahat Masood",
+    "Salil Kanhere"
+   ],
+   "url": "https://arxiv.org/abs/2605.31277v1",
+   "pdf": "https://arxiv.org/pdf/2605.31277v1"
+  },
+  {
+   "id": "arXiv:2604.08140",
+   "title": "Multimodal Reasoning with LLM for Encrypted Traffic Interpretation: A Benchmark",
+   "year": "2026-04-09",
+   "authors": [
+    "Longgang Zhang",
+    "Xiaowei Fu",
+    "Fuxiang Huang"
+   ],
+   "url": "https://arxiv.org/abs/2604.08140v1",
+   "pdf": "https://arxiv.org/pdf/2604.08140v1"
+  },
+  {
+   "id": "arXiv:2603.29537",
+   "title": "Mean Masked Autoencoder with Flow-Mixing for Encrypted Traffic Classification",
+   "year": "2026-03-31",
+   "authors": [
+    "Xiao Liu",
+    "Xiaowei Fu",
+    "Fuxiang Huang"
+   ],
+   "url": "https://arxiv.org/abs/2603.29537v1",
+   "pdf": "https://arxiv.org/pdf/2603.29537v1"
+  },
+  {
+   "id": "arXiv:2603.29520",
+   "title": "TrafficMoE: Heterogeneity-aware Mixture of Experts for Encrypted Traffic Classification",
+   "year": "2026-03-31",
+   "authors": [
+    "Qing He",
+    "Xiaowei Fu",
+    "Lei Zhang"
+   ],
+   "url": "https://arxiv.org/abs/2603.29520v1",
+   "pdf": "https://arxiv.org/pdf/2603.29520v1"
+  },
+  {
+   "id": "arXiv:2603.27811",
+   "title": "Tracking without Seeing: Geospatial Inference using Encrypted Traffic from Distributed Nodes",
+   "year": "2026-03-29",
+   "authors": [
+    "Sadik Yagiz Yetim",
+    "Gaofeng Dong",
+    "Isaac-Neil Zanoria"
+   ],
+   "url": "https://arxiv.org/abs/2603.27811v1",
+   "pdf": "https://arxiv.org/pdf/2603.27811v1"
+  },
+  {
+   "id": "arXiv:2603.10051",
+   "title": "Where Do Flow Semantics Reside? A Protocol-Native Tabular Pretraining Paradigm for Encrypted Traffic Classification",
+   "year": "2026-03-09",
+   "authors": [
+    "Sizhe Huang",
+    "Zitong Li",
+    "Shujie Yang"
+   ],
+   "url": "https://arxiv.org/abs/2603.10051v2",
+   "pdf": "https://arxiv.org/pdf/2603.10051v2"
+  },
+  {
+   "id": "arXiv:2602.14055",
+   "title": "The Inevitability of Side-Channel Leakage in Encrypted Traffic",
+   "year": "2026-02-15",
+   "authors": [
+    "Guangjie Liu",
+    "Guang Chen",
+    "Weiwei Liu"
+   ],
+   "url": "https://arxiv.org/abs/2602.14055v1",
+   "pdf": "https://arxiv.org/pdf/2602.14055v1"
+  },
+  {
+   "id": "arXiv:2601.16160",
+   "title": "CONTEX-T: Contextual Exploitation of Encrypted Traffic for Device Fingerprinting via Transformer Time-Frequency Analysis",
+   "year": "2026-01-22",
+   "authors": [
+    "Nazmul Islam",
+    "Mohammad Zulkernine"
+   ],
+   "url": "https://arxiv.org/abs/2601.16160v2",
+   "pdf": "https://arxiv.org/pdf/2601.16160v2"
+  },
+  {
+   "id": "arXiv:2512.21144",
+   "title": "Encrypted Traffic Detection in Resource Constrained IoT Networks: A Diffusion Model and LLM Integrated Framework",
+   "year": "2025-12-24",
+   "authors": [
+    "Hongjuan Li",
+    "Hui Kang",
+    "Chenbang Liu"
+   ],
+   "url": "https://arxiv.org/abs/2512.21144v1",
+   "pdf": "https://arxiv.org/pdf/2512.21144v1"
+  },
+  {
+   "id": "arXiv:2512.15753",
+   "title": "TAO-Net: Two-stage Adaptive OOD Classification Network for Fine-grained Encrypted Traffic Classification",
+   "year": "2025-12-11",
+   "authors": [
+    "Zihao Wang",
+    "Wei Peng",
+    "Junming Zhang"
+   ],
+   "url": "https://arxiv.org/abs/2512.15753v1",
+   "pdf": "https://arxiv.org/pdf/2512.15753v1"
+  },
+  {
+   "id": "arXiv:2509.17495",
+   "title": "BiLCNet : BiLSTM-Conformer Network for Encrypted Traffic Classification with 5G SA Physical Channel Records",
+   "year": "2025-09-22",
+   "authors": [
+    "Ke Ma",
+    "Jialiang Lu",
+    "Philippe Martins"
+   ],
+   "url": "https://arxiv.org/abs/2509.17495v1",
+   "pdf": "https://arxiv.org/pdf/2509.17495v1"
+  }
+ ],
+ "pred-traffic": [
+  {
+   "id": "arXiv:2606.29856",
+   "title": "LEOSTP: A Spatio-Temporal Traffic Prediction Framework for LEO Satellite Networks",
+   "year": "2026-06-29",
+   "authors": [
+    "Shaoyou Ao",
+    "Yong Niu",
+    "Zhu Han"
+   ],
+   "url": "https://arxiv.org/abs/2606.29856v1",
+   "pdf": "https://arxiv.org/pdf/2606.29856v1"
+  },
+  {
+   "id": "arXiv:2605.09260",
+   "title": "Chain-of-Thought Reasoning Enhances In-Context Learning for LLM-Based Mobile Traffic Prediction",
+   "year": "2026-05-10",
+   "authors": [
+    "MohammadMahdi Ghadaksaz",
+    "Mohammad Farzanullah",
+    "Akram Bin Sediq"
+   ],
+   "url": "https://arxiv.org/abs/2605.09260v1",
+   "pdf": "https://arxiv.org/pdf/2605.09260v1"
+  },
+  {
+   "id": "arXiv:2603.11475",
+   "title": "Deep Learning Network-Temporal Models For Traffic Prediction",
+   "year": "2026-03-12",
+   "authors": [
+    "Yufeng Xin",
+    "Ethan Fan"
+   ],
+   "url": "https://arxiv.org/abs/2603.11475v2",
+   "pdf": "https://arxiv.org/pdf/2603.11475v2"
+  },
+  {
+   "id": "arXiv:2602.13282",
+   "title": "GraFSTNet: Graph-based Frequency SpatioTemporal Network for Cellular Traffic Prediction",
+   "year": "2026-02-06",
+   "authors": [
+    "Ziyi Li",
+    "Hui Ma",
+    "Fei Xing"
+   ],
+   "url": "https://arxiv.org/abs/2602.13282v2",
+   "pdf": "https://arxiv.org/pdf/2602.13282v2"
+  },
+  {
+   "id": "arXiv:2601.02694",
+   "title": "Which Deep Learner? A Systematic Evaluation of Advanced Deep Forecasting Models Accuracy and Efficiency for Network Traffic Prediction",
+   "year": "2026-01-06",
+   "authors": [
+    "Eilaf MA Babai",
+    "Aalaa MA Babai",
+    "Koji Okamura"
+   ],
+   "url": "https://arxiv.org/abs/2601.02694v1",
+   "pdf": "https://arxiv.org/pdf/2601.02694v1"
+  },
+  {
+   "id": "arXiv:2508.08281",
+   "title": "Multi-grained spatial-temporal feature complementarity for accurate online cellular traffic prediction",
+   "year": "2025-08-01",
+   "authors": [
+    "Ningning Fu",
+    "Shengheng Liu",
+    "Weiliang Xie"
+   ],
+   "url": "https://arxiv.org/abs/2508.08281v1",
+   "pdf": "https://arxiv.org/pdf/2508.08281v1"
+  },
+  {
+   "id": "arXiv:2506.12074",
+   "title": "Mobile Traffic Prediction using LLMs with Efficient In-context Demonstration Selection",
+   "year": "2025-06-05",
+   "authors": [
+    "Han Zhang",
+    "Akram Bin Sediq",
+    "Ali Afana"
+   ],
+   "url": "https://arxiv.org/abs/2506.12074v1",
+   "pdf": "https://arxiv.org/pdf/2506.12074v1"
+  },
+  {
+   "id": "arXiv:2503.00154",
+   "title": "Fed-KAN: Federated Learning with Kolmogorov-Arnold Networks for Traffic Prediction",
+   "year": "2025-02-28",
+   "authors": [
+    "Engin Zeydan",
+    "Cristian J. Vaca-Rubio",
+    "Luis Blanco"
+   ],
+   "url": "https://arxiv.org/abs/2503.00154v1",
+   "pdf": "https://arxiv.org/pdf/2503.00154v1"
+  },
+  {
+   "id": "arXiv:2502.12834",
+   "title": "NTP-INT: Network Traffic Prediction-Driven In-band Network Telemetry for High-load Switches",
+   "year": "2025-02-18",
+   "authors": [
+    "Penghui Zhang",
+    "Hua Zhang",
+    "Yuqi Dai"
+   ],
+   "url": "https://arxiv.org/abs/2502.12834v1",
+   "pdf": "https://arxiv.org/pdf/2502.12834v1"
+  },
+  {
+   "id": "arXiv:2502.06743",
+   "title": "A Fair Federated Learning Framework for Collaborative Network Traffic Prediction and Resource Allocation",
+   "year": "2025-02-10",
+   "authors": [
+    "Saroj Kumar Panda",
+    "Tania Panayiotou",
+    "Georgios Ellinas"
+   ],
+   "url": "https://arxiv.org/abs/2502.06743v2",
+   "pdf": "https://arxiv.org/pdf/2502.06743v2"
+  },
+  {
+   "id": "arXiv:2409.14550",
+   "title": "Interpretable Nonroutine Network Traffic Prediction with a Case Study",
+   "year": "2024-09-22",
+   "authors": [
+    "Liangzhi Wang",
+    "Haoyuan Zhu",
+    "Jiliang Zhang"
+   ],
+   "url": "https://arxiv.org/abs/2409.14550v1",
+   "pdf": "https://arxiv.org/pdf/2409.14550v1"
+  },
+  {
+   "id": "arXiv:2409.14535",
+   "title": "Hyper-parameter Optimization for Wireless Network Traffic Prediction Models with A Novel Meta-Learning Framework",
+   "year": "2024-09-22",
+   "authors": [
+    "Liangzhi Wang",
+    "Jie Zhang",
+    "Yuan Gao"
+   ],
+   "url": "https://arxiv.org/abs/2409.14535v3",
+   "pdf": "https://arxiv.org/pdf/2409.14535v3"
+  },
+  {
+   "id": "arXiv:2409.02396",
+   "title": "A Dynamic Resource Scheduling Algorithm Based on Traffic Prediction for Coexistence of eMBB and Random Arrival URLLC",
+   "year": "2024-09-04",
+   "authors": [
+    "Yizhou Jiang",
+    "Xiujun Zhang",
+    "Xiaofeng Zhong"
+   ],
+   "url": "https://arxiv.org/abs/2409.02396v1",
+   "pdf": "https://arxiv.org/pdf/2409.02396v1"
+  },
+  {
+   "id": "arXiv:2404.14389",
+   "title": "Poisoning Attacks on Federated Learning-based Wireless Traffic Prediction",
+   "year": "2024-04-22",
+   "authors": [
+    "Zifan Zhang",
+    "Minghong Fang",
+    "Jiayuan Huang"
+   ],
+   "url": "https://arxiv.org/abs/2404.14389v2",
+   "pdf": "https://arxiv.org/pdf/2404.14389v2"
+  },
+  {
+   "id": "arXiv:2404.08314",
+   "title": "Multi-Step Traffic Prediction for Multi-Period Planning in Optical Networks",
+   "year": "2024-04-12",
+   "authors": [
+    "Hafsa Maryam",
+    "Tania Panayiotou",
+    "Georgios Ellinas"
+   ],
+   "url": "https://arxiv.org/abs/2404.08314v1",
+   "pdf": "https://arxiv.org/pdf/2404.08314v1"
+  },
+  {
+   "id": "arXiv:2403.10808",
+   "title": "Transformer-Based Wireless Traffic Prediction and Network Optimization in O-RAN",
+   "year": "2024-03-16",
+   "authors": [
+    "Md Arafat Habib",
+    "Pedro Enrique Iturria-Rivera",
+    "Yigit Ozcan"
+   ],
+   "url": "https://arxiv.org/abs/2403.10808v1",
+   "pdf": "https://arxiv.org/pdf/2403.10808v1"
+  },
+  {
+   "id": "arXiv:2401.06922",
+   "title": "Open RAN LSTM Traffic Prediction and Slice Management using Deep Reinforcement Learning",
+   "year": "2024-01-12",
+   "authors": [
+    "Fatemeh Lotfi",
+    "Fatemeh Afghah"
+   ],
+   "url": "https://arxiv.org/abs/2401.06922v1",
+   "pdf": "https://arxiv.org/pdf/2401.06922v1"
+  },
+  {
+   "id": "arXiv:2311.18824",
+   "title": "An Adaptive Framework for Generalizing Network Traffic Prediction towards Uncertain Environments",
+   "year": "2023-11-30",
+   "authors": [
+    "Alexander Downey",
+    "Evren Tuna",
+    "Alkan Soysal"
+   ],
+   "url": "https://arxiv.org/abs/2311.18824v1",
+   "pdf": "https://arxiv.org/pdf/2311.18824v1"
+  },
+  {
+   "id": "arXiv:2309.10645",
+   "title": "Towards Energy-Aware Federated Traffic Prediction for Cellular Networks",
+   "year": "2023-09-19",
+   "authors": [
+    "Vasileios Perifanis",
+    "Nikolaos Pavlidis",
+    "Selim F. Yilmaz"
+   ],
+   "url": "https://arxiv.org/abs/2309.10645v1",
+   "pdf": "https://arxiv.org/pdf/2309.10645v1"
+  },
+  {
+   "id": "arXiv:2309.03898",
+   "title": "Multivariate, Multi-step, and Spatiotemporal Traffic Prediction for NextG Network Slicing under SLA Constraints",
+   "year": "2023-09-07",
+   "authors": [
+    "Evren Tuna",
+    "Alkan Soysal"
+   ],
+   "url": "https://arxiv.org/abs/2309.03898v1",
+   "pdf": "https://arxiv.org/pdf/2309.03898v1"
+  },
+  {
+   "id": "arXiv:2305.15234",
+   "title": "On the road to more accurate mobile cellular traffic predictions",
+   "year": "2023-05-24",
+   "authors": [
+    "Natalia Vassileva Vesselinova"
+   ],
+   "url": "https://arxiv.org/abs/2305.15234v1",
+   "pdf": "https://arxiv.org/pdf/2305.15234v1"
+  },
+  {
+   "id": "arXiv:2304.11156",
+   "title": "Multivariate and Multi-step Traffic Prediction for NextG Networks with SLA Violation Constraints",
+   "year": "2023-04-21",
+   "authors": [
+    "Evren Tuna",
+    "Alkan Soysal"
+   ],
+   "url": "https://arxiv.org/abs/2304.11156v1",
+   "pdf": "https://arxiv.org/pdf/2304.11156v1"
+  },
+  {
+   "id": "arXiv:2304.09811",
+   "title": "Analytic Network Traffic Prediction Based on User Behavior Modeling",
+   "year": "2023-04-19",
+   "authors": [
+    "Liangzhi Wang",
+    "Jiliang Zhang",
+    "Zitian Zhang"
+   ],
+   "url": "https://arxiv.org/abs/2304.09811v1",
+   "pdf": "https://arxiv.org/pdf/2304.09811v1"
+  },
+  {
+   "id": "arXiv:2304.01590",
+   "title": "A method of combining traffic classification and traffic prediction based on machine learning in wireless networks",
+   "year": "2023-04-04",
+   "authors": [
+    "Luming Wang",
+    "Mao Yang",
+    "Bo Li"
+   ],
+   "url": "https://arxiv.org/abs/2304.01590v1",
+   "pdf": "https://arxiv.org/pdf/2304.01590v1"
+  },
+  {
+   "id": "arXiv:2303.13529",
+   "title": "Enhancing Peak Network Traffic Prediction via Time-Series Decomposition",
+   "year": "2023-03-09",
+   "authors": [
+    "Tucker Stewart",
+    "Bin Yu",
+    "Anderson Nascimento"
+   ],
+   "url": "https://arxiv.org/abs/2303.13529v1",
+   "pdf": "https://arxiv.org/pdf/2303.13529v1"
+  }
+ ],
+ "anom-net": [
+  {
+   "id": "arXiv:2610.05835",
+   "title": "Adaptive-Shot Hybrid Quantum Anomaly Detection for Tactile Internet Security: Reliability-Aware Measurement Allocation Under Resource Constraints",
+   "year": "2026-10-05",
+   "authors": [
+    "Mubassir Serneabat Sudipto",
+    "Shakil Ahmed",
+    "Ashfaq Khokhar"
+   ],
+   "url": "https://arxiv.org/abs/2610.05835v1",
+   "pdf": "https://arxiv.org/pdf/2610.05835v1"
+  },
+  {
+   "id": "arXiv:2609.03505",
+   "title": "An Adversarial Zero-Shot Learning Approach for Anomaly Detection in Multivariate IoT Traffic Data",
+   "year": "2026-09-03",
+   "authors": [
+    "Mahshid Rezakhani",
+    "Tolunay Seyfi",
+    "Fatemeh Afghah"
+   ],
+   "url": "https://arxiv.org/abs/2609.03505v1",
+   "pdf": "https://arxiv.org/pdf/2609.03505v1"
+  },
+  {
+   "id": "arXiv:2608.22812",
+   "title": "The Surprising Effectiveness of LLMs in BGP Security: Mining An Unprecedented Amount of Incidents and Boosting Anomaly Detection",
+   "year": "2026-08-24",
+   "authors": [
+    "Libin Liu",
+    "Wenzhou Yang",
+    "Li Chen"
+   ],
+   "url": "https://arxiv.org/abs/2608.22812v1",
+   "pdf": "https://arxiv.org/pdf/2608.22812v1"
+  },
+  {
+   "id": "arXiv:2608.02627",
+   "title": "Micro-Segmentation Anomaly Detection in Zero-Trust Software-Defined Network Fabrics",
+   "year": "2026-07-24",
+   "authors": [
+    "Ashly Joseph"
+   ],
+   "url": "https://arxiv.org/abs/2608.02627v1",
+   "pdf": "https://arxiv.org/pdf/2608.02627v1"
+  },
+  {
+   "id": "arXiv:2607.18127",
+   "title": "ClouDens: Operational Context-Aware Anomaly Detection for Large-scale Cloud System Monitoring",
+   "year": "2026-07-20",
+   "authors": [
+    "Thu T. H. Doan",
+    "Mohammad Saiful Islam",
+    "Andriy Miranskyy"
+   ],
+   "url": "https://arxiv.org/abs/2607.18127v1",
+   "pdf": "https://arxiv.org/pdf/2607.18127v1"
+  },
+  {
+   "id": "arXiv:2608.14576",
+   "title": "CoMeT-Net: Consensus Memory Template Network for Real-time Traffic Anomaly Detection",
+   "year": "2026-06-10",
+   "authors": [
+    "Tingcong Jiang",
+    "Adhwaa Alchaab",
+    "Ayman Younis"
+   ],
+   "url": "https://arxiv.org/abs/2608.14576v1",
+   "pdf": "https://arxiv.org/pdf/2608.14576v1"
+  },
+  {
+   "id": "arXiv:2606.10827",
+   "title": "A Unified Siamese Learning Framework for Zero-Day Anomaly Detection and Classification in Optical Networks",
+   "year": "2026-06-09",
+   "authors": [
+    "Carlos Natalino",
+    "Flávia P. Monteiro",
+    "Paolo Monti"
+   ],
+   "url": "https://arxiv.org/abs/2606.10827v1",
+   "pdf": "https://arxiv.org/pdf/2606.10827v1"
+  },
+  {
+   "id": "arXiv:2606.06261",
+   "title": "DAST: A VLM-LLM Framework for Cross-Interface Anomaly Detection in O-RAN",
+   "year": "2026-06-04",
+   "authors": [
+    "Francesco Spinelli",
+    "Esteban Municio",
+    "Pau Baguer"
+   ],
+   "url": "https://arxiv.org/abs/2606.06261v1",
+   "pdf": "https://arxiv.org/pdf/2606.06261v1"
+  },
+  {
+   "id": "arXiv:2605.19451",
+   "title": "A Hybrid Cluster-Based Classification Model for Anomaly Detection in Unbalanced IoT Networks",
+   "year": "2026-05-19",
+   "authors": [
+    "Hossein Shaemi Barzoki",
+    "Amir Hossein Fathi Hafshejani",
+    "Ahmadreza Montazerolghaem"
+   ],
+   "url": "https://arxiv.org/abs/2605.19451v1",
+   "pdf": "https://arxiv.org/pdf/2605.19451v1"
+  },
+  {
+   "id": "arXiv:2605.17716",
+   "title": "Enhancing Network Resilience via Graph-Based Anomaly Detection in Sovereign Functions",
+   "year": "2026-05-18",
+   "authors": [
+    "Xin Hao",
+    "Wei Ni",
+    "Chenhan Zhang"
+   ],
+   "url": "https://arxiv.org/abs/2605.17716v2",
+   "pdf": "https://arxiv.org/pdf/2605.17716v2"
+  },
+  {
+   "id": "arXiv:2605.06571",
+   "title": "CLAD: A Clustered Label-Agnostic Federated Learning Framework for Joint Anomaly Detection and Attack Classification",
+   "year": "2026-05-07",
+   "authors": [
+    "Iason Ofeidis",
+    "Nikos Papadis",
+    "Randeep Bhatia"
+   ],
+   "url": "https://arxiv.org/abs/2605.06571v1",
+   "pdf": "https://arxiv.org/pdf/2605.06571v1"
+  },
+  {
+   "id": "arXiv:2604.23332",
+   "title": "Advanced Anomaly Detection and Threat Intelligence in Zero Trust IoT Environments Using Machine Learning",
+   "year": "2026-04-25",
+   "authors": [
+    "Muhammad Umair Basharat",
+    "Jawad Hussain",
+    "Waqas Khalid"
+   ],
+   "url": "https://arxiv.org/abs/2604.23332v1",
+   "pdf": "https://arxiv.org/pdf/2604.23332v1"
+  },
+  {
+   "id": "arXiv:2602.13288",
+   "title": "Benchmarking Anomaly Detection Across Heterogeneous Cloud Telemetry Datasets",
+   "year": "2026-02-07",
+   "authors": [
+    "Mohammad Saiful Islam",
+    "Andriy Miranskyy"
+   ],
+   "url": "https://arxiv.org/abs/2602.13288v1",
+   "pdf": "https://arxiv.org/pdf/2602.13288v1"
+  },
+  {
+   "id": "arXiv:2510.27664",
+   "title": "Rethinking Telemetry Design for Fine-Grained Anomaly Detection in 5G User Planes",
+   "year": "2025-10-31",
+   "authors": [
+    "Niloy Saha",
+    "Noura Limam",
+    "Yang Xiao"
+   ],
+   "url": "https://arxiv.org/abs/2510.27664v1",
+   "pdf": "https://arxiv.org/pdf/2510.27664v1"
+  },
+  {
+   "id": "arXiv:2510.26487",
+   "title": "Quantum Gated Recurrent GAN with Gaussian Uncertainty for Network Anomaly Detection",
+   "year": "2025-10-30",
+   "authors": [
+    "Wajdi Hammami",
+    "Soumaya Cherkaoui",
+    "Jean-Frederic Laprade"
+   ],
+   "url": "https://arxiv.org/abs/2510.26487v1",
+   "pdf": "https://arxiv.org/pdf/2510.26487v1"
+  },
+  {
+   "id": "arXiv:2510.07109",
+   "title": "GNN-enhanced Traffic Anomaly Detection for Next-Generation SDN-Enabled Consumer Electronics",
+   "year": "2025-10-08",
+   "authors": [
+    "Guan-Yan Yang",
+    "Farn Wang",
+    "Kuo-Hui Yeh"
+   ],
+   "url": "https://arxiv.org/abs/2510.07109v1",
+   "pdf": "https://arxiv.org/pdf/2510.07109v1"
+  },
+  {
+   "id": "arXiv:2509.05936",
+   "title": "ALPHA: LLM-Enabled Active Learning for Human-Free Network Anomaly Detection",
+   "year": "2025-09-07",
+   "authors": [
+    "Xuanhao Luo",
+    "Shivesh Madan Nath Jha",
+    "Akruti Sinha"
+   ],
+   "url": "https://arxiv.org/abs/2509.05936v1",
+   "pdf": "https://arxiv.org/pdf/2509.05936v1"
+  },
+  {
+   "id": "arXiv:2509.03290",
+   "title": "Machine Learning-Driven Anomaly Detection for 5G O-RAN Performance Metrics",
+   "year": "2025-09-03",
+   "authors": [
+    "Babak Azkaei",
+    "Kishor Chandra Joshi",
+    "George Exarchakos"
+   ],
+   "url": "https://arxiv.org/abs/2509.03290v1",
+   "pdf": "https://arxiv.org/pdf/2509.03290v1"
+  },
+  {
+   "id": "arXiv:2508.20985",
+   "title": "RANGAN: GAN-empowered Anomaly Detection in 5G Cloud RAN",
+   "year": "2025-08-28",
+   "authors": [
+    "Douglas Liao",
+    "Jiping Luo",
+    "Jens Vevstad"
+   ],
+   "url": "https://arxiv.org/abs/2508.20985v1",
+   "pdf": "https://arxiv.org/pdf/2508.20985v1"
+  },
+  {
+   "id": "arXiv:2508.09660",
+   "title": "Anomaly Detection for IoT Global Connectivity",
+   "year": "2025-08-13",
+   "authors": [
+    "Jesus Omaña Iglesias",
+    "Carlos Segura Perales",
+    "Stefan Geißler"
+   ],
+   "url": "https://arxiv.org/abs/2508.09660v1",
+   "pdf": "https://arxiv.org/pdf/2508.09660v1"
+  },
+  {
+   "id": "arXiv:2506.17821",
+   "title": "The Blind Spot of BGP Anomaly Detection: Why LSTM Autoencoders Fail on Real-World Outages",
+   "year": "2025-06-21",
+   "authors": [
+    "Samuel Oluwafemi Adebayo"
+   ],
+   "url": "https://arxiv.org/abs/2506.17821v1",
+   "pdf": "https://arxiv.org/pdf/2506.17821v1"
+  },
+  {
+   "id": "arXiv:2506.12070",
+   "title": "Multi-domain anomaly detection in a 5G network",
+   "year": "2025-06-04",
+   "authors": [
+    "Thomas Hoger",
+    "Philippe Owezarski"
+   ],
+   "url": "https://arxiv.org/abs/2506.12070v1",
+   "pdf": "https://arxiv.org/pdf/2506.12070v1"
+  },
+  {
+   "id": "arXiv:2505.23706",
+   "title": "Distributed Federated Learning for Vehicular Network Security: Anomaly Detection Benefits and Multi-Domain Attack Threats",
+   "year": "2025-05-29",
+   "authors": [
+    "Utku Demir",
+    "Yalin E. Sagduyu",
+    "Tugba Erpek"
+   ],
+   "url": "https://arxiv.org/abs/2505.23706v1",
+   "pdf": "https://arxiv.org/pdf/2505.23706v1"
+  },
+  {
+   "id": "arXiv:2505.21563",
+   "title": "Fog Intelligence for Network Anomaly Detection",
+   "year": "2025-05-27",
+   "authors": [
+    "Kai Yang",
+    "Hui Ma",
+    "Shaoyu Dou"
+   ],
+   "url": "https://arxiv.org/abs/2505.21563v1",
+   "pdf": "https://arxiv.org/pdf/2505.21563v1"
+  },
+  {
+   "id": "arXiv:2506.02007",
+   "title": "eACGM: Non-instrumented Performance Tracing and Anomaly Detection towards Machine Learning Systems",
+   "year": "2025-05-25",
+   "authors": [
+    "Ruilin Xu",
+    "Zongxuan Xie",
+    "Pengfei Chen"
+   ],
+   "url": "https://arxiv.org/abs/2506.02007v2",
+   "pdf": "https://arxiv.org/pdf/2506.02007v2"
+  }
+ ],
+ "ids": [
+  {
+   "id": "arXiv:2610.08066",
+   "title": "Systematically Optimized CNN-Transformer with Focal Loss for Imbalanced Intrusion Detection on NSL-KDD",
+   "year": "2026-10-06",
+   "authors": [
+    "Kartick Sutradhar",
+    "Ranjitha Venkatesh"
+   ],
+   "url": "https://arxiv.org/abs/2610.08066v1",
+   "pdf": "https://arxiv.org/pdf/2610.08066v1"
+  },
+  {
+   "id": "arXiv:2610.08867",
+   "title": "A Deployment-Aware Feasibility Framework for Machine Learning-Based IoT Intrusion Detection Across Edge, Fog, and Cloud Architectures",
+   "year": "2026-10-06",
+   "authors": [
+    "Shaker Nawasra",
+    "Munther Abualkibash"
+   ],
+   "url": "https://arxiv.org/abs/2610.08867v1",
+   "pdf": "https://arxiv.org/pdf/2610.08867v1"
+  },
+  {
+   "id": "arXiv:2610.07489",
+   "title": "Deep Defence on Wheels: A Dual Intrusion Detection System Architecture for Comprehensive In-Vehicle Network Security",
+   "year": "2026-10-05",
+   "authors": [
+    "Shashwat Khandelwal",
+    "Shanker Shreejith"
+   ],
+   "url": "https://arxiv.org/abs/2610.07489v1",
+   "pdf": "https://arxiv.org/pdf/2610.07489v1"
+  },
+  {
+   "id": "arXiv:2610.05369",
+   "title": "AutoDP-LLM: Automating Data Pre-processing for Intrusion Detection Systems using Large Language Models",
+   "year": "2026-10-04",
+   "authors": [
+    "Bao-Phong Nguyen",
+    "Gia-Khanh Pham",
+    "Thai-Duong Do"
+   ],
+   "url": "https://arxiv.org/abs/2610.05369v1",
+   "pdf": "https://arxiv.org/pdf/2610.05369v1"
+  },
+  {
+   "id": "arXiv:2610.03999",
+   "title": "SERA-IDS: Structured Experience Retrieval-Augmented Intrusion Detection with Small Language Models",
+   "year": "2026-10-02",
+   "authors": [
+    "Md Shamimul Islam",
+    "Ayesha S. Dina"
+   ],
+   "url": "https://arxiv.org/abs/2610.03999v2",
+   "pdf": "https://arxiv.org/pdf/2610.03999v2"
+  },
+  {
+   "id": "arXiv:2610.02552",
+   "title": "Out of Sync, Out of Sight: Phantom State Attacks against IIoT Intrusion Detection",
+   "year": "2026-10-01",
+   "authors": [
+    "Sabrine Ennaji",
+    "Elhadj Benkhelifa",
+    "Nadia Kabachi"
+   ],
+   "url": "https://arxiv.org/abs/2610.02552v1",
+   "pdf": "https://arxiv.org/pdf/2610.02552v1"
+  },
+  {
+   "id": "arXiv:2610.01872",
+   "title": "From Network Intrusion Detection to Blockchain-Backed Endpoint Detection and Response: Mapping the Landscape of Decentralized Detection-and-Response Architectures",
+   "year": "2026-10-01",
+   "authors": [
+    "Yahya Shahsavari",
+    "Sara Rouhani",
+    "Kaiwen Zhang"
+   ],
+   "url": "https://arxiv.org/abs/2610.01872v1",
+   "pdf": "https://arxiv.org/pdf/2610.01872v1"
+  },
+  {
+   "id": "arXiv:2610.01250",
+   "title": "A Resource-Aware Behavior Reconstruction and Hierarchical Semantic Learning Framework for Host Intrusion Detection",
+   "year": "2026-10-01",
+   "authors": [
+    "Youli Tao",
+    "Rui Tang",
+    "Hao Ren"
+   ],
+   "url": "https://arxiv.org/abs/2610.01250v1",
+   "pdf": "https://arxiv.org/pdf/2610.01250v1"
+  },
+  {
+   "id": "arXiv:2610.01079",
+   "title": "Jev-IDS: System One Models for Network Intrusion Detection",
+   "year": "2026-10-01",
+   "authors": [
+    "Paulo Severo",
+    "Silvio E. Quincozes",
+    "Amanda Dias"
+   ],
+   "url": "https://arxiv.org/abs/2610.01079v1",
+   "pdf": "https://arxiv.org/pdf/2610.01079v1"
+  },
+  {
+   "id": "arXiv:2609.39584",
+   "title": "Cybersecurity in Edge Computing: A Trust-Aware Federated Hybrid Intrusion Detection Framework",
+   "year": "2026-09-30",
+   "authors": [
+    "Zawad Yalmie Sazid",
+    "Robert Abbas"
+   ],
+   "url": "https://arxiv.org/abs/2609.39584v1",
+   "pdf": "https://arxiv.org/pdf/2609.39584v1"
+  },
+  {
+   "id": "arXiv:2609.36039",
+   "title": "Multi-Class, Multi-Tier Network Intrusion Detection: A Comprehensive and Reproducible Benchmark",
+   "year": "2026-09-28",
+   "authors": [
+    "Yufeng Xin",
+    "Bryant Goseland",
+    "Mohamed Rahouti"
+   ],
+   "url": "https://arxiv.org/abs/2609.36039v1",
+   "pdf": "https://arxiv.org/pdf/2609.36039v1"
+  },
+  {
+   "id": "arXiv:2609.33532",
+   "title": "Where the Numbers Come From: Auditing Evaluation in Provenance-Based Intrusion Detection",
+   "year": "2026-09-27",
+   "authors": [
+    "Jihwan Moon",
+    "Gunhee Kim",
+    "Myeongjang Pyeon"
+   ],
+   "url": "https://arxiv.org/abs/2609.33532v1",
+   "pdf": "https://arxiv.org/pdf/2609.33532v1"
+  },
+  {
+   "id": "arXiv:2609.30605",
+   "title": "Probabilistic Robustness-driven Universal Adversarial Perturbations with Explainability against Deep Reinforcement Learning-based Intrusion Detection System",
+   "year": "2026-09-24",
+   "authors": [
+    "Hongsen Zhang",
+    "Lu Zhang",
+    "Mingjing Xu"
+   ],
+   "url": "https://arxiv.org/abs/2609.30605v1",
+   "pdf": "https://arxiv.org/pdf/2609.30605v1"
+  },
+  {
+   "id": "arXiv:2609.28725",
+   "title": "Unmasking Shortcut Learning in IoT Intrusion Detection: A Forensic, Multi-Paradigm Evaluation of Feature Dependence and Data Leakage",
+   "year": "2026-09-23",
+   "authors": [
+    "Uday Shankar Roy",
+    "Mahbuba Jahan Minu"
+   ],
+   "url": "https://arxiv.org/abs/2609.28725v1",
+   "pdf": "https://arxiv.org/pdf/2609.28725v1"
+  },
+  {
+   "id": "arXiv:2609.28599",
+   "title": "BRFID: Toward Byzantine-Robust Federated Intrusion Detection",
+   "year": "2026-09-23",
+   "authors": [
+    "Asmah Muallem",
+    "Firdous Kausar",
+    "Sajid Hussain"
+   ],
+   "url": "https://arxiv.org/abs/2609.28599v1",
+   "pdf": "https://arxiv.org/pdf/2609.28599v1"
+  },
+  {
+   "id": "arXiv:2609.27052",
+   "title": "Improving Service Availability in KubeEdge-Based Architectures Using Lightweight Intrusion Detection",
+   "year": "2026-09-22",
+   "authors": [
+    "Harrol Ndjeudji Kuibou",
+    "Mostafa Anouar Ghorab",
+    "Mohamed Aymen Saied"
+   ],
+   "url": "https://arxiv.org/abs/2609.27052v1",
+   "pdf": "https://arxiv.org/pdf/2609.27052v1"
+  },
+  {
+   "id": "arXiv:2609.25901",
+   "title": "How It's Made: Uncovering Detection Engineering Processes for Network Intrusion Detection Rules",
+   "year": "2026-09-22",
+   "authors": [
+    "Koen T. W. Teuwen",
+    "Emmanuele Zambon",
+    "Luca Allodi"
+   ],
+   "url": "https://arxiv.org/abs/2609.25901v1",
+   "pdf": "https://arxiv.org/pdf/2609.25901v1"
+  },
+  {
+   "id": "arXiv:2609.24393",
+   "title": "Passive Hybrid Network-Based Intrusion Detection System (Hybrid-NIDS) Combining Suricata and Random Forest",
+   "year": "2026-09-21",
+   "authors": [
+    "Quoc-Cuong Tang",
+    "Hoang-Lam Huynh",
+    "Van-Tri Phan"
+   ],
+   "url": "https://arxiv.org/abs/2609.24393v1",
+   "pdf": "https://arxiv.org/pdf/2609.24393v1"
+  },
+  {
+   "id": "arXiv:2609.23097",
+   "title": "An LLM-Assisted AutoML Framework for Intrusion Detection in IoT Networks",
+   "year": "2026-09-19",
+   "authors": [
+    "Li Yang"
+   ],
+   "url": "https://arxiv.org/abs/2609.23097v1",
+   "pdf": "https://arxiv.org/pdf/2609.23097v1"
+  },
+  {
+   "id": "arXiv:2609.21217",
+   "title": "X-SPUR: Explainable Surprisal-Based Protocol-Aware Unsupervised Reasoning for Automotive Ethernet Intrusion Detection",
+   "year": "2026-09-18",
+   "authors": [
+    "Jisoo Kim",
+    "Seonghoon Jeong"
+   ],
+   "url": "https://arxiv.org/abs/2609.21217v1",
+   "pdf": "https://arxiv.org/pdf/2609.21217v1"
+  },
+  {
+   "id": "arXiv:2609.16462",
+   "title": "Not All Relations Are Equal: Relation-Balanced and Calibrated Graph Learning for Provenance-Based Intrusion Detection",
+   "year": "2026-09-15",
+   "authors": [
+    "Lijie Zheng",
+    "Ji He",
+    "Zhiwei Zhang"
+   ],
+   "url": "https://arxiv.org/abs/2609.16462v3",
+   "pdf": "https://arxiv.org/pdf/2609.16462v3"
+  },
+  {
+   "id": "arXiv:2609.16363",
+   "title": "FSNIC: A Low-Latency Flow-Based Intrusion Detection Architecture for FPGA SmartNICs",
+   "year": "2026-09-14",
+   "authors": [
+    "Nise O'Cuill",
+    "Changhong Li",
+    "Georgios Floros"
+   ],
+   "url": "https://arxiv.org/abs/2609.16363v1",
+   "pdf": "https://arxiv.org/pdf/2609.16363v1"
+  },
+  {
+   "id": "arXiv:2609.13511",
+   "title": "A Three-Axis Stress Test of LLM vs Classical ML for Network Intrusion Detection under Distribution Shift and Adversarial Evasion",
+   "year": "2026-09-11",
+   "authors": [
+    "Muhammad Ebad Atif",
+    "Muhammad Haider Ali"
+   ],
+   "url": "https://arxiv.org/abs/2609.13511v1",
+   "pdf": "https://arxiv.org/pdf/2609.13511v1"
+  },
+  {
+   "id": "arXiv:2609.12646",
+   "title": "Poster: Towards Selecting Threat Appropriate Industrial Intrusion Detection Systems",
+   "year": "2026-09-11",
+   "authors": [
+    "Stefan Lenz",
+    "Johannes Weidmann",
+    "Martin Henze"
+   ],
+   "url": "https://arxiv.org/abs/2609.12646v1",
+   "pdf": "https://arxiv.org/pdf/2609.12646v1"
+  },
+  {
+   "id": "arXiv:2609.12263",
+   "title": "A First-Principles Evaluation of Graph-Based Network Intrusion Detection Systems",
+   "year": "2026-09-10",
+   "authors": [
+    "Rui Zhao",
+    "Wajih Ul Hassan"
+   ],
+   "url": "https://arxiv.org/abs/2609.12263v1",
+   "pdf": "https://arxiv.org/pdf/2609.12263v1"
+  }
+ ],
+ "cc-rl": [
+  {
+   "id": "arXiv:2608.02095",
+   "title": "Emulation vs Simulation: A Case Study from Congestion Control Algorithms in Low Earth Orbit Satellite Networks",
+   "year": "2026-08-03",
+   "authors": [
+    "Aiden Valentine",
+    "Mihai Mazilu",
+    "James Knowles"
+   ],
+   "url": "https://arxiv.org/abs/2608.02095v1",
+   "pdf": "https://arxiv.org/pdf/2608.02095v1"
+  },
+  {
+   "id": "arXiv:2605.21915",
+   "title": "CCLab: Adversarial Testing of Learning- and Non-Learning-Based Congestion Controllers",
+   "year": "2026-05-21",
+   "authors": [
+    "Zhi Chen",
+    "Shehab Sarar Ahmed",
+    "Chenkai Wang"
+   ],
+   "url": "https://arxiv.org/abs/2605.21915v1",
+   "pdf": "https://arxiv.org/pdf/2605.21915v1"
+  },
+  {
+   "id": "arXiv:2605.19909",
+   "title": "Fair-Aurora: Comparing Fairness Strategies for Reinforcement Learning-Based Congestion Control in Multi-Flow Environments",
+   "year": "2026-05-19",
+   "authors": [
+    "Thomas Mbrice",
+    "Yuyu Liu"
+   ],
+   "url": "https://arxiv.org/abs/2605.19909v2",
+   "pdf": "https://arxiv.org/pdf/2605.19909v2"
+  },
+  {
+   "id": "arXiv:2603.04550",
+   "title": "Transformer-Based Multipath Congestion Control: A Decoupled Approach for Wireless Uplinks",
+   "year": "2026-03-04",
+   "authors": [
+    "Zongyuan Zhang",
+    "Tianyang Duan",
+    "Liang Wang"
+   ],
+   "url": "https://arxiv.org/abs/2603.04550v1",
+   "pdf": "https://arxiv.org/pdf/2603.04550v1"
+  },
+  {
+   "id": "arXiv:2512.20186",
+   "title": "Edge-Served Congestion Control for Wireless Multipath Transmission with a Transformer Agent",
+   "year": "2025-12-23",
+   "authors": [
+    "Liang Wang"
+   ],
+   "url": "https://arxiv.org/abs/2512.20186v1",
+   "pdf": "https://arxiv.org/pdf/2512.20186v1"
+  },
+  {
+   "id": "arXiv:2510.25105",
+   "title": "Learning-Based vs Human-Derived Congestion Control: An In-Depth Experimental Study",
+   "year": "2025-10-29",
+   "authors": [
+    "Mihai Mazilu",
+    "Luca Giacomoni",
+    "George Parisis"
+   ],
+   "url": "https://arxiv.org/abs/2510.25105v2",
+   "pdf": "https://arxiv.org/pdf/2510.25105v2"
+  },
+  {
+   "id": "arXiv:2508.01047",
+   "title": "A Deep Reinforcement Learning-Based TCP Congestion Control Algorithm: Design, Simulation, and Evaluation",
+   "year": "2025-08-01",
+   "authors": [
+    "Efe Ağlamazlar",
+    "Emirhan Eken",
+    "Harun Batur Geçici"
+   ],
+   "url": "https://arxiv.org/abs/2508.01047v3",
+   "pdf": "https://arxiv.org/pdf/2508.01047v3"
+  },
+  {
+   "id": "arXiv:2505.07042",
+   "title": "A Reinforcement Learning Framework for Application-Specific TCP Congestion-Control",
+   "year": "2025-05-11",
+   "authors": [
+    "Jinming Xing",
+    "Muhammad Shahzad"
+   ],
+   "url": "https://arxiv.org/abs/2505.07042v2",
+   "pdf": "https://arxiv.org/pdf/2505.07042v2"
+  },
+  {
+   "id": "arXiv:2502.16498",
+   "title": "Combining Heuristic and Reinforcement Learning to Achieve the Low-latency and High-throughput Receiver-side Congestion Control",
+   "year": "2025-02-23",
+   "authors": [
+    "Xianliang Jiang",
+    "Guanghui Gong",
+    "Guang Jin"
+   ],
+   "url": "https://arxiv.org/abs/2502.16498v1",
+   "pdf": "https://arxiv.org/pdf/2502.16498v1"
+  },
+  {
+   "id": "arXiv:2411.06742",
+   "title": "Loss-tolerant neural video codec aware congestion control for real time video communication",
+   "year": "2024-11-11",
+   "authors": [
+    "Zhengxu Xia",
+    "Hanchen Li",
+    "Junchen Jiang"
+   ],
+   "url": "https://arxiv.org/abs/2411.06742v2",
+   "pdf": "https://arxiv.org/pdf/2411.06742v2"
+  },
+  {
+   "id": "arXiv:2407.16034",
+   "title": "Efficient Replay Memory Architectures in Multi-Agent Reinforcement Learning for Traffic Congestion Control",
+   "year": "2024-07-22",
+   "authors": [
+    "Mukul Chodhary",
+    "Kevin Octavian",
+    "SooJean Han"
+   ],
+   "url": "https://arxiv.org/abs/2407.16034v1",
+   "pdf": "https://arxiv.org/pdf/2407.16034v1"
+  },
+  {
+   "id": "arXiv:2405.01435",
+   "title": "Closed-form congestion control via deep symbolic regression",
+   "year": "2024-03-28",
+   "authors": [
+    "Jean Martins",
+    "Igor Almeida",
+    "Ricardo Souza"
+   ],
+   "url": "https://arxiv.org/abs/2405.01435v1",
+   "pdf": "https://arxiv.org/pdf/2405.01435v1"
+  },
+  {
+   "id": "arXiv:2403.01798",
+   "title": "Towards Fair and Efficient Learning-based Congestion Control",
+   "year": "2024-03-04",
+   "authors": [
+    "Xudong Liao",
+    "Han Tian",
+    "Chaoliang Zeng"
+   ],
+   "url": "https://arxiv.org/abs/2403.01798v1",
+   "pdf": "https://arxiv.org/pdf/2403.01798v1"
+  },
+  {
+   "id": "arXiv:2401.00297",
+   "title": "A Novel Reinforcement Learning Routing Algorithm for Congestion Control in Complex Networks",
+   "year": "2023-12-30",
+   "authors": [
+    "Seyed Hassan Yajadda",
+    "Farshad Safaei"
+   ],
+   "url": "https://arxiv.org/abs/2401.00297v1",
+   "pdf": "https://arxiv.org/pdf/2401.00297v1"
+  },
+  {
+   "id": "arXiv:2308.04905",
+   "title": "GraphCC: A Practical Graph Learning-based Approach to Congestion Control in Datacenters",
+   "year": "2023-08-09",
+   "authors": [
+    "Guillermo Bernárdez",
+    "José Suárez-Varela",
+    "Xiang Shi"
+   ],
+   "url": "https://arxiv.org/abs/2308.04905v1",
+   "pdf": "https://arxiv.org/pdf/2308.04905v1"
+  },
+  {
+   "id": "arXiv:2306.15591",
+   "title": "Learning to Sail Dynamic Networks: The MARLIN Reinforcement Learning Framework for Congestion Control in Tactical Environments",
+   "year": "2023-06-27",
+   "authors": [
+    "Raffaele Galliera",
+    "Mattia Zaccarini",
+    "Alessandro Morelli"
+   ],
+   "url": "https://arxiv.org/abs/2306.15591v1",
+   "pdf": "https://arxiv.org/pdf/2306.15591v1"
+  },
+  {
+   "id": "arXiv:2302.01301",
+   "title": "MARLIN: Soft Actor-Critic based Reinforcement Learning for Congestion Control in Real Networks",
+   "year": "2023-02-02",
+   "authors": [
+    "Raffaele Galliera",
+    "Alessandro Morelli",
+    "Roberto Fronteddu"
+   ],
+   "url": "https://arxiv.org/abs/2302.01301v1",
+   "pdf": "https://arxiv.org/pdf/2302.01301v1"
+  },
+  {
+   "id": "arXiv:2301.12558",
+   "title": "A Deep Reinforcement Learning Framework for Optimizing Congestion Control in Data Centers",
+   "year": "2023-01-29",
+   "authors": [
+    "Shiva Ketabi",
+    "Hongkai Chen",
+    "Haiwei Dong"
+   ],
+   "url": "https://arxiv.org/abs/2301.12558v1",
+   "pdf": "https://arxiv.org/pdf/2301.12558v1"
+  },
+  {
+   "id": "arXiv:2210.16987",
+   "title": "Symbolic Distillation for Learned TCP Congestion Control",
+   "year": "2022-10-24",
+   "authors": [
+    "S P Sharan",
+    "Wenqing Zheng",
+    "Kuo-Feng Hsu"
+   ],
+   "url": "https://arxiv.org/abs/2210.16987v1",
+   "pdf": "https://arxiv.org/pdf/2210.16987v1"
+  },
+  {
+   "id": "arXiv:2207.02295",
+   "title": "Implementing Reinforcement Learning Datacenter Congestion Control in NVIDIA NICs",
+   "year": "2022-07-05",
+   "authors": [
+    "Benjamin Fuhrer",
+    "Yuval Shpigelman",
+    "Chen Tessler"
+   ],
+   "url": "https://arxiv.org/abs/2207.02295v5",
+   "pdf": "https://arxiv.org/pdf/2207.02295v5"
+  },
+  {
+   "id": "arXiv:2206.01972",
+   "title": "MACC: Cross-Layer Multi-Agent Congestion Control with Deep Reinforcement Learning",
+   "year": "2022-06-04",
+   "authors": [
+    "Jianing Bai",
+    "Tianhao Zhang",
+    "Guangming Xie"
+   ],
+   "url": "https://arxiv.org/abs/2206.01972v1",
+   "pdf": "https://arxiv.org/pdf/2206.01972v1"
+  },
+  {
+   "id": "arXiv:2107.08617",
+   "title": "DeepCC: Bridging the Gap Between Congestion Control and Applications via Multi-Objective Optimization",
+   "year": "2021-07-19",
+   "authors": [
+    "Lei Zhang",
+    "Yong Cui",
+    "Mowei Wang"
+   ],
+   "url": "https://arxiv.org/abs/2107.08617v1",
+   "pdf": "https://arxiv.org/pdf/2107.08617v1"
+  },
+  {
+   "id": "arXiv:2107.01427",
+   "title": "Multi-Objective Congestion Control",
+   "year": "2021-07-03",
+   "authors": [
+    "Yiqing Ma",
+    "Han Tian",
+    "Xudong Liao"
+   ],
+   "url": "https://arxiv.org/abs/2107.01427v1",
+   "pdf": "https://arxiv.org/pdf/2107.01427v1"
+  },
+  {
+   "id": "arXiv:2102.09337",
+   "title": "Reinforcement Learning for Datacenter Congestion Control",
+   "year": "2021-02-18",
+   "authors": [
+    "Chen Tessler",
+    "Yuval Shpigelman",
+    "Gal Dalal"
+   ],
+   "url": "https://arxiv.org/abs/2102.09337v2",
+   "pdf": "https://arxiv.org/pdf/2102.09337v2"
+  },
+  {
+   "id": "arXiv:2010.11397",
+   "title": "When Machine Learning Meets Congestion Control: A Survey and Comparison",
+   "year": "2020-10-22",
+   "authors": [
+    "Huiling Jiang",
+    "Qing Li",
+    "Yong Jiang"
+   ],
+   "url": "https://arxiv.org/abs/2010.11397v1",
+   "pdf": "https://arxiv.org/pdf/2010.11397v1"
+  }
+ ],
+ "cc-learning": [
+  {
+   "id": "arXiv:2605.21915",
+   "title": "CCLab: Adversarial Testing of Learning- and Non-Learning-Based Congestion Controllers",
+   "year": "2026-05-21",
+   "authors": [
+    "Zhi Chen",
+    "Shehab Sarar Ahmed",
+    "Chenkai Wang"
+   ],
+   "url": "https://arxiv.org/abs/2605.21915v1",
+   "pdf": "https://arxiv.org/pdf/2605.21915v1"
+  },
+  {
+   "id": "arXiv:2605.19909",
+   "title": "Fair-Aurora: Comparing Fairness Strategies for Reinforcement Learning-Based Congestion Control in Multi-Flow Environments",
+   "year": "2026-05-19",
+   "authors": [
+    "Thomas Mbrice",
+    "Yuyu Liu"
+   ],
+   "url": "https://arxiv.org/abs/2605.19909v2",
+   "pdf": "https://arxiv.org/pdf/2605.19909v2"
+  },
+  {
+   "id": "arXiv:2403.01798",
+   "title": "Towards Fair and Efficient Learning-based Congestion Control",
+   "year": "2024-03-04",
+   "authors": [
+    "Xudong Liao",
+    "Han Tian",
+    "Chaoliang Zeng"
+   ],
+   "url": "https://arxiv.org/abs/2403.01798v1",
+   "pdf": "https://arxiv.org/pdf/2403.01798v1"
+  },
+  {
+   "id": "arXiv:1905.05998",
+   "title": "Statistical Learning Based Congestion Control for Real-time Video Communication",
+   "year": "2019-05-15",
+   "authors": [
+    "Tongyu Dai",
+    "Xinggong Zhang",
+    "Yihang Zhang"
+   ],
+   "url": "https://arxiv.org/abs/1905.05998v2",
+   "pdf": "https://arxiv.org/pdf/1905.05998v2"
+  }
+ ],
+ "llm-net": [
+  {
+   "id": "arXiv:2610.08090",
+   "title": "Explainable Rule Mining of IPv6 Extension-Header Presence Patterns from Paired-Vantage Captures",
+   "year": "2026-10-06",
+   "authors": [
+    "Priyanka Sinha",
+    "Nikolaos Kekatos",
+    "Stylianos Basagiannis"
+   ],
+   "url": "https://arxiv.org/abs/2610.08090v1",
+   "pdf": "https://arxiv.org/pdf/2610.08090v1"
+  },
+  {
+   "id": "arXiv:2610.04578",
+   "title": "Control-Compute Governance in Agentic AI-RAN: AI Agents as Both Controllers and Workloads",
+   "year": "2026-10-03",
+   "authors": [
+    "Le Xia",
+    "Rose Qingyang Hu",
+    "Yuan Zhou"
+   ],
+   "url": "https://arxiv.org/abs/2610.04578v1",
+   "pdf": "https://arxiv.org/pdf/2610.04578v1"
+  },
+  {
+   "id": "arXiv:2610.02861",
+   "title": "Containing the Autonomous Operator: A Defense-in-Depth Framework and Reference Architecture for Securing AI Agents on Kubernetes",
+   "year": "2026-10-02",
+   "authors": [
+    "Simhadri Podala Narasimha"
+   ],
+   "url": "https://arxiv.org/abs/2610.02861v1",
+   "pdf": "https://arxiv.org/pdf/2610.02861v1"
+  },
+  {
+   "id": "arXiv:2609.39477",
+   "title": "Resource-Efficient Semantic Communication for Heterogeneous Agentic Teams",
+   "year": "2026-09-30",
+   "authors": [
+    "Farhad Rezazadeh",
+    "Hatim Chergui",
+    "Lingjia Liu"
+   ],
+   "url": "https://arxiv.org/abs/2609.39477v1",
+   "pdf": "https://arxiv.org/pdf/2609.39477v1"
+  },
+  {
+   "id": "arXiv:2609.39138",
+   "title": "MoSE: Mode-Switching Expander for Mixed LLM Training and Inference",
+   "year": "2026-09-30",
+   "authors": [
+    "Fan Yang",
+    "Ying Zhou",
+    "Binglei Wang"
+   ],
+   "url": "https://arxiv.org/abs/2609.39138v1",
+   "pdf": "https://arxiv.org/pdf/2609.39138v1"
+  },
+  {
+   "id": "arXiv:2609.34334",
+   "title": "HOCCL: Offloading Collective Communication from GPU Cores to Accelerate Distributed Training",
+   "year": "2026-09-28",
+   "authors": [
+    "Yao Fei",
+    "Gongming Zhao",
+    "Hongli Xu"
+   ],
+   "url": "https://arxiv.org/abs/2609.34334v1",
+   "pdf": "https://arxiv.org/pdf/2609.34334v1"
+  },
+  {
+   "id": "arXiv:2609.32226",
+   "title": "Toward Agentic Optical Networks: A Vision of LLM Agent-Driven Autonomous Lifecycle Management",
+   "year": "2026-09-26",
+   "authors": [
+    "Yao Zhang",
+    "Shengnan Li",
+    "Yuchen Song"
+   ],
+   "url": "https://arxiv.org/abs/2609.32226v1",
+   "pdf": "https://arxiv.org/pdf/2609.32226v1"
+  },
+  {
+   "id": "arXiv:2609.31397",
+   "title": "Intent2Tc: Automated Intent-to-Traffic Control Translation with Language Models",
+   "year": "2026-09-25",
+   "authors": [
+    "Andrea Masini",
+    "Sudipta Acharya",
+    "Paolo Bellavista"
+   ],
+   "url": "https://arxiv.org/abs/2609.31397v1",
+   "pdf": "https://arxiv.org/pdf/2609.31397v1"
+  },
+  {
+   "id": "arXiv:2609.29364",
+   "title": "NebulaSD: Many-for-Many Speculative Decoding",
+   "year": "2026-09-24",
+   "authors": [
+    "Junhao He",
+    "Hongyang Du"
+   ],
+   "url": "https://arxiv.org/abs/2609.29364v1",
+   "pdf": "https://arxiv.org/pdf/2609.29364v1"
+  },
+  {
+   "id": "arXiv:2609.27386",
+   "title": "From Intents to Algorithms: Verified Algorithm Discovery for Transport Networks",
+   "year": "2026-09-23",
+   "authors": [
+    "Behnam Ojaghi",
+    "Ricard Vilalta",
+    "Raul Muñoz"
+   ],
+   "url": "https://arxiv.org/abs/2609.27386v1",
+   "pdf": "https://arxiv.org/pdf/2609.27386v1"
+  },
+  {
+   "id": "arXiv:2609.23136",
+   "title": "Intent Interpretation at RIC Timescales: Jev Decision Models versus Large Language Models in 6G Open RAN",
+   "year": "2026-09-19",
+   "authors": [
+    "Delong Li",
+    "Xu Wang",
+    "Haochen Gong"
+   ],
+   "url": "https://arxiv.org/abs/2609.23136v2",
+   "pdf": "https://arxiv.org/pdf/2609.23136v2"
+  },
+  {
+   "id": "arXiv:2609.22753",
+   "title": "Replacing Large Language Models with Jev Decision Models for Low-Latency Edge Service Orchestration",
+   "year": "2026-09-19",
+   "authors": [
+    "Delong Li",
+    "Xu Wang",
+    "Haochen Gong"
+   ],
+   "url": "https://arxiv.org/abs/2609.22753v2",
+   "pdf": "https://arxiv.org/pdf/2609.22753v2"
+  },
+  {
+   "id": "arXiv:2609.22723",
+   "title": "ANI-Gamut: Benchmarking Agent Reliability across the Gamut of Agent-Network Interface Abstractions",
+   "year": "2026-09-19",
+   "authors": [
+    "Lorenzo Bracciale",
+    "Pierpaolo Loreti",
+    "Andrea Mayer"
+   ],
+   "url": "https://arxiv.org/abs/2609.22723v1",
+   "pdf": "https://arxiv.org/pdf/2609.22723v1"
+  },
+  {
+   "id": "arXiv:2609.22486",
+   "title": "Semantics Delivery Network: Rethinking Web Retrieval Infrastructure for LLM Agents",
+   "year": "2026-09-18",
+   "authors": [
+    "Peichun Hua",
+    "Yunming Xiao"
+   ],
+   "url": "https://arxiv.org/abs/2609.22486v1",
+   "pdf": "https://arxiv.org/pdf/2609.22486v1"
+  },
+  {
+   "id": "arXiv:2609.21103",
+   "title": "NetInspector: Measuring and Improving LLM Capabilities for Reliable Intent-Based Networking Policy Generation",
+   "year": "2026-09-17",
+   "authors": [
+    "Yuxuan Zhang",
+    "Hongxin Hu",
+    "Guofei Gu"
+   ],
+   "url": "https://arxiv.org/abs/2609.21103v1",
+   "pdf": "https://arxiv.org/pdf/2609.21103v1"
+  },
+  {
+   "id": "arXiv:2609.19924",
+   "title": "The Life of a Token: from Words to Bits on the Wire",
+   "year": "2026-09-17",
+   "authors": [
+    "Davide Avesani",
+    "Pengwenlong Gu",
+    "Sotiris Skaperas"
+   ],
+   "url": "https://arxiv.org/abs/2609.19924v1",
+   "pdf": "https://arxiv.org/pdf/2609.19924v1"
+  },
+  {
+   "id": "arXiv:2609.18075",
+   "title": "SemABR: Measuring Video Semantic Fidelity with Multimodal LLMs for Adaptive Bitrate Streaming",
+   "year": "2026-09-16",
+   "authors": [
+    "Shiqi Xu",
+    "Soung Chang Liew",
+    "Yuyang Du"
+   ],
+   "url": "https://arxiv.org/abs/2609.18075v1",
+   "pdf": "https://arxiv.org/pdf/2609.18075v1"
+  },
+  {
+   "id": "arXiv:2609.17110",
+   "title": "Agentic RDZ: Autonomous Zone Management with AI Agents and an FR3 Coexistence Use Case",
+   "year": "2026-09-15",
+   "authors": [
+    "Minh Dat Nguyen",
+    "Gabriele Gemmi",
+    "Tamerlan Aghayev"
+   ],
+   "url": "https://arxiv.org/abs/2609.17110v1",
+   "pdf": "https://arxiv.org/pdf/2609.17110v1"
+  },
+  {
+   "id": "arXiv:2609.14253",
+   "title": "Breaking the Duplex Barrier: Lane-Granularity OCS Scheduling for LLM Training",
+   "year": "2026-09-13",
+   "authors": [
+    "Bangbo Liang",
+    "Yupeng Chen",
+    "Sicheng Zhao"
+   ],
+   "url": "https://arxiv.org/abs/2609.14253v1",
+   "pdf": "https://arxiv.org/pdf/2609.14253v1"
+  },
+  {
+   "id": "arXiv:2609.12170",
+   "title": "NDT Factory: Synthesizing Verified Network Digital Twins from Semantic Models via Multi-Agent LLM",
+   "year": "2026-09-10",
+   "authors": [
+    "Sudipta Acharya",
+    "Petar Djukic",
+    "Burak Kantarci"
+   ],
+   "url": "https://arxiv.org/abs/2609.12170v1",
+   "pdf": "https://arxiv.org/pdf/2609.12170v1"
+  },
+  {
+   "id": "arXiv:2609.07115",
+   "title": "Ollama in the Wild: A Longitudinal Measurement of Exposed Ollama LLM Endpoints at Internet Scale",
+   "year": "2026-09-07",
+   "authors": [
+    "Zuyao Xu",
+    "Xiang Li",
+    "Yuqi Qiu"
+   ],
+   "url": "https://arxiv.org/abs/2609.07115v1",
+   "pdf": "https://arxiv.org/pdf/2609.07115v1"
+  },
+  {
+   "id": "arXiv:2609.05725",
+   "title": "WIP: Energy-Efficient LLM-Based Serving Cluster Formulation in Cell-Free Massive MIMO",
+   "year": "2026-09-04",
+   "authors": [
+    "Marcin Hoffmann",
+    "Paweł Kryszkiewicz"
+   ],
+   "url": "https://arxiv.org/abs/2609.05725v1",
+   "pdf": "https://arxiv.org/pdf/2609.05725v1"
+  },
+  {
+   "id": "arXiv:2609.01779",
+   "title": "Agents That Model Agents: Five Principles Toward a Theory of Mind for 6G Networks",
+   "year": "2026-09-01",
+   "authors": [
+    "Hatim Chergui",
+    "Carolina Fernández-Martínez",
+    "Mehdi Bennis"
+   ],
+   "url": "https://arxiv.org/abs/2609.01779v1",
+   "pdf": "https://arxiv.org/pdf/2609.01779v1"
+  },
+  {
+   "id": "arXiv:2608.28532",
+   "title": "xTRUCE: A Provably Safe Arbiter for Multi-xApp Conflict Mitigation in Agentic O-RAN",
+   "year": "2026-08-28",
+   "authors": [
+    "Le Xia",
+    "Rose Qingyang Hu",
+    "Paul S. Kudyba"
+   ],
+   "url": "https://arxiv.org/abs/2608.28532v2",
+   "pdf": "https://arxiv.org/pdf/2608.28532v2"
+  },
+  {
+   "id": "arXiv:2608.25803",
+   "title": "Generative AI-Enabled Mission-Aware Radio Orchestration for RIS-Assisted LEO Satellite ISAC Systems",
+   "year": "2026-08-26",
+   "authors": [
+    "Fitsum Debebe Tilahun",
+    "Chung G. Kang"
+   ],
+   "url": "https://arxiv.org/abs/2608.25803v1",
+   "pdf": "https://arxiv.org/pdf/2608.25803v1"
+  }
+ ],
+ "aiops": [
+  {
+   "id": "arXiv:2610.04893",
+   "title": "SFlexRCA: Lightweight, Scalable, and Flexible Root Cause Analysis for IIoT Edge Systems",
+   "year": "2026-10-04",
+   "authors": [
+    "Amr M. Zaki",
+    "Farhoud Jafari",
+    "Honggeun Ji"
+   ],
+   "url": "https://arxiv.org/abs/2610.04893v1",
+   "pdf": "https://arxiv.org/pdf/2610.04893v1"
+  },
+  {
+   "id": "arXiv:2610.03515",
+   "title": "Learning from Repaired Reasoning: Root-Cause-Guided On-Policy Distillation",
+   "year": "2026-10-02",
+   "authors": [
+    "Chenglei Shen",
+    "Haoyang Yao",
+    "Weijie Yu"
+   ],
+   "url": "https://arxiv.org/abs/2610.03515v1",
+   "pdf": "https://arxiv.org/pdf/2610.03515v1"
+  },
+  {
+   "id": "arXiv:2609.36771",
+   "title": "Beyond Conditional Independence: Root Cause Analysis with Deep Causal Models",
+   "year": "2026-09-29",
+   "authors": [
+    "Md Musfiqur Rahman",
+    "Kenneth Lee",
+    "Ziwei Jiang"
+   ],
+   "url": "https://arxiv.org/abs/2609.36771v1",
+   "pdf": "https://arxiv.org/pdf/2609.36771v1"
+  },
+  {
+   "id": "arXiv:2609.36686",
+   "title": "Where Root Cause Analysis Fails: A Retrieval-Reranking Decomposition",
+   "year": "2026-09-29",
+   "authors": [
+    "Hada Melino Muhammad",
+    "Luan Pham",
+    "Laure Barrière"
+   ],
+   "url": "https://arxiv.org/abs/2609.36686v1",
+   "pdf": "https://arxiv.org/pdf/2609.36686v1"
+  },
+  {
+   "id": "arXiv:2609.27069",
+   "title": "Does Graph Structure Earn Its Place in Microservice Root-Cause Analysis? A Controlled Study on RCAEval, and What the Benchmark Was Really Measuring",
+   "year": "2026-09-22",
+   "authors": [
+    "Imad Buljić"
+   ],
+   "url": "https://arxiv.org/abs/2609.27069v1",
+   "pdf": "https://arxiv.org/pdf/2609.27069v1"
+  },
+  {
+   "id": "arXiv:2609.23766",
+   "title": "TriFleetRCA: On-Premise LLM Root Cause Analysis for Kubernetes",
+   "year": "2026-09-20",
+   "authors": [
+    "Rohit Patel",
+    "Susil Kumar Mohanty",
+    "Jeenal Chaudhary"
+   ],
+   "url": "https://arxiv.org/abs/2609.23766v1",
+   "pdf": "https://arxiv.org/pdf/2609.23766v1"
+  },
+  {
+   "id": "arXiv:2609.22822",
+   "title": "From IceCube to IT-Sphere: A Hybrid Quantum-Classical GNN for Banking IT Root Cause Analysis",
+   "year": "2026-09-19",
+   "authors": [
+    "Antonio Greco",
+    "Riccardo Paoletti",
+    "Roberto Cappuccio"
+   ],
+   "url": "https://arxiv.org/abs/2609.22822v1",
+   "pdf": "https://arxiv.org/pdf/2609.22822v1"
+  },
+  {
+   "id": "arXiv:2609.19825",
+   "title": "EviRCA: Decoupling Evidence Extraction from Reasoning for Microservice Root-Cause Analysis",
+   "year": "2026-09-17",
+   "authors": [
+    "Yuhao Wang",
+    "Zhen Qin",
+    "Xingliang Wang"
+   ],
+   "url": "https://arxiv.org/abs/2609.19825v1",
+   "pdf": "https://arxiv.org/pdf/2609.19825v1"
+  },
+  {
+   "id": "arXiv:2609.14762",
+   "title": "TriCalRAG: A Three-Strategy, Retrieval-Augmented Benchmark for On-Premise LLM-Based Root Cause Analysis in AIOps",
+   "year": "2026-09-13",
+   "authors": [
+    "Rohit Patel",
+    "Susil Kumar Mohanty",
+    "Jeenal Chaudhary"
+   ],
+   "url": "https://arxiv.org/abs/2609.14762v2",
+   "pdf": "https://arxiv.org/pdf/2609.14762v2"
+  },
+  {
+   "id": "arXiv:2609.13463",
+   "title": "Root-Cause Attribution Is a Search Problem: Continual Search for Long-Horizon Agent Failures",
+   "year": "2026-09-11",
+   "authors": [
+    "Harsh Raj",
+    "David Lee",
+    "Anas Mahmoud"
+   ],
+   "url": "https://arxiv.org/abs/2609.13463v2",
+   "pdf": "https://arxiv.org/pdf/2609.13463v2"
+  },
+  {
+   "id": "arXiv:2609.02805",
+   "title": "Large Language Models (LLMs) for Telecom Root Cause Analysis (RCA): A Structured Reasoning Framework for Evidence-Grounded Diagnosis",
+   "year": "2026-09-02",
+   "authors": [
+    "Hao Zhou",
+    "Mandar Kulkarni",
+    "Hao Chen"
+   ],
+   "url": "https://arxiv.org/abs/2609.02805v1",
+   "pdf": "https://arxiv.org/pdf/2609.02805v1"
+  },
+  {
+   "id": "arXiv:2608.29735",
+   "title": "A Unified Approach to Interpretable Causal Root Cause Attribution",
+   "year": "2026-08-30",
+   "authors": [
+    "Jing Zhou",
+    "Dominik Janzing",
+    "Sepp Tsang"
+   ],
+   "url": "https://arxiv.org/abs/2608.29735v1",
+   "pdf": "https://arxiv.org/pdf/2608.29735v1"
+  },
+  {
+   "id": "arXiv:2608.27182",
+   "title": "TraceBench: Controlled Evaluation of LLM Agents for Time-Series Root-Cause Attribution",
+   "year": "2026-08-27",
+   "authors": [
+    "Tommaso Bendinelli",
+    "Artur Dox",
+    "Christian Holz"
+   ],
+   "url": "https://arxiv.org/abs/2608.27182v1",
+   "pdf": "https://arxiv.org/pdf/2608.27182v1"
+  },
+  {
+   "id": "arXiv:2608.25661",
+   "title": "From General Agents to RCA Experts: A Self-Evolving Harness for Root Cause Analysis",
+   "year": "2026-08-26",
+   "authors": [
+    "Haiyu Huang",
+    "Jiewei Lyu",
+    "Zhihan Jiang"
+   ],
+   "url": "https://arxiv.org/abs/2608.25661v1",
+   "pdf": "https://arxiv.org/pdf/2608.25661v1"
+  },
+  {
+   "id": "arXiv:2608.23084",
+   "title": "ARGUS: MCP-Grounded Root Cause Analysis for Kubernetes Incidents",
+   "year": "2026-08-24",
+   "authors": [
+    "Ergi Senja",
+    "Seyed Mohammad Reza Razavi Zadegan",
+    "Philipp Leitner"
+   ],
+   "url": "https://arxiv.org/abs/2608.23084v1",
+   "pdf": "https://arxiv.org/pdf/2608.23084v1"
+  },
+  {
+   "id": "arXiv:2608.21310",
+   "title": "Beyond Fault Localization: A Trajectory-Level Study of LLM Agents for Microservice Root Cause Analysis",
+   "year": "2026-08-21",
+   "authors": [
+    "Qisheng Lu",
+    "Aoyang Fang",
+    "Junjielong Xu"
+   ],
+   "url": "https://arxiv.org/abs/2608.21310v1",
+   "pdf": "https://arxiv.org/pdf/2608.21310v1"
+  },
+  {
+   "id": "arXiv:2608.21117",
+   "title": "Root cause analysis via difference graph discovery from linear time-series data",
+   "year": "2026-08-21",
+   "authors": [
+    "Anouk Ruer",
+    "Timothée Loranchet",
+    "Daria Bystrova"
+   ],
+   "url": "https://arxiv.org/abs/2608.21117v1",
+   "pdf": "https://arxiv.org/pdf/2608.21117v1"
+  },
+  {
+   "id": "arXiv:2608.20011",
+   "title": "Manifold Drift in Flow Preference Optimization: A Root Cause of Reward Hacking",
+   "year": "2026-08-20",
+   "authors": [
+    "Yansen Han",
+    "Shengyi Liao",
+    "Yuanxing Zhang"
+   ],
+   "url": "https://arxiv.org/abs/2608.20011v1",
+   "pdf": "https://arxiv.org/pdf/2608.20011v1"
+  },
+  {
+   "id": "arXiv:2608.15242",
+   "title": "LongRCA Bench: Root-Cause Localization in Long-Horizon Agent Trajectories",
+   "year": "2026-08-15",
+   "authors": [
+    "Yunfei Zhang",
+    "Boyu Feng",
+    "Changhua Pei"
+   ],
+   "url": "https://arxiv.org/abs/2608.15242v4",
+   "pdf": "https://arxiv.org/pdf/2608.15242v4"
+  },
+  {
+   "id": "arXiv:2608.11277",
+   "title": "Knowledge-Graph-Guided Retrieval-Augmented LLMs for Explainable Root Cause Analysis in Automotive HiL Validation",
+   "year": "2026-08-11",
+   "authors": [
+    "Hamza Ouarrad",
+    "Mohammad Abboush",
+    "Andreas Rausch"
+   ],
+   "url": "https://arxiv.org/abs/2608.11277v1",
+   "pdf": "https://arxiv.org/pdf/2608.11277v1"
+  },
+  {
+   "id": "arXiv:2608.08968",
+   "title": "GALA: Graph-Augmented LLM Agents for Root Cause Analysis and Incident Response in Microservices",
+   "year": "2026-08-10",
+   "authors": [
+    "Yifang Tian",
+    "Yaming Liu",
+    "Zichun Chong"
+   ],
+   "url": "https://arxiv.org/abs/2608.08968v1",
+   "pdf": "https://arxiv.org/pdf/2608.08968v1"
+  },
+  {
+   "id": "arXiv:2608.08073",
+   "title": "eIRWR: Enhanced Iterative Random Walk with Restart for Scalable Root Cause Analysis in Microservices",
+   "year": "2026-08-08",
+   "authors": [
+    "Saiful Khan",
+    "Afrah Farea"
+   ],
+   "url": "https://arxiv.org/abs/2608.08073v1",
+   "pdf": "https://arxiv.org/pdf/2608.08073v1"
+  },
+  {
+   "id": "arXiv:2608.01975",
+   "title": "TELLER: Non-intrusive Cross-Layer Root-Cause Analysis for LLM Inference",
+   "year": "2026-08-03",
+   "authors": [
+    "Ruilin Xu",
+    "Junyi Li",
+    "Pengfei Chen"
+   ],
+   "url": "https://arxiv.org/abs/2608.01975v1",
+   "pdf": "https://arxiv.org/pdf/2608.01975v1"
+  },
+  {
+   "id": "arXiv:2608.01001",
+   "title": "From AI Technical Debt to Agentic Technical Debt: A Systematic Mapping of Root Causes and Manifestations in Agentic AI Systems",
+   "year": "2026-08-02",
+   "authors": [
+    "Muhammad Tukur",
+    "Hayatullahi B. Adeyemo",
+    "Tao Chen"
+   ],
+   "url": "https://arxiv.org/abs/2608.01001v1",
+   "pdf": "https://arxiv.org/pdf/2608.01001v1"
+  },
+  {
+   "id": "arXiv:2607.29092",
+   "title": "MATERO-RCA: Mode-Aware Trajectory-Level Energy-Based Root-Set Optimization for Industrial Root Cause Analysis",
+   "year": "2026-07-31",
+   "authors": [
+    "Chengyu Tao",
+    "Chunxi Huang",
+    "Runquan Xiao"
+   ],
+   "url": "https://arxiv.org/abs/2607.29092v1",
+   "pdf": "https://arxiv.org/pdf/2607.29092v1"
+  }
+ ],
+ "te-rl": [
+  {
+   "id": "arXiv:2307.15922",
+   "title": "Distributed Traffic Engineering in Hybrid Software Defined Networks: A Multi-agent Reinforcement Learning Framework",
+   "year": "2023-07-29",
+   "authors": [
+    "Yingya Guo",
+    "Qi Tang",
+    "Yulong Ma"
+   ],
+   "url": "https://arxiv.org/abs/2307.15922v1",
+   "pdf": "https://arxiv.org/pdf/2307.15922v1"
+  },
+  {
+   "id": "arXiv:2303.18157",
+   "title": "MAGNNETO: A Graph Neural Network-based Multi-Agent system for Traffic Engineering",
+   "year": "2023-03-31",
+   "authors": [
+    "Guillermo Bernárdez",
+    "José Suárez-Varela",
+    "Albert López"
+   ],
+   "url": "https://arxiv.org/abs/2303.18157v1",
+   "pdf": "https://arxiv.org/pdf/2303.18157v1"
+  },
+  {
+   "id": "arXiv:2210.13763",
+   "title": "Teal: Learning-Accelerated Optimization of WAN Traffic Engineering",
+   "year": "2022-10-25",
+   "authors": [
+    "Zhiying Xu",
+    "Francis Y. Yan",
+    "Rachee Singh"
+   ],
+   "url": "https://arxiv.org/abs/2210.13763v4",
+   "pdf": "https://arxiv.org/pdf/2210.13763v4"
+  },
+  {
+   "id": "arXiv:2111.15087",
+   "title": "MAMRL: Exploiting Multi-agent Meta Reinforcement Learning in WAN Traffic Engineering",
+   "year": "2021-11-30",
+   "authors": [
+    "Shan Sun",
+    "Mariam Kiran",
+    "Wei Ren"
+   ],
+   "url": "https://arxiv.org/abs/2111.15087v1",
+   "pdf": "https://arxiv.org/pdf/2111.15087v1"
+  },
+  {
+   "id": "arXiv:2109.01445",
+   "title": "Is Machine Learning Ready for Traffic Engineering Optimization?",
+   "year": "2021-09-03",
+   "authors": [
+    "Guillermo Bernárdez",
+    "José Suárez-Varela",
+    "Albert López"
+   ],
+   "url": "https://arxiv.org/abs/2109.01445v1",
+   "pdf": "https://arxiv.org/pdf/2109.01445v1"
+  },
+  {
+   "id": "arXiv:2004.11986",
+   "title": "CFR-RL: Traffic Engineering with Reinforcement Learning in SDN",
+   "year": "2020-04-24",
+   "authors": [
+    "Junjie Zhang",
+    "Minghao Ye",
+    "Zehua Guo"
+   ],
+   "url": "https://arxiv.org/abs/2004.11986v1",
+   "pdf": "https://arxiv.org/pdf/2004.11986v1"
+  }
+ ],
+ "routing-gnn": [
+  {
+   "id": "arXiv:2609.38760",
+   "title": "HALO: Heterogeneous Allocation Via Localized Observations for the Vehicle Routing Problem",
+   "year": "2026-09-30",
+   "authors": [
+    "Andrew Meighan",
+    "Hyungsub Kim",
+    "Or Dantsker"
+   ],
+   "url": "https://arxiv.org/abs/2609.38760v1",
+   "pdf": "https://arxiv.org/pdf/2609.38760v1"
+  },
+  {
+   "id": "arXiv:2609.04593",
+   "title": "GNN-Guided Graph Coarsening and Adaptive QUBO Penalties for the Capacitated Vehicle Routing Problem with Time Windows on a Quantum Annealer",
+   "year": "2026-09-04",
+   "authors": [
+    "Youssef Kamel Rezk",
+    "Paweł Gora"
+   ],
+   "url": "https://arxiv.org/abs/2609.04593v2",
+   "pdf": "https://arxiv.org/pdf/2609.04593v2"
+  },
+  {
+   "id": "arXiv:2608.23917",
+   "title": "GATNextHop: A GAT for Shortest Path Routing with Cross-Topology Generalization",
+   "year": "2026-08-24",
+   "authors": [
+    "Chia-Hong Chou",
+    "Katerina Potika"
+   ],
+   "url": "https://arxiv.org/abs/2608.23917v1",
+   "pdf": "https://arxiv.org/pdf/2608.23917v1"
+  },
+  {
+   "id": "arXiv:2608.26132",
+   "title": "SLM-Conditioned Hierarchical Relation Routing for Labeled Property Graph Learning",
+   "year": "2026-06-24",
+   "authors": [
+    "Michal Podstawski"
+   ],
+   "url": "https://arxiv.org/abs/2608.26132v1",
+   "pdf": "https://arxiv.org/pdf/2608.26132v1"
+  },
+  {
+   "id": "arXiv:2606.05353",
+   "title": "Learning Implicit Feasibility Constraints for Real-World Routing and Scheduling: Application to Log Transportation",
+   "year": "2026-06-03",
+   "authors": [
+    "Abdelhakim Abdellaoui",
+    "Ayoub Boufous",
+    "Issmail El Hallaoui"
+   ],
+   "url": "https://arxiv.org/abs/2606.05353v1",
+   "pdf": "https://arxiv.org/pdf/2606.05353v1"
+  },
+  {
+   "id": "arXiv:2606.01987",
+   "title": "Graph Edit Distance Formulation for the Vehicle Routing Problem: Theory and Analysis",
+   "year": "2026-06-01",
+   "authors": [
+    "Adel Dabah"
+   ],
+   "url": "https://arxiv.org/abs/2606.01987v1",
+   "pdf": "https://arxiv.org/pdf/2606.01987v1"
+  },
+  {
+   "id": "arXiv:2606.26125",
+   "title": "Geometric Fairness-Aware Routing for Federated Edge Networks",
+   "year": "2026-05-31",
+   "authors": [
+    "Ratun Rahman"
+   ],
+   "url": "https://arxiv.org/abs/2606.26125v1",
+   "pdf": "https://arxiv.org/pdf/2606.26125v1"
+  },
+  {
+   "id": "arXiv:2605.28155",
+   "title": "Temporal Hyperbolic Graph Representation Learning for Scale-Free Internet Routing and Delay Prediction",
+   "year": "2026-05-27",
+   "authors": [
+    "Yi-Ling Kuo",
+    "Hao-Yu Tien",
+    "Shih-Yu Tsai"
+   ],
+   "url": "https://arxiv.org/abs/2605.28155v1",
+   "pdf": "https://arxiv.org/pdf/2605.28155v1"
+  },
+  {
+   "id": "arXiv:2605.06918",
+   "title": "Generalising Travel Time Prediction To Varying Route Choices In Urban Networks",
+   "year": "2026-05-07",
+   "authors": [
+    "Łukasz Gorczyca",
+    "Kacper Drozd",
+    "Michał Bujak"
+   ],
+   "url": "https://arxiv.org/abs/2605.06918v1",
+   "pdf": "https://arxiv.org/pdf/2605.06918v1"
+  },
+  {
+   "id": "arXiv:2606.09841",
+   "title": "Human-Centered AI for Safe Shuttle Car Routing in Underground Room-and-Pillar Coal Mines Using Graph Neural Networks",
+   "year": "2026-04-23",
+   "authors": [
+    "Bryant Pollard"
+   ],
+   "url": "https://arxiv.org/abs/2606.09841v1",
+   "pdf": "https://arxiv.org/pdf/2606.09841v1"
+  },
+  {
+   "id": "arXiv:2604.09306",
+   "title": "SatQNet: Satellite-assisted Quantum Network Entanglement Routing Using Directed Line Graph Neural Networks",
+   "year": "2026-04-10",
+   "authors": [
+    "Tobias Meuser",
+    "Jannis Weil",
+    "Aninda Lahiri"
+   ],
+   "url": "https://arxiv.org/abs/2604.09306v1",
+   "pdf": "https://arxiv.org/pdf/2604.09306v1"
+  },
+  {
+   "id": "arXiv:2603.21020",
+   "title": "Characterizing Long-Range Dependencies in Knee Joint Contact Mechanics: A Comparison of Topology Diffusion, Global Routing, and Hybrid Graph Neural Networks",
+   "year": "2026-03-22",
+   "authors": [
+    "Zhengye Pan",
+    "Jianwei Zuo",
+    "Jiajia Luo"
+   ],
+   "url": "https://arxiv.org/abs/2603.21020v1",
+   "pdf": "https://arxiv.org/pdf/2603.21020v1"
+  },
+  {
+   "id": "arXiv:2602.15053",
+   "title": "One Rule to Bring Them All: Investigating Transport Connectivity in Public Transport Route Generation for Equitable Access",
+   "year": "2026-02-11",
+   "authors": [
+    "Aleksandr Morozov",
+    "Ruslan Kozliak",
+    "Georgii Kontsevik"
+   ],
+   "url": "https://arxiv.org/abs/2602.15053v1",
+   "pdf": "https://arxiv.org/pdf/2602.15053v1"
+  },
+  {
+   "id": "arXiv:2601.21921",
+   "title": "Duality-Guided Graph Learning for Real-Time Joint Connectivity and Routing in LEO Mega-Constellations",
+   "year": "2026-01-29",
+   "authors": [
+    "Zhouyou Gu",
+    "Jinho Choi",
+    "Tony Q. S. Quek"
+   ],
+   "url": "https://arxiv.org/abs/2601.21921v1",
+   "pdf": "https://arxiv.org/pdf/2601.21921v1"
+  },
+  {
+   "id": "arXiv:2601.21281",
+   "title": "EGAM: Extended Graph Attention Model for Solving Routing Problems",
+   "year": "2026-01-29",
+   "authors": [
+    "Licheng Wang",
+    "Yuzi Yan",
+    "Mingtao Huang"
+   ],
+   "url": "https://arxiv.org/abs/2601.21281v1",
+   "pdf": "https://arxiv.org/pdf/2601.21281v1"
+  },
+  {
+   "id": "arXiv:2601.13632",
+   "title": "Resilient Routing: Risk-Aware Dynamic Routing in Smart Logistics via Spatiotemporal Graph Learning",
+   "year": "2026-01-20",
+   "authors": [
+    "Zhiming Xue",
+    "Sichen Zhao",
+    "Yalun Qi"
+   ],
+   "url": "https://arxiv.org/abs/2601.13632v2",
+   "pdf": "https://arxiv.org/pdf/2601.13632v2"
+  },
+  {
+   "id": "arXiv:2601.04705",
+   "title": "A zone-based training approach for last-mile routing using Graph Neural Networks and Pointer Networks",
+   "year": "2026-01-08",
+   "authors": [
+    "Àngel Ruiz-Fas",
+    "Carlos Granell",
+    "José Francisco Ramos"
+   ],
+   "url": "https://arxiv.org/abs/2601.04705v1",
+   "pdf": "https://arxiv.org/pdf/2601.04705v1"
+  },
+  {
+   "id": "arXiv:2512.18441",
+   "title": "A Distributed Hierarchical Spatio-Temporal Edge-Enhanced Graph Neural Network for City-Scale Dynamic Logistics Routing",
+   "year": "2025-12-20",
+   "authors": [
+    "Zihan Han",
+    "Lingran Meng",
+    "Jingwei Zhang"
+   ],
+   "url": "https://arxiv.org/abs/2512.18441v1",
+   "pdf": "https://arxiv.org/pdf/2512.18441v1"
+  },
+  {
+   "id": "arXiv:2511.22321",
+   "title": "RELiQ: Scalable Entanglement Routing via Reinforcement Learning in Quantum Networks",
+   "year": "2025-11-27",
+   "authors": [
+    "Tobias Meuser",
+    "Jannis Weil",
+    "Aninda Lahiri"
+   ],
+   "url": "https://arxiv.org/abs/2511.22321v1",
+   "pdf": "https://arxiv.org/pdf/2511.22321v1"
+  },
+  {
+   "id": "arXiv:2511.15175",
+   "title": "Vehicle Routing Problems via Quantum Graph Attention Network Deep Reinforcement Learning",
+   "year": "2025-11-19",
+   "authors": [
+    "Le Tung Giang",
+    "Vu Hoang Viet",
+    "Nguyen Xuan Tung"
+   ],
+   "url": "https://arxiv.org/abs/2511.15175v1",
+   "pdf": "https://arxiv.org/pdf/2511.15175v1"
+  },
+  {
+   "id": "arXiv:2511.07850",
+   "title": "GAMA: A Neural Neighborhood Search Method with Graph-aware Multi-modal Attention for Vehicle Routing Problem",
+   "year": "2025-11-11",
+   "authors": [
+    "Xiangling Chen",
+    "Yi Mei",
+    "Mengjie Zhang"
+   ],
+   "url": "https://arxiv.org/abs/2511.07850v2",
+   "pdf": "https://arxiv.org/pdf/2511.07850v2"
+  },
+  {
+   "id": "arXiv:2511.07603",
+   "title": "One Router to Route Them All: Homogeneous Expert Routing for Heterogeneous Graph Transformers",
+   "year": "2025-11-10",
+   "authors": [
+    "Georgiy Shakirov",
+    "Albert Arakelov"
+   ],
+   "url": "https://arxiv.org/abs/2511.07603v2",
+   "pdf": "https://arxiv.org/pdf/2511.07603v2"
+  },
+  {
+   "id": "arXiv:2511.04008",
+   "title": "GNN-MoE: Context-Aware Patch Routing using GNNs for Parameter-Efficient Domain Generalization",
+   "year": "2025-11-06",
+   "authors": [
+    "Mahmoud Soliman",
+    "Omar Abdelaziz",
+    "Ahmed Radwan"
+   ],
+   "url": "https://arxiv.org/abs/2511.04008v1",
+   "pdf": "https://arxiv.org/pdf/2511.04008v1"
+  },
+  {
+   "id": "arXiv:2510.15210",
+   "title": "Structural Generalization for Microservice Routing Using Graph Neural Networks",
+   "year": "2025-10-17",
+   "authors": [
+    "Chenrui Hu",
+    "Ziyu Cheng",
+    "Di Wu"
+   ],
+   "url": "https://arxiv.org/abs/2510.15210v1",
+   "pdf": "https://arxiv.org/pdf/2510.15210v1"
+  },
+  {
+   "id": "arXiv:2510.11109",
+   "title": "Graph Neural Network-Based Multicast Routing for On-Demand Streaming Services in 6G Networks",
+   "year": "2025-10-13",
+   "authors": [
+    "Xiucheng Wang",
+    "Zien Wang",
+    "Nan Cheng"
+   ],
+   "url": "https://arxiv.org/abs/2510.11109v1",
+   "pdf": "https://arxiv.org/pdf/2510.11109v1"
+  }
+ ],
+ "ml-net-survey": [
+  {
+   "id": "arXiv:2608.18155",
+   "title": "How Quantum Is the Advantage? A Fair, Calibration- and Noise-Aware Benchmark and Attribution Audit of Quantum Machine Learning for Network Intrusion Detection",
+   "year": "2026-08-13",
+   "authors": [
+    "Syeda Anshrah Gillani",
+    "Mirza Samad Ahmed Baig",
+    "Shahid Munir Shah"
+   ],
+   "url": "https://arxiv.org/abs/2608.18155v1",
+   "pdf": "https://arxiv.org/pdf/2608.18155v1"
+  },
+  {
+   "id": "arXiv:2607.19305",
+   "title": "Riemannian Deep Learning: Modules, Networks, and Geometries",
+   "year": "2026-07-21",
+   "authors": [
+    "Ziheng Chen"
+   ],
+   "url": "https://arxiv.org/abs/2607.19305v4",
+   "pdf": "https://arxiv.org/pdf/2607.19305v4"
+  },
+  {
+   "id": "arXiv:2607.12203",
+   "title": "Explaining Intrusion Alert Decisions of Deep Learning-based Network Intrusion Detection Systems for Security Analysts",
+   "year": "2026-07-13",
+   "authors": [
+    "Ayush Kumar",
+    "Vrizlynn L. L. Thing"
+   ],
+   "url": "https://arxiv.org/abs/2607.12203v1",
+   "pdf": "https://arxiv.org/pdf/2607.12203v1"
+  },
+  {
+   "id": "arXiv:2606.12075",
+   "title": "Categorical Robustness Assessment for Machine Learning based Network Intrusion Detection Systems",
+   "year": "2026-06-10",
+   "authors": [
+    "Mayank Raj",
+    "Nathaniel D. Bastian",
+    "Lance Fiondella"
+   ],
+   "url": "https://arxiv.org/abs/2606.12075v1",
+   "pdf": "https://arxiv.org/pdf/2606.12075v1"
+  },
+  {
+   "id": "arXiv:2603.17717",
+   "title": "Machine Learning for Network Attacks Classification and Statistical Evaluation of Adversarial Learning Methodologies for Synthetic Data Generation",
+   "year": "2026-03-18",
+   "authors": [
+    "Iakovos-Christos Zarkadis",
+    "Christos Douligeris"
+   ],
+   "url": "https://arxiv.org/abs/2603.17717v4",
+   "pdf": "https://arxiv.org/pdf/2603.17717v4"
+  },
+  {
+   "id": "arXiv:2601.02581",
+   "title": "Threat Detection in Social Media Networks Using Machine Learning Based Network Analysis",
+   "year": "2026-01-05",
+   "authors": [
+    "Aditi Sanjay Agrawal"
+   ],
+   "url": "https://arxiv.org/abs/2601.02581v1",
+   "pdf": "https://arxiv.org/pdf/2601.02581v1"
+  },
+  {
+   "id": "arXiv:2512.19491",
+   "title": "Learning from sanctioned government suppliers: A machine learning and network science approach to detecting fraud and corruption in Mexico",
+   "year": "2025-12-22",
+   "authors": [
+    "Martí Medina-Hernández",
+    "Janos Kertész",
+    "Mihály Fazekas"
+   ],
+   "url": "https://arxiv.org/abs/2512.19491v2",
+   "pdf": "https://arxiv.org/pdf/2512.19491v2"
+  },
+  {
+   "id": "arXiv:2509.21389",
+   "title": "Towards Adapting Federated & Quantum Machine Learning for Network Intrusion Detection: A Survey",
+   "year": "2025-09-24",
+   "authors": [
+    "Devashish Chaudhary",
+    "Sutharshan Rajasegarar",
+    "Shiva Raj Pokhrel"
+   ],
+   "url": "https://arxiv.org/abs/2509.21389v2",
+   "pdf": "https://arxiv.org/pdf/2509.21389v2"
+  },
+  {
+   "id": "arXiv:2509.18007",
+   "title": "Building Transparency in Deep Learning-Powered Network Traffic Classification: A Traffic-Explainer Framework",
+   "year": "2025-09-22",
+   "authors": [
+    "Riya Ponraj",
+    "Ram Durairajan",
+    "Yu Wang"
+   ],
+   "url": "https://arxiv.org/abs/2509.18007v1",
+   "pdf": "https://arxiv.org/pdf/2509.18007v1"
+  },
+  {
+   "id": "arXiv:2509.02435",
+   "title": "A Convolutional Hierarchical Deep-learning Neural Network (C-HiDeNN) Framework for Non-linear Finite Element Analysis",
+   "year": "2025-09-02",
+   "authors": [
+    "Yingjian Liu",
+    "Monish Yadav Pabbala",
+    "Jiachen Guo"
+   ],
+   "url": "https://arxiv.org/abs/2509.02435v2",
+   "pdf": "https://arxiv.org/pdf/2509.02435v2"
+  },
+  {
+   "id": "arXiv:2507.05498",
+   "title": "Explainable Hierarchical Deep Learning Neural Networks (Ex-HiDeNN)",
+   "year": "2025-07-07",
+   "authors": [
+    "Reza T. Batley",
+    "Chanwook Park",
+    "Wing Kam Liu"
+   ],
+   "url": "https://arxiv.org/abs/2507.05498v1",
+   "pdf": "https://arxiv.org/pdf/2507.05498v1"
+  },
+  {
+   "id": "arXiv:2506.07882",
+   "title": "Evaluating explainable AI for deep learning-based network intrusion detection system alert classification",
+   "year": "2025-06-09",
+   "authors": [
+    "Rajesh Kalakoti",
+    "Risto Vaarandi",
+    "Hayretdin Bahsi"
+   ],
+   "url": "https://arxiv.org/abs/2506.07882v1",
+   "pdf": "https://arxiv.org/pdf/2506.07882v1"
+  },
+  {
+   "id": "arXiv:2506.00039",
+   "title": "AbsoluteNet: A Deep Learning Neural Network to Classify Cerebral Hemodynamic Responses of Auditory Processing",
+   "year": "2025-05-27",
+   "authors": [
+    "Behtom Adeli",
+    "John Mclinden",
+    "Pankaj Pandey"
+   ],
+   "url": "https://arxiv.org/abs/2506.00039v2",
+   "pdf": "https://arxiv.org/pdf/2506.00039v2"
+  },
+  {
+   "id": "arXiv:2505.05810",
+   "title": "Intrusion Detection System Using Deep Learning for Network Security",
+   "year": "2025-05-09",
+   "authors": [
+    "Soham Chatterjee",
+    "Satvik Chaudhary",
+    "Aswani Kumar Cherukuri"
+   ],
+   "url": "https://arxiv.org/abs/2505.05810v1",
+   "pdf": "https://arxiv.org/pdf/2505.05810v1"
+  },
+  {
+   "id": "arXiv:2503.16746",
+   "title": "Ordered Topological Deep Learning: a Network Modeling Case Study",
+   "year": "2025-03-20",
+   "authors": [
+    "Guillermo Bernárdez",
+    "Miquel Ferriol-Galmés",
+    "Carlos Güemes-Palau"
+   ],
+   "url": "https://arxiv.org/abs/2503.16746v1",
+   "pdf": "https://arxiv.org/pdf/2503.16746v1"
+  },
+  {
+   "id": "arXiv:2502.15561",
+   "title": "A Defensive Framework Against Adversarial Attacks on Machine Learning-Based Network Intrusion Detection Systems",
+   "year": "2025-02-21",
+   "authors": [
+    "Benyamin Tafreshian",
+    "Shengzhi Zhang"
+   ],
+   "url": "https://arxiv.org/abs/2502.15561v1",
+   "pdf": "https://arxiv.org/pdf/2502.15561v1"
+  },
+  {
+   "id": "arXiv:2409.00329",
+   "title": "Convolutional Hierarchical Deep Learning Neural Networks-Tensor Decomposition (C-HiDeNN-TD): a scalable surrogate modeling approach for large-scale physical systems",
+   "year": "2024-08-31",
+   "authors": [
+    "Jiachen Guo",
+    "Chanwook Park",
+    "Xiaoyu Xie"
+   ],
+   "url": "https://arxiv.org/abs/2409.00329v2",
+   "pdf": "https://arxiv.org/pdf/2409.00329v2"
+  },
+  {
+   "id": "arXiv:2408.14040",
+   "title": "Evaluating The Explainability of State-of-the-Art Deep Learning-based Network Intrusion Detection Systems",
+   "year": "2024-08-26",
+   "authors": [
+    "Ayush Kumar",
+    "Vrizlynn L. L. Thing"
+   ],
+   "url": "https://arxiv.org/abs/2408.14040v4",
+   "pdf": "https://arxiv.org/pdf/2408.14040v4"
+  },
+  {
+   "id": "arXiv:2408.07104",
+   "title": "Model Based and Physics Informed Deep Learning Neural Network Structures",
+   "year": "2024-08-13",
+   "authors": [
+    "Ali Mohammad-Djafari",
+    "Ning Chu",
+    "Li Wang"
+   ],
+   "url": "https://arxiv.org/abs/2408.07104v1",
+   "pdf": "https://arxiv.org/pdf/2408.07104v1"
+  },
+  {
+   "id": "arXiv:2407.08838",
+   "title": "Deep Learning for Network Anomaly Detection under Data Contamination: Evaluating Robustness and Mitigating Performance Degradation",
+   "year": "2024-07-11",
+   "authors": [
+    "D'Jeff K. Nkashama",
+    "Jordan Masakuna Félicien",
+    "Arian Soltani"
+   ],
+   "url": "https://arxiv.org/abs/2407.08838v2",
+   "pdf": "https://arxiv.org/pdf/2407.08838v2"
+  },
+  {
+   "id": "arXiv:2406.03307",
+   "title": "Multi-Patch Isogeometric Convolution Hierarchical Deep-learning Neural Network",
+   "year": "2024-06-05",
+   "authors": [
+    "Lei Zhang",
+    "Chanwook Park",
+    "T. J. R. Hughes"
+   ],
+   "url": "https://arxiv.org/abs/2406.03307v1",
+   "pdf": "https://arxiv.org/pdf/2406.03307v1"
+  },
+  {
+   "id": "arXiv:2405.11141",
+   "title": "Enhancing Automata Learning with Statistical Machine Learning: A Network Security Case Study",
+   "year": "2024-05-18",
+   "authors": [
+    "Negin Ayoughi",
+    "Shiva Nejati",
+    "Mehrdad Sabetzadeh"
+   ],
+   "url": "https://arxiv.org/abs/2405.11141v2",
+   "pdf": "https://arxiv.org/pdf/2405.11141v2"
+  },
+  {
+   "id": "arXiv:2404.11352",
+   "title": "Accelerating Geo-distributed Machine Learning with Network-Aware Adaptive Tree and Auxiliary Route",
+   "year": "2024-04-17",
+   "authors": [
+    "Zonghang Li",
+    "Wenjiao Feng",
+    "Weibo Cai"
+   ],
+   "url": "https://arxiv.org/abs/2404.11352v1",
+   "pdf": "https://arxiv.org/pdf/2404.11352v1"
+  },
+  {
+   "id": "arXiv:2402.10974",
+   "title": "On the Cross-Dataset Generalization of Machine Learning for Network Intrusion Detection",
+   "year": "2024-02-15",
+   "authors": [
+    "Marco Cantone",
+    "Claudio Marrocco",
+    "Alessandro Bria"
+   ],
+   "url": "https://arxiv.org/abs/2402.10974v1",
+   "pdf": "https://arxiv.org/pdf/2402.10974v1"
+  },
+  {
+   "id": "arXiv:2402.05255",
+   "title": "An Overview of Machine Learning-Enabled Network Softwarization for the Internet of Things",
+   "year": "2024-02-07",
+   "authors": [
+    "Mohamed Ali Zormati",
+    "Hicham Lakhlef"
+   ],
+   "url": "https://arxiv.org/abs/2402.05255v1",
+   "pdf": "https://arxiv.org/pdf/2402.05255v1"
+  }
+ ],
+ "digital-twin": [
+  {
+   "id": "arXiv:2610.11934",
+   "title": "Digital Twin for Pre-Deployment Validation of AI-Driven Safety-Critical Industrial Edge Control Loops",
+   "year": "2026-10-08",
+   "authors": [
+    "Sara Cavallero",
+    "Federico Tonini",
+    "Tony Chahoud"
+   ],
+   "url": "https://arxiv.org/abs/2610.11934v1",
+   "pdf": "https://arxiv.org/pdf/2610.11934v1"
+  },
+  {
+   "id": "arXiv:2610.09546",
+   "title": "PCDT: A Predictive Cognitive Digital Twin Framework for Intelligent and Autonomous 6G Network Ecosystems",
+   "year": "2026-10-07",
+   "authors": [
+    "John Sengendo",
+    "Andreas Kassler",
+    "Fabrizio Granelli"
+   ],
+   "url": "https://arxiv.org/abs/2610.09546v1",
+   "pdf": "https://arxiv.org/pdf/2610.09546v1"
+  },
+  {
+   "id": "arXiv:2610.07889",
+   "title": "ONDT: A Modular and Virtualized O-RAN Digital Twin for xApp/rApp Closed-Loop Experimentatio",
+   "year": "2026-10-06",
+   "authors": [
+    "Miguel Catalan-Cid",
+    "Joan Josep Aleixendri",
+    "August Betzler"
+   ],
+   "url": "https://arxiv.org/abs/2610.07889v1",
+   "pdf": "https://arxiv.org/pdf/2610.07889v1"
+  },
+  {
+   "id": "arXiv:2610.05050",
+   "title": "Thermodynamic Digital Twins: Physics-Native Semantic Synchronization for 6G Kinetic Swarms",
+   "year": "2026-10-04",
+   "authors": [
+    "Wen-Yu Dong",
+    "Weiwei Jiang",
+    "Song Zhao"
+   ],
+   "url": "https://arxiv.org/abs/2610.05050v1",
+   "pdf": "https://arxiv.org/pdf/2610.05050v1"
+  },
+  {
+   "id": "arXiv:2610.04852",
+   "title": "Hybrid Ray-Tracing and Physics-Embedded Neural Modeling for High-Fidelity Channel Reconstruction in Wireless Digital Twins",
+   "year": "2026-10-04",
+   "authors": [
+    "Huiwen Zhang",
+    "Chu Ma",
+    "Feng Ye"
+   ],
+   "url": "https://arxiv.org/abs/2610.04852v1",
+   "pdf": "https://arxiv.org/pdf/2610.04852v1"
+  },
+  {
+   "id": "arXiv:2609.35644",
+   "title": "Energy-Driven Evaluation of Network Digital Twinning Applied to mmWave Beam Management",
+   "year": "2026-09-28",
+   "authors": [
+    "João Borges",
+    "Bruno Castro",
+    "Kleber Cardoso"
+   ],
+   "url": "https://arxiv.org/abs/2609.35644v1",
+   "pdf": "https://arxiv.org/pdf/2609.35644v1"
+  },
+  {
+   "id": "arXiv:2609.22709",
+   "title": "TiamiTwin: A Digital Twin for Bistatic ISAC Drone Sensing, Validated Against Measurements",
+   "year": "2026-09-19",
+   "authors": [
+    "Mehdi Zafari",
+    "Saeede Enayati",
+    "A. Lee Swindlehurst"
+   ],
+   "url": "https://arxiv.org/abs/2609.22709v1",
+   "pdf": "https://arxiv.org/pdf/2609.22709v1"
+  },
+  {
+   "id": "arXiv:2609.18704",
+   "title": "Toward Composable Network Digital Twins: A Subgraph-Based Latency Prediction Study",
+   "year": "2026-09-16",
+   "authors": [
+    "Shenjia Ding",
+    "David Flynn",
+    "Paul Harvey"
+   ],
+   "url": "https://arxiv.org/abs/2609.18704v2",
+   "pdf": "https://arxiv.org/pdf/2609.18704v2"
+  },
+  {
+   "id": "arXiv:2609.12170",
+   "title": "NDT Factory: Synthesizing Verified Network Digital Twins from Semantic Models via Multi-Agent LLM",
+   "year": "2026-09-10",
+   "authors": [
+    "Sudipta Acharya",
+    "Petar Djukic",
+    "Burak Kantarci"
+   ],
+   "url": "https://arxiv.org/abs/2609.12170v1",
+   "pdf": "https://arxiv.org/pdf/2609.12170v1"
+  },
+  {
+   "id": "arXiv:2609.05793",
+   "title": "HalifaxDT: A Wireless Digital Twin from Open Geospatial Data",
+   "year": "2026-09-05",
+   "authors": [
+    "Alexis Delplace",
+    "Xinyi Li",
+    "Samer Lahoud"
+   ],
+   "url": "https://arxiv.org/abs/2609.05793v1",
+   "pdf": "https://arxiv.org/pdf/2609.05793v1"
+  },
+  {
+   "id": "arXiv:2608.21866",
+   "title": "Reliability-Aware Scheduling for Digital Twin Maintenance",
+   "year": "2026-08-22",
+   "authors": [
+    "Milica Jankov",
+    "Carlo Fischione"
+   ],
+   "url": "https://arxiv.org/abs/2608.21866v1",
+   "pdf": "https://arxiv.org/pdf/2608.21866v1"
+  },
+  {
+   "id": "arXiv:2609.26107",
+   "title": "ST-NDT: A Topological Framework for Reducing Communication Overhead in Network Digital Twins",
+   "year": "2026-08-15",
+   "authors": [
+    "John Sengendo",
+    "Fabrizio Granelli"
+   ],
+   "url": "https://arxiv.org/abs/2609.26107v1",
+   "pdf": "https://arxiv.org/pdf/2609.26107v1"
+  },
+  {
+   "id": "arXiv:2608.12865",
+   "title": "Digital Twin Satellite Networks: A Paradigm for Intelligent, Efficient, and Resilient Operations",
+   "year": "2026-08-13",
+   "authors": [
+    "Mustafa Alhassan",
+    "Peng Hu"
+   ],
+   "url": "https://arxiv.org/abs/2608.12865v1",
+   "pdf": "https://arxiv.org/pdf/2608.12865v1"
+  },
+  {
+   "id": "arXiv:2608.10517",
+   "title": "Link-adaptive digital twin for robust physical-layer modeling in hybrid-amplified ultra-wideband optical networks",
+   "year": "2026-08-11",
+   "authors": [
+    "Xiaoxuan Gao",
+    "Rentao Gu",
+    "Yingchun Wang"
+   ],
+   "url": "https://arxiv.org/abs/2608.10517v1",
+   "pdf": "https://arxiv.org/pdf/2608.10517v1"
+  },
+  {
+   "id": "arXiv:2608.06227",
+   "title": "From Passive Mirrors to Active Agents: Holonic Digital Twins for Physical AI over Networks",
+   "year": "2026-08-06",
+   "authors": [
+    "Christo Kurisummoottil Thomas",
+    "Omar Hashash",
+    "Walid Saad"
+   ],
+   "url": "https://arxiv.org/abs/2608.06227v1",
+   "pdf": "https://arxiv.org/pdf/2608.06227v1"
+  },
+  {
+   "id": "arXiv:2607.28756",
+   "title": "Sovereign Cognitive Digital Twins: Fusing 6G ISAC, AI-RAN, and Zero-Trust Edge Grids for National Resilience in the Global South",
+   "year": "2026-07-30",
+   "authors": [
+    "Zoe Aiyanna M. Cayetano",
+    "George M. Gichuru",
+    "Taijuo T. Morris"
+   ],
+   "url": "https://arxiv.org/abs/2607.28756v1",
+   "pdf": "https://arxiv.org/pdf/2607.28756v1"
+  },
+  {
+   "id": "arXiv:2607.21310",
+   "title": "Empowering Rural Areas with Multi-radio Microwave Backhaul Supported by Digital Twin for 5G IAB-based FWA",
+   "year": "2026-07-23",
+   "authors": [
+    "Anselme Ndikumana",
+    "Kim Khoa Nguyen",
+    "Adel Larabi"
+   ],
+   "url": "https://arxiv.org/abs/2607.21310v2",
+   "pdf": "https://arxiv.org/pdf/2607.21310v2"
+  },
+  {
+   "id": "arXiv:2607.10367",
+   "title": "Model-Driven Digital Twin Framework for Quantum Networks",
+   "year": "2026-07-11",
+   "authors": [
+    "Amal Elsokary",
+    "Hayato Ishida",
+    "Ran Wei"
+   ],
+   "url": "https://arxiv.org/abs/2607.10367v1",
+   "pdf": "https://arxiv.org/pdf/2607.10367v1"
+  },
+  {
+   "id": "arXiv:2608.14599",
+   "title": "Intelligent Base Station Deployment in Urban Wireless Networks: A Geographic Data-Informed Digital Twin Approach",
+   "year": "2026-06-30",
+   "authors": [
+    "Zhenyu Tao",
+    "Yuxuan Li",
+    "Wei Xu"
+   ],
+   "url": "https://arxiv.org/abs/2608.14599v2",
+   "pdf": "https://arxiv.org/pdf/2608.14599v2"
+  },
+  {
+   "id": "arXiv:2606.24853",
+   "title": "Building a Low-cost Network Digital Twin for the IoT-Edge-Cloud Continuum Using Open-Source Tooling",
+   "year": "2026-06-23",
+   "authors": [
+    "Josevany do Amaral",
+    "Rute C. Sofia"
+   ],
+   "url": "https://arxiv.org/abs/2606.24853v2",
+   "pdf": "https://arxiv.org/pdf/2606.24853v2"
+  },
+  {
+   "id": "arXiv:2606.17845",
+   "title": "UAV-CAS: A Calibrated Digital-Twin Dataset for Intrusion Detection in UAV Swarm Networks",
+   "year": "2026-06-16",
+   "authors": [
+    "Sripath Mishra",
+    "Bharat Bhargava",
+    "Zizheng Liu"
+   ],
+   "url": "https://arxiv.org/abs/2606.17845v1",
+   "pdf": "https://arxiv.org/pdf/2606.17845v1"
+  },
+  {
+   "id": "arXiv:2606.13069",
+   "title": "Modular Multi-Domain Digital Twin Architecture: Sustainable Intent-Driven 6G Management",
+   "year": "2026-06-11",
+   "authors": [
+    "Berk Buzcu",
+    "Marcin Pakula",
+    "Gevher Yesevi Keskin"
+   ],
+   "url": "https://arxiv.org/abs/2606.13069v1",
+   "pdf": "https://arxiv.org/pdf/2606.13069v1"
+  },
+  {
+   "id": "arXiv:2609.09161",
+   "title": "SMCC-Empowered Digital Twins for Sensorless Monitoring in Large-Scale AI-Driven IoT Systems",
+   "year": "2026-06-04",
+   "authors": [
+    "Vincenzo Sammartino"
+   ],
+   "url": "https://arxiv.org/abs/2609.09161v1",
+   "pdf": "https://arxiv.org/pdf/2609.09161v1"
+  },
+  {
+   "id": "arXiv:2605.29772",
+   "title": "ARIADNE: AI-RAN Informed Link Adaptation in Digital Twin Network Environments",
+   "year": "2026-05-28",
+   "authors": [
+    "Maria Tsampazi",
+    "Neagin Neasamoni Santhi",
+    "Nicole Perrotta"
+   ],
+   "url": "https://arxiv.org/abs/2605.29772v2",
+   "pdf": "https://arxiv.org/pdf/2605.29772v2"
+  },
+  {
+   "id": "arXiv:2605.24662",
+   "title": "OpenTwin: Closed-Loop Digital Twins for Trustworthy Policy Deployment in Open RAN",
+   "year": "2026-05-23",
+   "authors": [
+    "Zifan Zhang",
+    "Md Sharif Hossen",
+    "Dara Ron"
+   ],
+   "url": "https://arxiv.org/abs/2605.24662v2",
+   "pdf": "https://arxiv.org/pdf/2605.24662v2"
+  }
+ ],
+ "netagent": [
+  {
+   "id": "arXiv:2610.08622",
+   "title": "Agentic RCA for Internet-Scale Services Using Constrained Creativity",
+   "year": "2026-10-06",
+   "authors": [
+    "Sayan Sinha",
+    "Vipul Harsh",
+    "B. Aditya Prakash"
+   ],
+   "url": "https://arxiv.org/abs/2610.08622v1",
+   "pdf": "https://arxiv.org/pdf/2610.08622v1"
+  },
+  {
+   "id": "arXiv:2610.02861",
+   "title": "Containing the Autonomous Operator: A Defense-in-Depth Framework and Reference Architecture for Securing AI Agents on Kubernetes",
+   "year": "2026-10-02",
+   "authors": [
+    "Simhadri Podala Narasimha"
+   ],
+   "url": "https://arxiv.org/abs/2610.02861v1",
+   "pdf": "https://arxiv.org/pdf/2610.02861v1"
+  },
+  {
+   "id": "arXiv:2609.39477",
+   "title": "Resource-Efficient Semantic Communication for Heterogeneous Agentic Teams",
+   "year": "2026-09-30",
+   "authors": [
+    "Farhad Rezazadeh",
+    "Hatim Chergui",
+    "Lingjia Liu"
+   ],
+   "url": "https://arxiv.org/abs/2609.39477v1",
+   "pdf": "https://arxiv.org/pdf/2609.39477v1"
+  },
+  {
+   "id": "arXiv:2609.32226",
+   "title": "Toward Agentic Optical Networks: A Vision of LLM Agent-Driven Autonomous Lifecycle Management",
+   "year": "2026-09-26",
+   "authors": [
+    "Yao Zhang",
+    "Shengnan Li",
+    "Yuchen Song"
+   ],
+   "url": "https://arxiv.org/abs/2609.32226v1",
+   "pdf": "https://arxiv.org/pdf/2609.32226v1"
+  },
+  {
+   "id": "arXiv:2609.31990",
+   "title": "CSI-Agent: LLM-Assisted Few-Shot Adaptation for Cross-Domain Wi-Fi CSI Sensing",
+   "year": "2026-09-25",
+   "authors": [
+    "Tianya Zhao",
+    "Chuan Liu",
+    "Xuyu Wang"
+   ],
+   "url": "https://arxiv.org/abs/2609.31990v1",
+   "pdf": "https://arxiv.org/pdf/2609.31990v1"
+  },
+  {
+   "id": "arXiv:2609.22723",
+   "title": "ANI-Gamut: Benchmarking Agent Reliability across the Gamut of Agent-Network Interface Abstractions",
+   "year": "2026-09-19",
+   "authors": [
+    "Lorenzo Bracciale",
+    "Pierpaolo Loreti",
+    "Andrea Mayer"
+   ],
+   "url": "https://arxiv.org/abs/2609.22723v1",
+   "pdf": "https://arxiv.org/pdf/2609.22723v1"
+  },
+  {
+   "id": "arXiv:2609.07843",
+   "title": "The OCUDU dApp Platform: An Open Runtime and E3 Interface for Real-Time AI-RAN",
+   "year": "2026-09-07",
+   "authors": [
+    "Timothy O'Shea",
+    "Matthew Pennybacker",
+    "Andriy Kharchenko"
+   ],
+   "url": "https://arxiv.org/abs/2609.07843v1",
+   "pdf": "https://arxiv.org/pdf/2609.07843v1"
+  },
+  {
+   "id": "arXiv:2609.01779",
+   "title": "Agents That Model Agents: Five Principles Toward a Theory of Mind for 6G Networks",
+   "year": "2026-09-01",
+   "authors": [
+    "Hatim Chergui",
+    "Carolina Fernández-Martínez",
+    "Mehdi Bennis"
+   ],
+   "url": "https://arxiv.org/abs/2609.01779v1",
+   "pdf": "https://arxiv.org/pdf/2609.01779v1"
+  },
+  {
+   "id": "arXiv:2608.23179",
+   "title": "NetConfArena: An Executable Benchmark for LLM Agents in Closed-Loop Network Configuration",
+   "year": "2026-08-24",
+   "authors": [
+    "Chang Liu",
+    "Xiaohui Xie",
+    "Xinyi Chen"
+   ],
+   "url": "https://arxiv.org/abs/2608.23179v1",
+   "pdf": "https://arxiv.org/pdf/2608.23179v1"
+  },
+  {
+   "id": "arXiv:2608.08277",
+   "title": "WirelessOpsAgent: A Benchmark and Agent Design for Action Assurance in Wireless Networks",
+   "year": "2026-08-08",
+   "authors": [
+    "Zijian Lu",
+    "Yiping Zuo",
+    "Hao Xu"
+   ],
+   "url": "https://arxiv.org/abs/2608.08277v1",
+   "pdf": "https://arxiv.org/pdf/2608.08277v1"
+  },
+  {
+   "id": "arXiv:2607.22400",
+   "title": "A Self-Calibrating Agentic AI Framework for Autonomous Edge Resource Allocation",
+   "year": "2026-07-24",
+   "authors": [
+    "Fin Gentzen",
+    "Marla Grunewald",
+    "Iulisloi Zacarias"
+   ],
+   "url": "https://arxiv.org/abs/2607.22400v1",
+   "pdf": "https://arxiv.org/pdf/2607.22400v1"
+  },
+  {
+   "id": "arXiv:2607.19215",
+   "title": "HACO: Hedged Agent Computing for Reliable LLM Systems",
+   "year": "2026-07-21",
+   "authors": [
+    "Enhan Li",
+    "Hongyang Du"
+   ],
+   "url": "https://arxiv.org/abs/2607.19215v1",
+   "pdf": "https://arxiv.org/pdf/2607.19215v1"
+  },
+  {
+   "id": "arXiv:2607.15593",
+   "title": "Scalable LLM Agent Tool Access in the Cloud",
+   "year": "2026-07-17",
+   "authors": [
+    "Mingxin Li",
+    "Enge Song",
+    "Yueshang Zuo"
+   ],
+   "url": "https://arxiv.org/abs/2607.15593v1",
+   "pdf": "https://arxiv.org/pdf/2607.15593v1"
+  },
+  {
+   "id": "arXiv:2606.23255",
+   "title": "Wireless Personal Agent: Extending Wireless Intelligence from Networks to Terminals",
+   "year": "2026-06-22",
+   "authors": [
+    "Jiedan Tan",
+    "Fang Liu",
+    "Jingwen Tong"
+   ],
+   "url": "https://arxiv.org/abs/2606.23255v1",
+   "pdf": "https://arxiv.org/pdf/2606.23255v1"
+  },
+  {
+   "id": "arXiv:2606.19135",
+   "title": "A Technical Taxonomy of LLM Agent Communication Protocols",
+   "year": "2026-06-17",
+   "authors": [
+    "Linus Sander",
+    "Habtom Kahsay Gidey",
+    "Alexander Lenz"
+   ],
+   "url": "https://arxiv.org/abs/2606.19135v1",
+   "pdf": "https://arxiv.org/pdf/2606.19135v1"
+  },
+  {
+   "id": "arXiv:2608.14573",
+   "title": "WARA: Toward Automated Wireless Optimization Research with Closed-Loop LLM Agents",
+   "year": "2026-06-07",
+   "authors": [
+    "Yuan Guo",
+    "Yilong Chen",
+    "Chao Hu"
+   ],
+   "url": "https://arxiv.org/abs/2608.14573v1",
+   "pdf": "https://arxiv.org/pdf/2608.14573v1"
+  },
+  {
+   "id": "arXiv:2606.18272",
+   "title": "Mitigating Anchoring Bias in LLM-Based Agents for Energy-Efficient 6G Autonomous Networks",
+   "year": "2026-06-05",
+   "authors": [
+    "Hatim Chergui",
+    "Claudia Carballo González",
+    "Farhad Rezazadeh"
+   ],
+   "url": "https://arxiv.org/abs/2606.18272v2",
+   "pdf": "https://arxiv.org/pdf/2606.18272v2"
+  },
+  {
+   "id": "arXiv:2605.07961",
+   "title": "Graph Representation Learning Augmented Model Manipulation on Federated Fine-Tuning of LLMs",
+   "year": "2026-05-08",
+   "authors": [
+    "Hanlin Cai",
+    "Kai Li",
+    "Houtianfu Wang"
+   ],
+   "url": "https://arxiv.org/abs/2605.07961v2",
+   "pdf": "https://arxiv.org/pdf/2605.07961v2"
+  },
+  {
+   "id": "arXiv:2605.07547",
+   "title": "Deadline-Driven Hierarchical Agentic Resource Sharing for AI Services and RAN Functions in AI-RAN",
+   "year": "2026-05-08",
+   "authors": [
+    "Haiyuan Li",
+    "Yulei Wu",
+    "Dimitra Simeonidou"
+   ],
+   "url": "https://arxiv.org/abs/2605.07547v1",
+   "pdf": "https://arxiv.org/pdf/2605.07547v1"
+  },
+  {
+   "id": "arXiv:2605.04530",
+   "title": "SADE: Symptom-Aware Diagnostic Escalation for LLM-Based Network Troubleshooting",
+   "year": "2026-05-06",
+   "authors": [
+    "Kuan-Hao Tseng",
+    "Niruth Bogahawatta",
+    "Yasod Ginige"
+   ],
+   "url": "https://arxiv.org/abs/2605.04530v1",
+   "pdf": "https://arxiv.org/pdf/2605.04530v1"
+  },
+  {
+   "id": "arXiv:2605.02584",
+   "title": "Beyond State Machines: Executing Network Procedures with Agentic Tool-Calling Sequences",
+   "year": "2026-05-04",
+   "authors": [
+    "Purna Sai Garigipati",
+    "Onur Ayan",
+    "Kishor Chandra Joshi"
+   ],
+   "url": "https://arxiv.org/abs/2605.02584v1",
+   "pdf": "https://arxiv.org/pdf/2605.02584v1"
+  },
+  {
+   "id": "arXiv:2605.01546",
+   "title": "6G Needs Agents: Toward Agentic AI-Native Networks for Autonomous Intelligence",
+   "year": "2026-05-02",
+   "authors": [
+    "Mohamed Amine Ferrag",
+    "Abderrahmane Lakas",
+    "Merouane Debbah"
+   ],
+   "url": "https://arxiv.org/abs/2605.01546v1",
+   "pdf": "https://arxiv.org/pdf/2605.01546v1"
+  },
+  {
+   "id": "arXiv:2604.12127",
+   "title": "BLAST: Blockchain-based LLM-powered Agentic Spectrum Trading",
+   "year": "2026-04-13",
+   "authors": [
+    "Anas Abognah",
+    "Otman Basir"
+   ],
+   "url": "https://arxiv.org/abs/2604.12127v1",
+   "pdf": "https://arxiv.org/pdf/2604.12127v1"
+  },
+  {
+   "id": "arXiv:2604.09678",
+   "title": "NetAgentBench: A State-Centric Benchmark for Evaluating Agentic Network Configuration",
+   "year": "2026-04-03",
+   "authors": [
+    "Ahmed Twabi",
+    "Yepeng Ding",
+    "Tohru Kondo"
+   ],
+   "url": "https://arxiv.org/abs/2604.09678v1",
+   "pdf": "https://arxiv.org/pdf/2604.09678v1"
+  },
+  {
+   "id": "arXiv:2603.21251",
+   "title": "WirelessBench: A Tolerance-Aware LLM Agent Benchmark for Wireless Network Intelligence",
+   "year": "2026-03-22",
+   "authors": [
+    "Jingwen Tong",
+    "Fang Liu",
+    "Linkai Xv"
+   ],
+   "url": "https://arxiv.org/abs/2603.21251v1",
+   "pdf": "https://arxiv.org/pdf/2603.21251v1"
+  }
+ ]
+}

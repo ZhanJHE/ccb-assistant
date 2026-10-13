@@ -1,0 +1,29 @@
+{
+ "cls-encrypted": {
+  "error": "HTTP Error 429: Too Many Requests"
+ },
+ "pred-traffic": {
+  "error": "HTTP Error 429: Too Many Requests"
+ },
+ "ids": {
+  "error": "HTTP Error 429: Too Many Requests"
+ },
+ "anom-net": {
+  "error": "HTTP Error 429: Too Many Requests"
+ },
+ "cc-learning": {
+  "error": "HTTP Error 429: Too Many Requests"
+ },
+ "llm-net": {
+  "error": "HTTP Error 429: Too Many Requests"
+ },
+ "aiops": {
+  "error": "HTTP Error 429: Too Many Requests"
+ },
+ "te-rl": {
+  "error": "HTTP Error 429: Too Many Requests"
+ },
+ "gnn-net": {
+  "error": "HTTP Error 429: Too Many Requests"
+ }
+}

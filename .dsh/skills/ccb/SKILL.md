@@ -178,7 +178,7 @@ gating live in `references/channels.md`.
 
 ## Full detail
 
-- `docs/for-agents.md` — written for agents: faces, context cost, rules
+- `开发文档/for-agents.md` — written for agents: faces, context cost, rules
 - MCP face: 16 `ccb_*` tools — registration in `references/commands.md`
 - `references/commands.md` — every command and flag, with examples
 - `references/topics.md` — the operators, the scoring, the CCF estimate

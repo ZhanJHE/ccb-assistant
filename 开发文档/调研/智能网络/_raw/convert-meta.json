@@ -1,0 +1,98 @@
+{
+ "AIN-9-SoK-flow-label-provenance.pdf": {
+  "title": "SoK: Where Do Flow Labels Come From? Auditing Label Provenance in Encrypted Traffic Benchmarks",
+  "venue": "arXiv 2026",
+  "id": "arXiv:2609.02140",
+  "url": "https://arxiv.org/abs/2609.02140"
+ },
+ "AIN-10-Colossus-PQC-ETC.pdf": {
+  "title": "The Colossus with Feet of Clay: Debunking Encrypted Traffic Classifiers under PQC Evolution",
+  "venue": "arXiv 2026",
+  "id": "arXiv:2608.22683",
+  "url": "https://arxiv.org/abs/2608.22683"
+ },
+ "AIN-11-FlowCLIP.pdf": {
+  "title": "FlowCLIP: Contrastive Pretraining Using Domain Names for Encrypted Traffic Classification",
+  "venue": "arXiv 2026",
+  "id": "arXiv:2606.17746",
+  "url": "https://arxiv.org/abs/2606.17746"
+ },
+ "AIN-17-Graph-NIDS-first-principles.pdf": {
+  "title": "A First-Principles Evaluation of Graph-Based Network Intrusion Detection Systems",
+  "venue": "arXiv 2026",
+  "id": "arXiv:2609.12263",
+  "url": "https://arxiv.org/abs/2609.12263"
+ },
+ "AIN-18-LLM-vs-ML-NIDS.pdf": {
+  "title": "A Three-Axis Stress Test of LLM vs Classical ML for Network Intrusion Detection under Distribution Shift and Adversarial Evasion",
+  "venue": "arXiv 2026",
+  "id": "arXiv:2609.13511",
+  "url": "https://arxiv.org/abs/2609.13511"
+ },
+ "AIN-19-FSNIC-FPGA-SmartNIC-IDS.pdf": {
+  "title": "FSNIC: A Low-Latency Flow-Based Intrusion Detection Architecture for FPGA SmartNICs",
+  "venue": "arXiv 2026",
+  "id": "arXiv:2609.16363",
+  "url": "https://arxiv.org/abs/2609.16363"
+ },
+ "AIN-23-GraphCC.pdf": {
+  "title": "GraphCC: A Practical Graph Learning-Based Approach to Congestion Control in Datacenters",
+  "venue": "arXiv 2023",
+  "id": "arXiv:2308.04905",
+  "url": "https://arxiv.org/abs/2308.04905"
+ },
+ "AIN-26-Learning-vs-Human-CC.pdf": {
+  "title": "Learning-Based vs Human-Derived Congestion Control: An In-Depth Experimental Study",
+  "venue": "arXiv 2025",
+  "id": "arXiv:2510.25105",
+  "url": "https://arxiv.org/abs/2510.25105"
+ },
+ "AIN-27-CCLab.pdf": {
+  "title": "CCLab: Adversarial Testing of Learning- and Non-Learning-Based Congestion Controllers",
+  "venue": "arXiv 2026",
+  "id": "arXiv:2605.21915",
+  "url": "https://arxiv.org/abs/2605.21915"
+ },
+ "AIN-33-LLM-BGP-security.pdf": {
+  "title": "The Surprising Effectiveness of LLMs in BGP Security: Mining an Unprecedented Amount of Incidents and Boosting Anomaly Detection",
+  "venue": "arXiv 2026",
+  "id": "arXiv:2608.22812",
+  "url": "https://arxiv.org/abs/2608.22812"
+ },
+ "AIN-38-CoT-mobile-traffic-pred.pdf": {
+  "title": "Chain-of-Thought Reasoning Enhances In-Context Learning for LLM-Based Mobile Traffic Prediction",
+  "venue": "arXiv 2026",
+  "id": "arXiv:2605.09260",
+  "url": "https://arxiv.org/abs/2605.09260"
+ },
+ "AIN-39-NTP-INT.pdf": {
+  "title": "NTP-INT: Network Traffic Prediction-Driven In-band Network Telemetry for High-load Switches",
+  "venue": "arXiv 2025",
+  "id": "arXiv:2502.12834",
+  "url": "https://arxiv.org/abs/2502.12834"
+ },
+ "AIN-40-NetConfArena.pdf": {
+  "title": "NetConfArena: An Executable Benchmark for LLM Agents in Closed-Loop Network Configuration",
+  "venue": "arXiv 2026",
+  "id": "arXiv:2608.23179",
+  "url": "https://arxiv.org/abs/2608.23179"
+ },
+ "AIN-41-Network-Arena-agent-bench.pdf": {
+  "title": "A Network Arena for Benchmarking AI Agents on Network Troubleshooting",
+  "venue": "arXiv 2025",
+  "id": "arXiv:2512.16381",
+  "url": "https://arxiv.org/abs/2512.16381"
+ },
+ "AIN-42-Agentic-IBN-6G.pdf": {
+  "title": "Agentic AI Empowered Intent-Based Networking for 6G",
+  "venue": "arXiv 2026",
+  "id": "arXiv:2601.06640",
+  "url": "https://arxiv.org/abs/2601.06640"
+ },
+ "AIN-43-NDT-Factory.pdf": {
+  "title": "NDT Factory: Synthesizing Verified Network Digital Twins from Semantic Models via Multi-Agent LLM",
+  "venue": "arXiv 2026",
+  "id": "arXiv:2609.12170",
+  "url": "https://arxiv.org/abs/2609.12170"
+ }
+}
