@@ -21,7 +21,6 @@ Design commitments:
 from __future__ import annotations
 
 import functools
-import json
 import os
 import re
 import sqlite3
@@ -35,6 +34,7 @@ from ..core.ids import work_path_shard
 from ..core.paths import checkout_root
 from ..core.model import (
     ChannelRecord,
+    DedupCandidate,
     Manifestation,
     WorkRecord,
     add_claim,
@@ -43,29 +43,23 @@ from ..core.model import (
     merge_identifiers,
 )
 from .index import WORK_FILE_GLOB, WorkIndex
+from .ledger import LEDGER_ARCHIVE_NAME, Ledger  # noqa: F401  (re-export)
+from .dedup import DedupEngine
+from .fulltext import FulltextStore
 from ..core.files import (
-    append_jsonl,
     exclusive_lock,
     read_json,
     read_jsonl,
     write_json_atomic,
-    write_text_atomic,
 )
 from ..core.util import (
-    jaccard,
+    fs_safe,
     normalize_arxiv_id,
     normalize_doi,
-    sha256_bytes,
-    sha256_text,
-    title_tokens,
     utc_now,
 )
 
 LIBRARY_SCHEMA = 1
-
-# Archived ledger events (see `Library.compact_ledger`). Append-only, never rewritten,
-# and counted by `count_events` so the self-check invariant survives a compaction.
-LEDGER_ARCHIVE_NAME = "library.jsonl.archive"
 
 # --- dedup thresholds ------------------------------------------------------- #
 # Auto-merge demands near-identity. `MERGE_CANDIDATE` catches the plausible-but-
@@ -108,26 +102,6 @@ class UpsertResult:
             "action": self.action,
             "added_fields": self.added_fields,
             "merge_candidates": self.merge_candidates,
-        }
-
-
-@dataclass
-class DedupCandidate:
-    other_id: str
-    score: float
-    title_sim: float
-    author_match: bool
-    year_delta: int | None
-    reason: str
-
-    def as_dict(self) -> dict[str, Any]:
-        return {
-            "other_id": self.other_id,
-            "score": round(self.score, 4),
-            "title_sim": round(self.title_sim, 4),
-            "author_match": self.author_match,
-            "year_delta": self.year_delta,
-            "reason": self.reason,
         }
 
 
@@ -174,6 +148,13 @@ class Library:
         self.blobs_dir = self.root / "blobs"
         self.ledger_path = self.root / "library.jsonl"
         self.lock_path = self.root / ".lock"
+        # Focused components behind the coordinator: the ledger owns the audit trail,
+        # the dedup engine owns identity scoring, the blob store owns files/ and
+        # blobs/. Every mutation still funnels through Library.save().
+        self._ledger = Ledger(self)
+        self._dedup = DedupEngine(self, auto_merge=AUTO_MERGE_JACCARD,
+                                  candidate=MERGE_CANDIDATE_JACCARD)
+        self._blobs = FulltextStore(self)
         self.meta_path = self.root / "library.json"
         self.index_path = self.root / "index.sqlite"
         self.evidence = EvidenceStore(self.root / "evidence")
@@ -233,81 +214,65 @@ class Library:
         meta["updated_at"] = utc_now()
         write_json_atomic(self.meta_path, meta)
 
-    # ------------------------------------------------------------------ #
-    # Ledger — append-only audit trail
-    # ------------------------------------------------------------------ #
+    # ---- ledger / dedup / blobs: focused components, thin delegates ----
 
     @_serialized
     def log(self, event: str, payload: dict[str, Any] | None = None) -> None:
-        append_jsonl(
-            self.ledger_path,
-            {"at": utc_now(), "event": event, **(payload or {})},
-        )
+        self._ledger.log(event, payload)
 
     def ledger(self, limit: int = 0, event: str = "") -> list[dict[str, Any]]:
-        rows = read_jsonl(self.ledger_path)
-        if event:
-            rows = [r for r in rows if r.get("event") == event]
-        return rows[-limit:] if limit else rows
+        return self._ledger.ledger(limit, event)
 
     def count_events(self, event: str) -> int:
-        """Count an event across the live ledger **and** any archive.
-
-        `check`'s integrity invariant — one `work_created` event per work — must survive
-        a compaction: archived events still happened, so they are still counted.
-        """
-        n = sum(1 for r in read_jsonl(self.ledger_path) if r.get("event") == event)
-        n += self._archived_event_count(lambda r: r.get("event") == event)
-        return n
-
-    def _archived_event_count(self, predicate=None) -> int:
-        """Rows in the ledger archive, optionally filtered. 0 when never compacted."""
-        archive = self.root / LEDGER_ARCHIVE_NAME
-        if not archive.exists():
-            return 0
-        rows = read_jsonl(archive)
-        if predicate is not None:
-            return sum(1 for r in rows if predicate(r))
-        return len(rows)
+        return self._ledger.count_events(event)
 
     @_serialized
     def compact_ledger(self, keep: int = 2000) -> dict[str, Any]:
-        """Move all but the newest `keep` events into an append-only archive.
+        return self._ledger.compact_ledger(keep)
 
-        The live file stays the audit trail for everything recent; the archive is
-        appended to and never rewritten, so nothing is lost — and `count_events` reads
-        both, which is what keeps the self-check invariant true across a compaction.
-        """
-        rows = read_jsonl(self.ledger_path)
-        if len(rows) <= keep:
-            return {
-                "compacted": False,
-                "events": len(rows),
-                "reason": f"at or below the {keep}-event threshold",
-            }
-        head, tail = rows[:-keep], rows[-keep:]
-        archive = self.root / LEDGER_ARCHIVE_NAME
-        with archive.open("a", encoding="utf-8", newline="\n") as fh:
-            for row in head:
-                fh.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
-        write_text_atomic(
-            self.ledger_path,
-            "".join(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n" for row in tail),
+    def _archived_event_count(self, predicate=None) -> int:
+        return self._ledger._archived_event_count(predicate)
+
+    def _find_existing(self, incoming: WorkRecord) -> WorkRecord | None:
+        return self._dedup.find_existing(incoming)
+
+    def dedup_candidates(self, work: WorkRecord, *, limit: int = 5) -> list[DedupCandidate]:
+        return self._dedup.dedup_candidates(work, limit=limit)
+
+    @_serialized
+    def store_file(self, data: bytes, *, ext: str = "pdf") -> tuple[str, str, int]:
+        return self._blobs.store_file(data, ext=ext)
+
+    @_serialized
+    def store_fulltext(self, work_id: str, text: str) -> tuple[str, int]:
+        return self._blobs.store_fulltext(work_id, text)
+
+    @_serialized
+    def store_passages(
+        self, work_id: str, passages: list[Any], *, source_sha256: str = "",
+    ) -> tuple[str, int]:
+        return self._blobs.store_passages(
+            work_id, passages, source_sha256=source_sha256
         )
-        self.log("ledger_compacted", {"archived": len(head), "kept": len(tail)})
-        return {
-            "compacted": True,
-            "archived": len(head),
-            "kept": len(tail) + 1,  # the ledger_compacted event just appended
-            "archive": str(archive),
-        }
+
+    def passages_path(self, work_id: str) -> Path:
+        return self._blobs.passages_path(work_id)
+
+    def read_passages(self, work: WorkRecord) -> list[Any]:
+        return self._blobs.read_passages(work)
+
+    def read_fulltext(self, work: WorkRecord) -> str:
+        return self._blobs.read_fulltext(work)
+
+    def file_abs(self, rel_path: str) -> Path:
+        return self._blobs.file_abs(rel_path)
 
     # ------------------------------------------------------------------ #
     # Work storage
     # ------------------------------------------------------------------ #
 
     def work_path(self, work_id: str) -> Path:
-        return self.works_dir / work_path_shard(work_id) / f"{_fs_safe(work_id)}.json"
+        return self.works_dir / work_path_shard(work_id) / f"{fs_safe(work_id)}.json"
 
     def load(self, work_id: str, *, use_cache: bool = True) -> WorkRecord | None:
         if use_cache and work_id in self._work_cache:
@@ -531,18 +496,6 @@ class Library:
             )
         return UpsertResult(incoming.work_id, "created", sorted(incoming.claims), flagged)
 
-    def _find_existing(self, incoming: WorkRecord) -> WorkRecord | None:
-        """Exact-identity path of dedup: any shared strong key means the same work."""
-        for key in incoming.keys:
-            hit = self._index.lookup_key(key)
-            if hit and hit != incoming.work_id:
-                return self.load(hit)
-        # Same work_id but recomputed identity (e.g. a DOI appeared later).
-        existing = self.load(incoming.work_id)
-        if existing is not None:
-            return existing
-        return None
-
     def _absorb(self, target: WorkRecord, incoming: WorkRecord) -> list[str]:
         """Merge claims/manifestations from `incoming` into `target`.
 
@@ -687,78 +640,6 @@ class Library:
     # ------------------------------------------------------------------ #
     # Dedup
     # ------------------------------------------------------------------ #
-
-    def dedup_candidates(self, work: WorkRecord, *, limit: int = 5) -> list[DedupCandidate]:
-        """Fuzzy stage of dedup. Produces candidates; never merges by itself."""
-        keys = work.dedup_keys()
-        if not keys.title_norm:
-            return []
-        mine = title_tokens(keys.title_norm)
-        out: list[DedupCandidate] = []
-        for other in self._dedup_block(keys.year, keys.title_norm, work.work_id):
-            other_keys = other.dedup_keys()
-            # Shared identifiers already handled by the exact stage; treat any
-            # remaining overlap as very strong evidence.
-            shared_id = (
-                (keys.doi and keys.doi == other_keys.doi)
-                or (keys.arxiv and keys.arxiv == other_keys.arxiv)
-            )
-            theirs = title_tokens(other_keys.title_norm)
-            sim = jaccard(mine, theirs)
-            if shared_id:
-                sim = 1.0
-            if sim < MERGE_CANDIDATE_JACCARD:
-                continue
-            author_match = bool(keys.first_author) and keys.first_author == other_keys.first_author
-            year_delta: int | None = None
-            if keys.year is not None and other_keys.year is not None:
-                year_delta = abs(keys.year - other_keys.year)
-            score = sim
-            if author_match:
-                score = min(1.0, score + 0.03)
-            if year_delta == 0:
-                score = min(1.0, score + 0.02)
-            elif year_delta is not None and year_delta > 2:
-                score = max(0.0, score - 0.15)
-            reason_bits = [f"title_jaccard={sim:.2f}"]
-            if shared_id:
-                reason_bits.append("shared_identifier")
-            if author_match:
-                reason_bits.append("first_author_match")
-            if year_delta is not None:
-                reason_bits.append(f"year_delta={year_delta}")
-            out.append(
-                DedupCandidate(
-                    other_id=other.work_id,
-                    score=score,
-                    title_sim=sim,
-                    author_match=author_match,
-                    year_delta=year_delta,
-                    reason=", ".join(reason_bits),
-                )
-            )
-        out.sort(key=lambda c: c.score, reverse=True)
-        return out[:limit]
-
-    def _dedup_block(self, year: int | None, title_norm: str, exclude: str) -> list[WorkRecord]:
-        """Cheap blocking so dedup does not compare against the whole library."""
-        toks = title_norm.split()
-        prefixes = [" ".join(toks[:2])] if toks else []
-        if len(toks) > 3:
-            prefixes.append(" ".join(toks[2:4]))
-        years = [year - 1, year, year + 1] if year is not None else [None]
-        seen: dict[str, WorkRecord] = {}
-        for y in years:
-            for p in prefixes:
-                if not p:
-                    continue
-                for wid in self._index.block_members(f"{y or 'x'}|{p}"):
-                    if wid == exclude or wid in seen:
-                        continue
-                    w = self.load(wid)
-                    if w is not None:
-                        seen[wid] = w
-        return list(seen.values())
 
     @_serialized
     def merge(self, keep_id: str, drop_id: str, *, reason: str = "manual") -> dict[str, Any]:
@@ -936,143 +817,10 @@ class Library:
         entries = [to_bibtex(w, key_style=key_style) for w in works if w is not None]
         return "\n\n".join(e for e in entries if e) + ("\n" if entries else "")
 
-    @_serialized
-    def store_file(self, data: bytes, *, ext: str = "pdf") -> tuple[str, str, int]:
-        """Content-address bytes into `files/`. Identical bytes are stored once.
-
-        Returns (sha256, library-relative path, size).
-        """
-        digest = sha256_bytes(data)
-        rel = Path("files") / digest[:2] / f"{digest}.{ext}"
-        abs_path = self.root / rel
-        if not abs_path.exists():
-            abs_path.parent.mkdir(parents=True, exist_ok=True)
-            tmp = abs_path.with_suffix(abs_path.suffix + ".part")
-            tmp.write_bytes(data)
-            os.replace(tmp, abs_path)
-        return digest, str(rel).replace("\\", "/"), len(data)
-
-    @_serialized
-    def store_fulltext(self, work_id: str, text: str) -> tuple[str, int]:
-        rel = Path("blobs") / _fs_safe(work_id) / "fulltext.txt"
-        abs_path = self.root / rel
-        write_text_atomic(abs_path, text)
-        return str(rel).replace("\\", "/"), len(text)
-
-    def passages_path(self, work_id: str) -> Path:
-        """Absolute path of a work's passage index.
-
-        Exposed because the on-disk name is escaped (a DOI contains "/") and callers
-        that reconstruct it by hand get a path that does not exist. Deriving it in one
-        place keeps tests, tools and the library agreeing on the layout.
-        """
-        return self.root / Path("blobs") / _fs_safe(work_id) / "passages.json"
-
-    @_serialized
-    def store_passages(
-        self, work_id: str, passages: list[Any], *, source_sha256: str = ""
-    ) -> tuple[str, int]:
-        """Persist the passage index for a work, next to its full text.
-
-        Derived from the full text and rebuildable, but stored because rebuilding it on
-        every question would mean re-tokenising every paper in the corpus — the same
-        "do not redo the work" principle the rest of the tool follows.
-
-        `source_sha256` records which full text this index was built from. Without it,
-        re-extracting a PDF would leave a stale passage index in place and searches
-        would keep hitting text that is no longer on disk — a derived artefact silently
-        disagreeing with its source.
-        """
-        rel = Path("blobs") / _fs_safe(work_id) / "passages.json"
-        abs_path = self.passages_path(work_id)
-        payload = {
-            "work_id": work_id,
-            "count": len(passages),
-            "built_at": utc_now(),
-            "source_sha256": source_sha256,
-            "passages": [p.as_dict(with_text=True) for p in passages],
-        }
-        write_json_atomic(abs_path, payload)
-        return str(rel).replace("\\", "/"), len(passages)
-
-    def read_passages(self, work: WorkRecord) -> list[Any]:
-        """Load a work's passages, rebuilding them whenever the source text changed.
-
-        Self-healing rather than strict: a library created before this index existed, or
-        one whose passage file was deleted or invalidated by a re-extraction, must still
-        be answerable rather than requiring a migration step an agent would have to
-        remember.
-        """
-        from .passages import chunk_text, load_passages
-
-        text = self.read_fulltext(work)
-        if not text:
-            return []
-        digest = sha256_text(text)
-        abs_path = self.passages_path(work.work_id)
-        if abs_path.exists():
-            data = read_json(abs_path, default={}) or {}
-            cached = load_passages(data)
-            recorded = str(data.get("source_sha256") or "")
-            if cached and recorded and recorded == digest:
-                return cached
-            if cached and not recorded:
-                # Built by an older version that did not record the source hash; adopt
-                # it rather than forcing a rebuild of the whole corpus.
-                return cached
-        passages = chunk_text(text, work_id=work.work_id)
-        if passages:
-            self.store_passages(work.work_id, passages, source_sha256=digest)
-        return passages
-
-    def read_fulltext(self, work: WorkRecord) -> str:
-        for m in work.manifestations:
-            if m.fulltext_path:
-                p = self.root / m.fulltext_path
-                if p.exists():
-                    return p.read_text(encoding="utf-8", errors="replace")
-        return ""
-
-    def file_abs(self, rel_path: str) -> Path:
-        return self.root / rel_path
-
-    def render_work(self, work: WorkRecord, *, show_claims: bool = False) -> str:
-        """Compact text view for terminal/agent consumption."""
-        lines = [
-            f"{work.work_id}",
-            f"  title : {work.title()}",
-            f"  authors: {', '.join(work.authors()[:8])}"
-            + (" et al." if len(work.authors()) > 8 else ""),
-            f"  year  : {work.year()}   venue: {work.venue()}",
-        ]
-        if work.ids:
-            lines.append("  ids   : " + ", ".join(f"{k}={v}" for k, v in sorted(work.ids.items())))
-        for m in work.manifestations:
-            flag = "PDF" if m.pdf_path else ("pdf_url" if m.pdf_url else "-")
-            lines.append(
-                f"  [{m.channel}] {m.kind} {m.version or ''} {m.year or ''} -> {flag}"
-                + (f" ({m.pdf_bytes} B)" if m.pdf_bytes else "")
-            )
-        if work.check_status:
-            lines.append(f"  check : {work.check_status} {work.check_notes}")
-        if show_claims:
-            for f in ("title", "year", "venue", "doi"):
-                for c in work.claims.get(f, []):
-                    lines.append(f"  claim {f} <- {c.src} (ev={c.ev or '-'}): {c.val}")
-        return "\n".join(lines)
-
 
 # --------------------------------------------------------------------------- #
 # Helpers
 # --------------------------------------------------------------------------- #
-
-
-def _fs_safe(work_id: str) -> str:
-    """Make an id safe as a filename while staying reversible enough to read."""
-    out = work_id.replace("/", "%2F").replace("\\", "%5C").replace(":", "%3A")
-    out = out.replace("|", "%7C").replace("<", "%3C").replace(">", "%3E")
-    out = out.replace('"', "%22").replace("*", "%2A").replace("?", "%3F")
-    return out[:180]
 
 
 def _sources_of(work: WorkRecord) -> list[str]:

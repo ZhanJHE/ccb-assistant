@@ -295,3 +295,11 @@ def truncate(text: str, limit: int) -> str:
     if text is None:
         return ""
     return text if len(text) <= limit else text[: max(0, limit - 1)] + "…"
+
+
+def fs_safe(work_id: str) -> str:
+    """Make an id safe as a filename while staying reversible enough to read."""
+    out = work_id.replace("/", "%2F").replace("\\", "%5C").replace(":", "%3A")
+    out = out.replace("|", "%7C").replace("<", "%3C").replace(">", "%3E")
+    out = out.replace('"', "%22").replace("*", "%2A").replace("?", "%3F")
+    return out[:180]

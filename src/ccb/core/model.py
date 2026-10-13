@@ -493,6 +493,28 @@ def _merge_manifestation(old: Manifestation, new: Manifestation) -> Manifestatio
 
 
 @dataclass
+class DedupCandidate:
+    """One fuzzy-dedup hit: who it looks like, how strongly, and why."""
+
+    other_id: str
+    score: float
+    title_sim: float
+    author_match: bool
+    year_delta: int | None
+    reason: str
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "other_id": self.other_id,
+            "score": round(self.score, 4),
+            "title_sim": round(self.title_sim, 4),
+            "author_match": self.author_match,
+            "year_delta": self.year_delta,
+            "reason": self.reason,
+        }
+
+
+@dataclass
 class ChannelRecord:
     """A normalized record as emitted by a channel, before it enters the library."""
 
