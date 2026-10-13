@@ -86,6 +86,11 @@ class Evidence:
     command: list[str] | None = None
     error: str = ""
     notes: str = ""
+    # True when the response was obtained under a credential: the body may carry
+    # entitlement-gated content, so a consumer about to share this directory should
+    # check the flag first. Recorded, never used to skip storage — provenance is the
+    # point of the snapshot.
+    restricted: bool = False
 
     def as_dict(self) -> dict[str, Any]:
         out: dict[str, Any] = {
@@ -104,6 +109,8 @@ class Evidence:
             out["status"] = self.status
         if self.params:
             out["params"] = redact_mapping(self.params)
+        if self.restricted:
+            out["restricted"] = True
         if self.body and not self.body_path:
             out["body"] = self.body
         return out
@@ -114,6 +121,7 @@ class Evidence:
             ev_id=d.get("ev_id", ""),
             channel=d.get("channel", "?"),
             kind=d.get("kind", "http"),
+            restricted=bool(d.get("restricted", False)),
         )
         for k in ("url", "content_type", "retrieved_at", "body_sha256", "body",
                   "body_path", "error", "notes"):
@@ -155,6 +163,7 @@ class EvidenceStore:
         error: str = "",
         notes: str = "",
         ev_id: str = "",
+        restricted: bool = False,
     ) -> Evidence:
         """Persist one raw response. Returns the Evidence handle with its id set."""
         safe_url = redact_url(url)
@@ -175,6 +184,7 @@ class EvidenceStore:
             command=list(command) if command else None,
             error=error,
             notes=notes,
+            restricted=restricted,
         )
         if len(body or "") > INLINE_BODY_LIMIT:
             write_text_atomic(self._body_path(ev_id), body)

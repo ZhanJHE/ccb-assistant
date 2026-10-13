@@ -116,6 +116,7 @@ class _DeclaredChannel(Channel):
             license=str(spec.get("license", "")),
             rate_rps=float(spec.get("rate_rps", 1.0) or 1.0),
             cs_authority=bool(spec.get("cs_authority", False)),
+            sensitive_response=bool(spec.get("sensitive_response", False)),
             notes=str(spec.get("notes", "")),
             requires_network=bool(spec.get("requires_network", True)),
             enabled=bool(spec.get("enabled", True)),

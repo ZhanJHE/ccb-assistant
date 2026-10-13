@@ -50,6 +50,11 @@ class ChannelSpec:
     license: str = ""
     rate_rps: float = 1.0
     cs_authority: bool = False
+    # True when responses may carry entitlement-gated content (a keyed institutional
+    # source): their evidence snapshots are marked `restricted` so a consumer about to
+    # share the library directory knows to check first. Storage is never skipped —
+    # provenance is the point of a snapshot.
+    sensitive_response: bool = False
     notes: str = ""
     requires_network: bool = True
     enabled: bool = True
@@ -88,6 +93,8 @@ class ChannelSpec:
                 out[k] = getattr(self, k)
         if self.cs_authority:
             out["cs_authority"] = True
+        if self.sensitive_response:
+            out["sensitive_response"] = True
         req = self.required_env()
         opt = self.optional_env()
         if req:
@@ -361,6 +368,7 @@ class Channel:
             command=command,
             error=error,
             notes=notes,
+            restricted=self.spec.sensitive_response,
         )
         return ev.ev_id
 

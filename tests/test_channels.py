@@ -11,6 +11,7 @@ and returned nothing with no error), so it is exercised end to end here.
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import sys
 import tempfile
@@ -387,6 +388,45 @@ class TestMissingCredentialsAreActionable(unittest.TestCase):
         self.assertIn("openalex", summary["credentials_missing"])
         kinds = {g["kind"] for g in summary["credentials_missing"]["openalex"]}
         self.assertEqual(kinds, {"optional"})
+
+    def test_sensitive_responses_are_marked_in_the_snapshot(self):
+        """A keyed institutional source's responses may carry entitlement-gated content.
+
+        Storage is never skipped — provenance is the point of a snapshot — but the
+        snapshot says so, and the flag survives the round trip through disk.
+        """
+        self.cfg.write_text(
+            "channels:\n"
+            "  gated_source:\n"
+            "    kind: http\n"
+            "    url: 'https://example.invalid/api?q={query}'\n"
+            "    caps: [search]\n"
+            "    auth: env:CCB_TEST_REQUIRED_KEY\n"
+            "    sensitive_response: true\n",
+            encoding="utf-8",
+        )
+        os.environ["CCB_TEST_REQUIRED_KEY"] = "institutional-key-value"
+        try:
+            reg = Registry(evidence=self.lib.evidence, config_paths=[self.cfg])
+            chan = reg.get("gated_source")
+            self.assertTrue(chan.spec.sensitive_response)
+            ev_id = chan.snapshot(
+                url="https://example.invalid/api?q=x", status=200, body='{"hits": []}'
+            )
+            ev = self.lib.evidence.get(ev_id)
+            self.assertTrue(ev.restricted)
+            self.assertIn("restricted", self.lib.evidence.get(ev_id).as_dict())
+            # The stored value must never leak the key either way.
+            self.assertNotIn("institutional-key-value", ev.as_dict()["url"])
+        finally:
+            os.environ.pop("CCB_TEST_REQUIRED_KEY", None)
+
+    def test_keyless_snapshots_are_not_marked(self):
+        reg = Registry(evidence=self.lib.evidence, config_paths=[])
+        chan = reg.get("openalex")
+        self.assertFalse(chan.spec.sensitive_response)
+        ev_id = chan.snapshot(url="https://api.openalex.org/works", status=200, body="{}")
+        self.assertFalse(self.lib.evidence.get(ev_id).restricted)
 
 
 class TestAllFourKindsThroughOneInterface(unittest.TestCase):
