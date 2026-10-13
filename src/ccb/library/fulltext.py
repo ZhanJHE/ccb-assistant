@@ -37,7 +37,13 @@ class FulltextStore:
         if not abs_path.exists():
             abs_path.parent.mkdir(parents=True, exist_ok=True)
             tmp = abs_path.with_suffix(abs_path.suffix + ".part")
-            tmp.write_bytes(data)
+            # fsync before the replace, like every other write in the tool: a crash that
+            # leaves a truncated file behind would be invisible (`exists()` is the only
+            # check) while the record still asserts this digest and byte count.
+            with tmp.open("wb") as fh:
+                fh.write(data)
+                fh.flush()
+                os.fsync(fh.fileno())
             os.replace(tmp, abs_path)
         return digest, str(rel).replace("\\", "/"), len(data)
 

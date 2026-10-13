@@ -61,10 +61,16 @@ def _evidence_key(evidence: dict[str, Any]) -> str:
     if evidence["type"] == "sparse_pair":
         a, b = sorted(evidence["terms"])
         return f"pair::{a}::{b}"
+    # The sentence is part of the key. Two limitations stated on the same page of the same
+    # paper are two different gaps; hashing only (kind, work_id, page) gave them one key,
+    # hence one candidate id, hence one topic_id — so the second `topics draft` silently
+    # overwrote the first record while its dedup key stayed retired.
+    sentence = short_hash(str(evidence.get("sentence", "")).strip().casefold(), length=10)
     return "gap::" + short_hash(
         str(evidence.get("kind", "")),
         str(evidence.get("work_id", "")),
         str(evidence.get("page", "")),
+        sentence,
     )
 
 
@@ -97,7 +103,7 @@ def _score(
     directness: float,
     support: int,
     difficulty: int,
-    novelty_hits: int,
+    novelty_hits: int | None,
     corpus_size: int,
 ) -> tuple[float, list[dict[str, Any]]]:
     """Four weighted parts, each normalised against the corpus so it can vary.
@@ -106,19 +112,38 @@ def _score(
     fixed target instead would saturate every part on a small corpus and produce a
     column of identical scores, which is exactly the situation in which a ranking stops
     carrying information.
+
+    ``novelty_hits=None`` means "not measured" (the self-check was skipped, or the
+    evidence yielded no usable terms). The part is then dropped and its weight is
+    redistributed over the others, and the basis says so — reporting a measured zero
+    instead would assert "0 of N works share these terms" about a question nobody asked.
     """
     scale = max(corpus_size, 1)
     support_part = min(support / scale, 1.0)
     ambition = (difficulty - operators_mod._MIN_DIFFICULTY) / (
         operators_mod._MAX_DIFFICULTY - operators_mod._MIN_DIFFICULTY
     )
-    novelty = 1.0 - min(novelty_hits / scale, 1.0)
-    total = (
+    measured = novelty_hits is not None
+    base = (
         WEIGHTS["directness"] * directness
         + WEIGHTS["support"] * support_part
         + WEIGHTS["ambition"] * ambition
-        + WEIGHTS["novelty"] * novelty
     )
+    if measured:
+        novelty = 1.0 - min(int(novelty_hits) / scale, 1.0)
+        total = base + WEIGHTS["novelty"] * novelty
+        novelty_value: float | None = round(novelty, 3)
+        novelty_why = (
+            f"{novelty_hits} of {corpus_size} works in this direction share this "
+            "candidate's terms"
+        )
+    else:
+        remainder = sum(WEIGHTS.values()) - WEIGHTS["novelty"]
+        total = base / remainder if remainder > 0 else base
+        novelty_value = None
+        novelty_why = (
+            "not measured, so this part's weight was redistributed over the others"
+        )
     basis = [
         {
             "part": "directness",
@@ -145,29 +170,85 @@ def _score(
         },
         {
             "part": "novelty",
-            "value": round(novelty, 3),
+            "value": novelty_value,
             "weight": WEIGHTS["novelty"],
-            "why": f"{novelty_hits} of {corpus_size} stored works share this candidate's "
-                   f"terms",
+            "why": novelty_why,
         },
     ]
     return round(total, 4), basis
+
+
+def _direction_corpus(library: "Library", survey: dict[str, Any]) -> list[tuple[str, str]]:
+    """(work_id, searchable text) for the direction's works, loaded once per run.
+
+    Loaded once because the alternative — a library query per candidate term — is what
+    made the coverage number come from a different population than the one the score
+    divides by.
+    """
+    out: list[tuple[str, str]] = []
+    for entry in survey.get("works") or []:
+        # `survey["works"]` is a list of summary rows (the shape the survey payload
+        # publishes), but a caller may hand over plain ids; accept both rather than
+        # silently measuring an empty direction.
+        wid = str(entry.get("work_id") if isinstance(entry, dict) else entry or "")
+        if not wid:
+            continue
+        w = library.load(wid)
+        if w is None:
+            continue
+        haystack = (
+            w.title() + " " + w.abstract() + " " + str(w.extras.get("user_note", ""))
+        ).casefold()
+        out.append((w.work_id, haystack))
+    return out
 
 
 def _local_coverage(
     library: "Library",
     candidate_terms: Iterable[str],
     *,
+    corpus: list[tuple[str, str]] | None = None,
     display: int = 5,
     search_limit: int = 50,
 ) -> dict[str, Any]:
-    """Stored works that share the candidate's terms, as a reading list, not a verdict.
+    """Stored works that share the candidate's terms, in two explicitly separate scopes.
 
-    The count is the true number of matches; only the listing is trimmed. Trimming the
-    count as well would silently cap the novelty part of the score.
+    * ``hits`` / ``of`` — works **in this direction** that share a term. This is the
+      number the novelty part divides by the direction's corpus size, so numerator and
+      denominator describe the same population.
+    * ``library_hits`` / ``works`` — the whole-library reading list ("read these before
+      claiming the combination is new"). It is informational and deliberately not used
+      for scoring: it is capped by the search limit, so treating it as a count both mixed
+      two populations and silently zeroed novelty for every candidate in a library much
+      larger than the direction.
     """
+    terms = [str(t).strip().casefold() for t in list(candidate_terms)[:4] if str(t).strip()]
+    if not terms:
+        return {
+            "checked": False,
+            "hits": 0,
+            "of": len(corpus or []),
+            "scope": "direction",
+            "library_hits": 0,
+            "works": [],
+            "note": (
+                "no candidate terms could be extracted, so local coverage was not "
+                "measured (the extractor handles Latin-script terms only)"
+            ),
+        }
+
+    direction_hits = 0
+    if corpus is not None:
+        matched: set[str] = set()
+        for wid, haystack in corpus:
+            if wid in matched:
+                continue
+            if any(term in haystack for term in terms):
+                matched.add(wid)
+        direction_hits = len(matched)
+
     seen: dict[str, dict[str, Any]] = {}
-    for term in list(candidate_terms)[:4]:
+    for term in terms:
         try:
             hits = library.search(term, limit=search_limit)
         except Exception:
@@ -182,7 +263,14 @@ def _local_coverage(
                 }
     rows = list(seen.values())
     rows.sort(key=lambda r: (-(r.get("year") or 0), r["work_id"]))
-    return {"hits": len(rows), "works": rows[:display]}
+    return {
+        "checked": True,
+        "hits": direction_hits,
+        "of": len(corpus or []),
+        "scope": "direction",
+        "library_hits": len(rows),
+        "works": rows[:display],
+    }
 
 
 def _candidate_terms(evidence: dict[str, Any]) -> list[str]:
@@ -302,6 +390,7 @@ def build(
     total_works = int((survey.get("corpus") or {}).get("works") or 0)
     known = set() if include_mined else mined_keys(library)
     already = mined_keys(library)
+    seen_keys: set[str] = set()
 
     raw = _build_raw(survey, gap_result, per_kind=per_kind, total_works=total_works)
     ranked: list[dict[str, Any]] = []
@@ -309,13 +398,19 @@ def build(
         op = item["operator"]
         key = _evidence_key(item["evidence"])
         dedup_key = f"{op.id}::{key}"
-        if dedup_key in known:
+        if dedup_key in known or dedup_key in seen_keys:
+            # `known` is history (already committed); `seen_keys` is this run. Without the
+            # second, two rows could carry one id, and one `topics draft` would overwrite
+            # the other's record.
             continue
+        seen_keys.add(dedup_key)
         score, basis = _score(
             directness=item["directness"],
             support=item["support"],
             difficulty=op.difficulty,
-            novelty_hits=0,
+            # Not measured yet: this pass only orders the shortlist, and every candidate
+            # gets the same (dropped) novelty part, so the ordering is unaffected.
+            novelty_hits=None,
             corpus_size=total_works,
         )
         ranked.append(
@@ -336,19 +431,31 @@ def build(
 
     # The novelty self-check costs a query per candidate, so only the shortlist gets it.
     shortlist = ranked[: max(limit * SELF_CHECK_FACTOR, limit)] if self_check else ranked[:limit]
+    direction = _direction_corpus(library, survey) if self_check else None
     candidates: list[dict[str, Any]] = []
     for row in shortlist:
         op = row["_op"]
         coverage = (
-            _local_coverage(library, _candidate_terms(row["_evidence"]))
+            _local_coverage(library, _candidate_terms(row["_evidence"]), corpus=direction)
             if self_check
-            else {"hits": 0, "works": []}
+            else {
+                "checked": False,
+                "hits": 0,
+                "of": total_works,
+                "scope": "direction",
+                "library_hits": 0,
+                "works": [],
+                "note": (
+                    "--no-self-check: local coverage was not measured, so the novelty "
+                    "part is omitted rather than reported as zero"
+                ),
+            }
         )
         score, basis = _score(
             directness=row["_directness"],
             support=row["_support"],
             difficulty=op.difficulty,
-            novelty_hits=coverage["hits"],
+            novelty_hits=coverage["hits"] if coverage.get("checked") else None,
             corpus_size=total_works,
         )
         candidate_id = short_hash(
@@ -372,6 +479,7 @@ def build(
                 "problem": row["_problem"],
                 "score": score,
                 "score_basis": basis,
+                "score_scope": "measured" if coverage.get("checked") else "no-self-check",
                 "support": row["_support"],
                 "directness": row["_directness"],
                 "local_coverage": coverage,

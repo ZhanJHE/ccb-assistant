@@ -638,5 +638,96 @@ class TestMcpFace(unittest.TestCase):
                 server.close()
 
 
+class TestCoverageScopeAndHonesty(unittest.TestCase):
+    """Novelty/coverage must describe one population, and must not invent a zero."""
+
+    def test_coverage_counts_within_the_direction_and_the_library_separately(self):
+        with _library() as lib:
+            wid = lib.all_work_ids()[0]
+            corpus = [(wid, "transformer molecular something")]
+            cov = candidates_mod._local_coverage(lib, ["transformer"], corpus=corpus)
+            self.assertEqual(cov["scope"], "direction")
+            self.assertTrue(cov["checked"])
+            # The numerator and the denominator are the same population...
+            self.assertEqual(cov["hits"], 1)
+            self.assertEqual(cov["of"], 1)
+            # ...while the whole-library reading list stays a separate, labelled number.
+            self.assertGreater(cov["library_hits"], 1)
+
+    def test_hits_can_never_exceed_the_direction_size(self):
+        """The old numerator was whole-library and the denominator the direction's, so a
+        small survey over a large library reported things like "50 of 25"."""
+        with _library() as lib:
+            survey = survey_mod.survey(lib, "molecular", offline=True)
+            result = candidates_mod.build(lib, survey)
+            total = int(survey["corpus"]["works"])
+            for cand in result["candidates"]:
+                cov = cand["local_coverage"]
+                self.assertLessEqual(cov["hits"], cov["of"])
+                self.assertEqual(cov["of"], total)
+
+    def test_no_terms_means_not_measured_not_zero(self):
+        with _library() as lib:
+            cov = candidates_mod._local_coverage(lib, [], corpus=[])
+            self.assertFalse(cov["checked"])
+            self.assertIn("not measured", cov["note"])
+
+    def test_no_self_check_omits_the_novelty_part_instead_of_faking_it(self):
+        with _library() as lib:
+            survey = survey_mod.survey(lib, "molecular", offline=True)
+            result = candidates_mod.build(lib, survey, self_check=False)
+            self.assertTrue(result["candidates"])
+            for cand in result["candidates"]:
+                self.assertEqual(cand["score_scope"], "no-self-check")
+                self.assertFalse(cand["local_coverage"]["checked"])
+                novelty = [b for b in cand["score_basis"] if b["part"] == "novelty"][0]
+                self.assertIsNone(novelty["value"])
+                measured = [b for b in cand["score_basis"] if b["value"] is not None]
+                self.assertLess(len(measured), len(cand["score_basis"]))
+
+    def test_an_unmeasured_part_is_renormalised_not_scored_as_zero(self):
+        score, basis = candidates_mod._score(
+            directness=1.0, support=2, difficulty=3, novelty_hits=None, corpus_size=10
+        )
+        measured = [b for b in basis if b["value"] is not None]
+        remainder = sum(b["weight"] for b in measured)
+        self.assertAlmostEqual(
+            sum(b["value"] * b["weight"] for b in measured) / remainder, score, places=3
+        )
+
+    def test_two_sentences_on_one_page_are_two_gaps(self):
+        base = {"type": "declared_gap", "kind": "limitation", "work_id": "arxiv:1",
+                "page": 9}
+        first = candidates_mod._evidence_key({**base, "sentence": "only considers X"})
+        second = candidates_mod._evidence_key({**base, "sentence": "cannot handle Y"})
+        self.assertNotEqual(first, second, "one id for two gaps overwrites a record")
+        self.assertEqual(
+            first,
+            candidates_mod._evidence_key({**base, "sentence": "  Only Considers X "}),
+            "the key must be stable across case and whitespace",
+        )
+
+    def test_rating_skips_coverage_it_could_not_measure(self):
+        record = {
+            "topic_id": "t1",
+            "operator": {"id": "transfer", "difficulty": 2, "ccf_ceiling": "C",
+                         "novelty_type": "application"},
+            "context": {"directness": 1.0, "support": 3, "corpus_works": 10,
+                        "local_coverage_hits": 0, "local_coverage_checked": False},
+        }
+        out = rating_mod.rate(self._lib, record)
+        entry = [b for b in out["basis"] if b["rule"] == "local_coverage"][0]
+        self.assertTrue(entry["skipped"])
+        self.assertIsNone(entry["value"])
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self._lib = _make_library(Path(self._tmp.name))
+
+    def tearDown(self):
+        self._lib.close()
+        self._tmp.cleanup()
+
+
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()

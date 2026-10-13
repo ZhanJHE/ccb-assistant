@@ -63,7 +63,12 @@ def save_json(library: "Library", kind: str, key: str, payload: dict[str, Any]) 
 
 
 def load_json(library: "Library", kind: str, key: str) -> dict[str, Any] | None:
-    path = artefact_path(library, kind, key)
+    try:
+        path = artefact_path(library, kind, key)
+    except ValueError:
+        # An unsafe or unknown key is "not found", not a crash: `topics show ../../etc`
+        # is a bad argument, and the exit code for that is 3.
+        return None
     if not path.exists():
         return None
     data = read_json(path, default=None)
@@ -129,28 +134,35 @@ def mined_keys(library: "Library") -> set[str]:
 
 
 def remember_topic(library: "Library", record: dict[str, Any]) -> dict[str, Any]:
-    """Record a committed topic in the index, with the keys it consumes."""
-    index = load_index(library)
+    """Record a committed topic in the index, with the keys it consumes.
+
+    Read-modify-write of `index.json` under the library lock: this file is the "one topic
+    at a time" memory, and two concurrent commits (the CLI and the MCP face are the same
+    process only by accident) each loading, appending and writing would lose one of the
+    retired keys — after which the same combination is proposed again.
+    """
     topic_id = str(record.get("topic_id") or "")
     if not topic_id:
         raise ValueError("topic record has no topic_id")
-    entry = {
-        "topic_id": topic_id,
-        "title": record.get("title", ""),
-        "query": record.get("query", ""),
-        "created_at": str(record.get("created_at") or utc_now()),
-        "keys": list(record.get("dedup_keys", [])),
-        "estimated_ccf": (record.get("rating") or {}).get("estimated_ccf", ""),
-    }
-    index["topics"] = [t for t in index["topics"] if t.get("topic_id") != topic_id]
-    index["topics"].append(entry)
-    known = {str(k) for k in index["keys"]}
-    for key in entry["keys"]:
-        if key not in known:
-            index["keys"].append(key)
-            known.add(key)
-    _save_index(library, index)
-    library.log("topics_topic_committed", {"topic_id": topic_id, "keys": entry["keys"]})
+    with library.locked():
+        index = load_index(library)
+        entry = {
+            "topic_id": topic_id,
+            "title": record.get("title", ""),
+            "query": record.get("query", ""),
+            "created_at": str(record.get("created_at") or utc_now()),
+            "keys": list(record.get("dedup_keys", [])),
+            "estimated_ccf": (record.get("rating") or {}).get("estimated_ccf", ""),
+        }
+        index["topics"] = [t for t in index["topics"] if t.get("topic_id") != topic_id]
+        index["topics"].append(entry)
+        known = {str(k) for k in index["keys"]}
+        for key in entry["keys"]:
+            if key not in known:
+                index["keys"].append(key)
+                known.add(key)
+        _save_index(library, index)
+        library.log("topics_topic_committed", {"topic_id": topic_id, "keys": entry["keys"]})
     return index
 
 

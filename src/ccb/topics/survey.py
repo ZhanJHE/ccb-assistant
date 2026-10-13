@@ -197,22 +197,31 @@ def _expand(
     # Fetch text only for the works that could supply it, and stop as soon as the
     # direction has enough full text to mine.
     fetched = 0
+    # Counted once, not inside the loop: the previous version re-walked every work file
+    # on every iteration (O(n^2) on a corpus of any size).
+    with_text = sum(1 for w in library.iter_works() if w.has_fulltext())
     for work in library.iter_works():
-        if fetched >= max_fetch:
-            break
-        with_text = sum(1 for w in library.iter_works() if w.has_fulltext())
-        if with_text >= want_fulltext:
+        if fetched >= max_fetch or with_text >= want_fulltext:
             break
         if not work.has_pdf() and not work.best_pdf():
             continue
+        had_text = work.has_fulltext()
         try:
-            result = resolver.get(work.work_id, with_pdf=True)
+            # `extract=True` is the point of this loop. Without it, a work whose PDF is
+            # already stored but was never read — the common case after a batch download
+            # or a migration — passed the guard and then did nothing, so `--min-fulltext`
+            # could never be satisfied by the top-up it names.
+            result = resolver.get(work.work_id, with_pdf=True, extract=True)
         except Exception as exc:
             report["errors"][work.work_id] = f"{type(exc).__name__}: {exc}"
             continue
         report["errors"].update(result.errors)
-        if work.has_fulltext():
+        # Re-read: `work` was loaded before the call and `get` attaches the text to its
+        # own instance, so the stale object answers for the state that no longer holds.
+        after = library.load(result.work_id or work.work_id, use_cache=False)
+        if after is not None and after.has_fulltext() and not had_text:
             report["indexed"] += 1
+            with_text += 1
         fetched += 1
     return report
 

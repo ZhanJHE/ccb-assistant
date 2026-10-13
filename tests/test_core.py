@@ -662,5 +662,94 @@ class TestExtrasCarryThrough(unittest.TestCase):
         self.assertEqual(n1, n2)
 
 
+class TestDedupGateAndIndexHealing(unittest.TestCase):
+    """The conservative-dedup promise, and the checks that notice a lost index row."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp(prefix="ccb-gate-"))
+        self.lib = Library(self.tmp / "lib")
+        self.lib.ensure()
+
+    def tearDown(self):
+        self.lib.close()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _title_pair(self):
+        # |A| = 7, |B| = 8 with all of A in B -> Jaccard 7/8 = 0.875: a candidate, never a
+        # merge. Same first author and same year push the *score* to 0.925, which is what
+        # the auto-merge gate used to read.
+        return ("alpha bravo charlie delta echo foxtrot golf",
+                "alpha bravo charlie delta echo foxtrot golf hotel")
+
+    def test_a_bonus_inflated_score_does_not_auto_merge(self):
+        first, second = self._title_pair()
+        self.lib.upsert_record(ChannelRecord(channel="a", title=first,
+                                             authors=["K He"], year=2016))
+        out = self.lib.upsert_record(ChannelRecord(channel="b", title=second,
+                                                   authors=["K He"], year=2016))
+        self.assertEqual(self.lib.count(), 2, "0.875 title similarity must not merge")
+        self.assertTrue(out.merge_candidates, "the ambiguity is surfaced, not dropped")
+        top = out.merge_candidates[0]
+        self.assertGreaterEqual(top["score"], 0.92)
+        self.assertLess(top["title_sim"], 0.92)
+        self.assertNotIn("auto_merge", [e["event"] for e in self.lib.ledger()])
+
+    def test_a_year_less_record_can_still_be_a_candidate(self):
+        """The `x|` bucket must be queried as well as written, or the pair is invisible."""
+        title = "kappa lambda mu nu xi omicron pi"
+        self.lib.upsert_record(ChannelRecord(channel="a", title=title, authors=["A Author"]))
+        self.lib.upsert_record(ChannelRecord(channel="b", title=title, authors=["A Author"],
+                                             year=2021))
+        events = [e for e in self.lib.ledger() if e["event"] == "auto_merge"]
+        self.assertTrue(events, "the year-less record was never compared")
+        self.assertIn("title_jaccard", events[0]["reason"])
+
+    def test_a_stale_block_recipe_rebuilds_itself(self):
+        self.lib.upsert_record(ChannelRecord(channel="a", title="Attention Is All You Need",
+                                             authors=["A Vaswani"], year=2017))
+        conn = self.lib._index.connect()
+        conn.execute("PRAGMA user_version = 1")
+        conn.execute("DELETE FROM blocks")
+        conn.commit()
+        self.lib._index._checked = False
+        self.lib._index._ensure()
+        self.assertGreater(self.lib._index._count_rows("blocks"), 0)
+        self.assertEqual(conn.execute("PRAGMA user_version").fetchone()[0], 2)
+
+    def test_a_missing_index_row_is_detected_and_repaired(self):
+        self.lib.upsert_record(ChannelRecord(channel="a", title="Attention Is All You Need",
+                                             authors=["A Vaswani"], year=2017))
+        conn = self.lib._index.connect()
+        conn.execute("DELETE FROM works")
+        conn.commit()
+        report = self.lib.self_check(repair=False)
+        self.assertFalse(report["index_ok"], "a row-less index is not healthy")
+        self.assertIn("work rows", report.get("index_reason", ""))
+        fixed = self.lib.self_check(repair=True)
+        self.assertTrue(fixed["index_ok"])
+        self.assertEqual(self.lib._index._count_rows("works"), 1)
+
+    def test_the_corpus_state_is_recorded_when_the_lock_is_released(self):
+        self.lib.upsert_record(ChannelRecord(channel="a", title="Attention Is All You Need",
+                                             authors=["A Vaswani"], year=2017))
+        meta = self.lib.meta()
+        self.assertEqual(meta["works"], 1)
+        self.assertTrue(meta.get("works_fingerprint"))
+        self.assertTrue(self.lib.self_check()["index_ok"])
+
+    def test_pending_merges_survive_a_ledger_compaction(self):
+        self.lib.upsert_record(ChannelRecord(channel="a", title="Delta Echo Foxtrot Golf",
+                                             authors=["K He"], year=2016))
+        self.lib.upsert_record(ChannelRecord(channel="b", title="Delta Echo Foxtrot Golf Hotel",
+                                             authors=["K He"], year=2016,
+                                             abstract="An abstract long enough to differ."))
+        before = len(self.lib.pending_merges())
+        for i in range(6):
+            self.lib.log("noise", {"i": i})
+        self.lib.compact_ledger(keep=2)
+        self.assertEqual(len(self.lib.pending_merges()), before,
+                         "compaction must not hide a decision the ledger recorded")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

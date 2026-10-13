@@ -18,6 +18,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from typing import Any
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
@@ -765,6 +766,25 @@ class TestFindFanOut(unittest.TestCase):
         self.assertEqual(self.calls, ["a", "b"])
         self.assertTrue(res.stopped_early)
         self.assertEqual(res.channels_queried, ["a", "b"])
+
+    def test_a_channels_records_are_ingested_under_one_lock(self):
+        """Corpus state is recorded once per channel, not once per record.
+
+        Recording it per `save()` re-read every work file for every ingested record, which
+        made a large ingest quadratic.
+        """
+        self.channels = [_StubChannel(n, self.calls, records=4) for n in ("a", "b")]
+        calls: list[int] = []
+        real_count = Library.count
+
+        def counting(lib):
+            calls.append(1)
+            return real_count(lib)
+
+        with mock.patch.object(Library, "count", counting):
+            res = self._find()
+        self.assertEqual(res.ingested, 8)
+        self.assertLessEqual(len(calls), 2, "one corpus-state write per channel")
 
 
 if __name__ == "__main__":

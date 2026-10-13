@@ -90,21 +90,18 @@ class DedupEngine:
         return out[:limit]
 
     def _dedup_block(self, year: int | None, title_norm: str, exclude: str) -> list[WorkRecord]:
-        """Cheap blocking so dedup does not compare against the whole library."""
-        toks = title_norm.split()
-        prefixes = [" ".join(toks[:2])] if toks else []
-        if len(toks) > 3:
-            prefixes.append(" ".join(toks[2:4]))
-        years = [year - 1, year, year + 1] if year is not None else [None]
+        """Cheap blocking so dedup does not compare against the whole library.
+
+        The key recipe lives in one place (`WorkIndex.block_keys`) so the keys written by
+        the index and the keys queried here cannot drift apart — they were two copies of
+        the same prefix/year logic before.
+        """
         seen: dict[str, WorkRecord] = {}
-        for y in years:
-            for p in prefixes:
-                if not p:
+        for block in self._lib._index.block_keys(year, title_norm):
+            for wid in self._lib._index.block_members(block):
+                if wid == exclude or wid in seen:
                     continue
-                for wid in self._lib._index.block_members(f"{y or 'x'}|{p}"):
-                    if wid == exclude or wid in seen:
-                        continue
-                    w = self._lib.load(wid)
-                    if w is not None:
-                        seen[wid] = w
+                w = self._lib.load(wid)
+                if w is not None:
+                    seen[wid] = w
         return list(seen.values())

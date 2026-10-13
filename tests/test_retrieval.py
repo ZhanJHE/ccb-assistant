@@ -472,5 +472,26 @@ class TestCitationsClosed(unittest.TestCase):
         self.assertIn("eprint = {2201.00001}", out)
 
 
+class TestChunkBoundaries(unittest.TestCase):
+    """A boundary that lands inside the overlap window must not stall the walk."""
+
+    def test_a_boundary_near_the_overlap_does_not_explode_the_page(self):
+        from ccb.library.passages import chunk_text
+
+        # The sentence break sits at 201 chars; boundary snapping then put `end` inside
+        # the 200-char overlap, and `max(pos + 1, end - overlap)` advanced one character
+        # per iteration — 125 near-identical passages for a single page.
+        text = "A" * 199 + ". " + "B" * 4000
+        passages = chunk_text(text, work_id="w")
+        self.assertLessEqual(len(passages), 8)
+        starts = [p.start for p in passages]
+        self.assertEqual(starts, sorted(set(starts)), "starts must strictly increase")
+        self.assertLess(
+            sum(len(p.text) for p in passages),
+            len(text) * 3,
+            "overlap must not multiply the stored text",
+        )
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -377,6 +377,9 @@ def draft(
             "local_coverage_hits": int(
                 (candidate.get("local_coverage") or {}).get("hits") or 0
             ),
+            "local_coverage_checked": bool(
+                (candidate.get("local_coverage") or {}).get("checked", True)
+            ),
         },
         "dedup_keys": [str(candidate.get("dedup_key") or "")],
         "sections": _sections(

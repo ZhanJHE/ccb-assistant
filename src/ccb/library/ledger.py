@@ -38,6 +38,23 @@ class Ledger:
             rows = [r for r in rows if r.get("event") == event]
         return rows[-limit:] if limit else rows
 
+    def events(self, event: str = "", limit: int = 0) -> list[dict[str, Any]]:
+        """Events from the live ledger **and** the archive, oldest first.
+
+        `ledger()` answers "what happened recently" and reads only the live file. A
+        caller that reconstructs state from history — pending merge candidates, for
+        instance — must not lose rows to a compaction, which is the whole reason the
+        archive exists.
+        """
+        rows = self._archived_rows() + read_jsonl(self._lib.ledger_path)
+        if event:
+            rows = [r for r in rows if r.get("event") == event]
+        return rows[-limit:] if limit else rows
+
+    def _archived_rows(self) -> list[dict[str, Any]]:
+        archive = self._lib.root / LEDGER_ARCHIVE_NAME
+        return read_jsonl(archive) if archive.exists() else []
+
     def count_events(self, event: str) -> int:
         """Count an event across the live ledger **and** any archive.
 
@@ -50,10 +67,7 @@ class Ledger:
 
     def _archived_event_count(self, predicate=None) -> int:
         """Rows in the ledger archive, optionally filtered. 0 when never compacted."""
-        archive = self._lib.root / LEDGER_ARCHIVE_NAME
-        if not archive.exists():
-            return 0
-        rows = read_jsonl(archive)
+        rows = self._archived_rows()
         if predicate is not None:
             return sum(1 for r in rows if predicate(r))
         return len(rows)

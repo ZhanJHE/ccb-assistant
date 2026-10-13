@@ -30,6 +30,12 @@ if TYPE_CHECKING:  # avoid a hard import cycle; Library owns the records
 
 WORK_FILE_GLOB = "**/*.json"
 
+# The recipe behind the `blocks` table (which prefixes and years a work is filed under).
+# A stale recipe means fuzzy dedup silently stops finding the pairs it was written for,
+# so it is versioned like the FTS shape: a mismatch drops and rebuilds the table instead
+# of becoming a step somebody has to remember.
+BLOCK_KEY_VERSION = 2
+
 
 class WorkIndex:
     """SQLite-backed index over the work files, plus its own drift detection."""
@@ -43,6 +49,7 @@ class WorkIndex:
         # walk, which is fine before the first query of a command and wasteful after.
         self._checked = False
         self._fts_needs_rebuild = False
+        self._blocks_needs_rebuild = False
 
     # ------------------------------------------------------------------ #
     # Connection and schema
@@ -116,6 +123,20 @@ class WorkIndex:
                 " tokenize = 'trigram')"
             )
             self._fts_needs_rebuild = True
+        # Blocking keys live in a derived table with no declared shape of their own, so
+        # `PRAGMA user_version` carries their recipe version. A previous version means the
+        # rows were filed under rules the current code no longer queries.
+        version = int(conn.execute("PRAGMA user_version").fetchone()[0] or 0)
+        if version != BLOCK_KEY_VERSION:
+            # Version 0 means "never versioned" — which an existing index from before this
+            # recipe also reports — so the decision is made on whether there were rows to
+            # lose, not on the number alone. Deleting them without a rebuild would leave
+            # fuzzy dedup silently blind.
+            had_rows = (self._count_rows("blocks") or 0) > 0
+            conn.execute("DELETE FROM blocks")
+            conn.execute(f"PRAGMA user_version = {BLOCK_KEY_VERSION}")
+            if version or had_rows:
+                self._blocks_needs_rebuild = True
         conn.commit()
 
     def _ensure(self) -> None:
@@ -129,9 +150,10 @@ class WorkIndex:
                 # plain CREATE-IF-NOT-EXISTS path so queries still work.
                 pass
         self.ensure_schema()
-        if self._fts_needs_rebuild:
-            # The FTS shape was upgraded under an old index file: repopulate once.
+        if self._fts_needs_rebuild or self._blocks_needs_rebuild:
+            # A derived shape was upgraded under an old index file: repopulate once.
             self._fts_needs_rebuild = False
+            self._blocks_needs_rebuild = False
             self.reindex()
 
     # ------------------------------------------------------------------ #
@@ -193,6 +215,15 @@ class WorkIndex:
             index_ok, reason = False, "index fingerprint does not match work files"
         elif bad_files:
             index_ok, reason = False, "work files could not all be read"
+        else:
+            # The fingerprint describes *files*: it cannot see an index that is missing
+            # rows for files that are still there (a rebuilt-while-writing race, or a
+            # hand-deleted row). Counting the table is the check that closes that gap —
+            # without it, a work could vanish from every lookup while `doctor` reported
+            # the library healthy.
+            rows = self._count_rows("works")
+            if rows is not None and rows != n_works:
+                index_ok, reason = False, f"index holds {rows} work rows, disk has {n_works}"
 
         report["index_ok"] = index_ok
         if not index_ok:
@@ -221,6 +252,14 @@ class WorkIndex:
                 }
             )
         return report
+
+    def _count_rows(self, table: str) -> int | None:
+        """Row count of one derived table, or None when it cannot be read."""
+        try:
+            row = self.connect().execute(f"SELECT COUNT(*) FROM {table}").fetchone()
+        except Exception:
+            return None
+        return int(row[0]) if row else None
 
     def repair(self) -> dict[str, Any]:
         """Force a full rebuild and report every problem found beforehand."""
@@ -476,11 +515,13 @@ class WorkIndex:
 
     @staticmethod
     def block_keys(year: int | None, title_norm: str) -> list[str]:
-        """Blocking keys for dedup.
+        """Blocking keys for dedup — the single definition of the recipe.
 
-        Buckets by year (with a ±1 tolerance) crossed with two title-token prefixes, so
-        a comparison never has to touch the whole library. Two prefixes rather than one
-        because a subtitle can shift the leading tokens.
+        Buckets by two title-token prefixes (a subtitle can shift the leading tokens)
+        crossed with the year and its neighbours. The year-less bucket `x|` is always
+        included: without it, a record with no year could never be compared against one
+        that has a year, so the auditable 0.60-0.92 candidate band silently did not exist
+        for exactly the records most likely to need it.
         """
         toks = title_norm.split()
         prefixes = []
@@ -488,7 +529,9 @@ class WorkIndex:
             prefixes.append(" ".join(toks[:2]))
         if len(toks) > 3:
             prefixes.append(" ".join(toks[2:4]))
-        years = [year - 1, year, year + 1] if year is not None else [None]
+        years: list[int | None] = [None]
+        if year is not None:
+            years = [year - 1, year, year + 1, None]
         return [f"{y or 'x'}|{p}" for y in years for p in prefixes if p]
 
 

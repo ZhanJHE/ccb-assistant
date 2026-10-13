@@ -87,17 +87,28 @@ def rate(
 
     operator = topic.get("operator") or {}
     context = topic.get("context") or {}
-    ceiling = str(operator.get("ccf_ceiling") or "C")
+    # A stored record is hand-editable JSON, so the ceiling is validated once here rather
+    # than trusted: `BANDS.index` on an unexpected string used to raise (or, in
+    # `_downgrade`, silently become "C" while `upper_bound` still reported the bad value).
+    declared_ceiling = str(operator.get("ccf_ceiling") or "C").strip().upper()
+    ceiling = declared_ceiling if declared_ceiling in BANDS else "C"
     difficulty = int(operator.get("difficulty") or 3)
     novelty_type = str(operator.get("novelty_type") or "")
     directness = float(context.get("directness") or 0.5)
     support = int(context.get("support") or 0)
     corpus_works = max(int(context.get("corpus_works") or 0), 0)
     coverage_hits = int(context.get("local_coverage_hits") or 0)
+    coverage_checked = bool(context.get("local_coverage_checked", True))
 
     basis: list[dict[str, Any]] = []
     risks: list[str] = []
     steps = 0
+    if declared_ceiling not in BANDS:
+        risks.append(
+            f"The stored operator ceiling {declared_ceiling!r} is not one of "
+            f"{', '.join(BANDS)}; the estimate was computed from CCF-C and this value "
+            "should be corrected in the record."
+        )
 
     basis.append(
         {
@@ -194,30 +205,46 @@ def rate(
                 }
             )
 
-        covered = coverage_hits / corpus_works
-        if covered > HEAVILY_COVERED_RATIO:
-            steps += 1
-            risks.append(
-                f"{coverage_hits} of {corpus_works} stored works already share this "
-                f"candidate's terms. Read them before claiming the combination is new."
-            )
+        if not coverage_checked:
+            # Not measured is not the same as measured zero: say so and leave the band
+            # alone rather than recording a downgrade nobody can recompute.
             basis.append(
                 {
                     "rule": "local_coverage",
-                    "value": round(covered, 3),
-                    "why": f"{coverage_hits}/{corpus_works} works share the terms; above "
-                           f"{HEAVILY_COVERED_RATIO}; -1 band",
+                    "value": None,
+                    "skipped": True,
+                    "why": (
+                        "local coverage was not measured (the novelty self-check was "
+                        "skipped or the evidence yielded no usable terms); no adjustment"
+                    ),
                 }
             )
         else:
-            basis.append(
-                {
-                    "rule": "local_coverage",
-                    "value": round(covered, 3),
-                    "why": f"{coverage_hits}/{corpus_works} works share the terms; no "
-                           f"adjustment",
-                }
-            )
+            covered = coverage_hits / corpus_works
+            if covered > HEAVILY_COVERED_RATIO:
+                steps += 1
+                risks.append(
+                    f"{coverage_hits} of {corpus_works} works in this direction already "
+                    f"share this candidate's terms. Read them before claiming the "
+                    f"combination is new."
+                )
+                basis.append(
+                    {
+                        "rule": "local_coverage",
+                        "value": round(covered, 3),
+                        "why": f"{coverage_hits}/{corpus_works} works share the terms; "
+                               f"above {HEAVILY_COVERED_RATIO}; -1 band",
+                    }
+                )
+            else:
+                basis.append(
+                    {
+                        "rule": "local_coverage",
+                        "value": round(covered, 3),
+                        "why": f"{coverage_hits}/{corpus_works} works share the terms; no "
+                               f"adjustment",
+                    }
+                )
     else:
         risks.append(
             "The topic records no corpus size, so support and coverage could not be "

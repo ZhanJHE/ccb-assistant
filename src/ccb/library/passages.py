@@ -252,8 +252,13 @@ def chunk_text(
             if is_final:
                 break
             # Step forward, keeping the overlap so a sentence across the seam is whole
-            # in one of the two passages.
-            pos = max(pos + 1, end - overlap_chars)
+            # in one of the two passages. The step must be *forward*: when boundary
+            # snapping lands the end inside the overlap window (81-200 chars), the naive
+            # `max(pos + 1, end - overlap)` advanced one character at a time and emitted
+            # ~120 near-identical passages for one page, which is what a ranked query
+            # then returned.
+            nxt = end - overlap_chars
+            pos = nxt if nxt > pos else end
     for p in passages:
         p.token_count = len(tokenize(p.text))
     return passages

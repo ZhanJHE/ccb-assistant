@@ -160,6 +160,9 @@ class Library:
         self.evidence = EvidenceStore(self.root / "evidence")
         self._trust = tuple(trust) if trust else None
         self._work_cache: dict[str, WorkRecord] = {}
+        # Corpus state is recorded once per outermost locked mutation (see `locked`).
+        self._lock_depth = 0
+        self._meta_dirty = False
         # The derived query index lives in its own collaborator: it is a cache
         # over the work files, not part of the corpus's identity.
         self._index = WorkIndex(self)
@@ -200,12 +203,35 @@ class Library:
 
         Prefer the `_serialized` decorator on mutation methods; this context manager is
         for callers outside the class (topics writes) and for tests.
+
+        The outermost release also persists the corpus state. Recording it per `save()`
+        meant globbing and reading every work file on every write — a 500-record ingest
+        re-read the whole library 500 times — while the numbers only have to be true once
+        the corpus has stopped changing.
         """
         with exclusive_lock(self.lock_path):
-            yield self
+            self._lock_depth += 1
+            try:
+                yield self
+            finally:
+                self._lock_depth -= 1
+                if self._lock_depth == 0 and self._meta_dirty:
+                    self._flush_meta()
 
     def meta(self) -> dict[str, Any]:
         return read_json(self.meta_path, default={}) or {}
+
+    def _flush_meta(self) -> None:
+        """Persist the work count + fingerprint after the outermost mutation.
+
+        `self_check` compares both against the files on disk, so a moment of staleness is
+        self-healing (it reports drift and rebuilds); the reverse — never recording them —
+        would make every command rebuild.
+        """
+        self._meta_dirty = False
+        self._save_meta(
+            works=self.count(), works_fingerprint=self._index.works_fingerprint()
+        )
 
     @_serialized
     def _save_meta(self, **changes: Any) -> None:
@@ -307,7 +333,7 @@ class Library:
         write_json_atomic(self.work_path(work.work_id), work.as_dict())
         self._work_cache[work.work_id] = work
         self._index.index_work(work)
-        self._save_meta(works=self.count(), works_fingerprint=self._index.works_fingerprint())
+        self._meta_dirty = True
         self.log(
             log_event,
             {"work_id": work.work_id, "title": work.title()[:160], **(log_extra or {})},
@@ -370,14 +396,17 @@ class Library:
 
     # --- consistency (delegated to the derived index) --- #
 
+    @_serialized
     def self_check(self, *, repair: bool = True) -> dict[str, Any]:
         """Verify derived artefacts against the work files; repair drift."""
         return self._index.self_check(repair=repair)
 
+    @_serialized
     def repair(self) -> dict[str, Any]:
         """Force a full rebuild of every derived artefact."""
         return self._index.repair()
 
+    @_serialized
     def reindex(self) -> dict[str, Any]:
         """Rebuild the query index from the JSON work files."""
         return self._index.reindex()
@@ -424,12 +453,9 @@ class Library:
             self._index.deindex_work(old_id, keep_aliases=True)
             moved.append(entry)
         if not dry_run and moved:
-            # The renames moved files, so the fingerprint recorded by the last `save` no
-            # longer describes the corpus; re-record it rather than letting the next
-            # command "discover" drift it just healed.
-            self._save_meta(
-                works=self.count(), works_fingerprint=self._index.works_fingerprint()
-            )
+            # The renames moved files, so the fingerprint recorded earlier in this call no
+            # longer describes the corpus; it is re-recorded on this call's way out.
+            self._meta_dirty = True
         return {
             "works_checked": self.count(),
             "reidentified": len(moved),
@@ -546,7 +572,11 @@ class Library:
         candidates = self.dedup_candidates(incoming)
         if auto_merge and candidates:
             top = candidates[0]
-            if top.score >= AUTO_MERGE_JACCARD:
+            # Gate on the *title* similarity, not on the score: `score` carries the
+            # first-author and same-year bonuses, so gating on it auto-merged at 0.87
+            # Jaccard while the documented promise is "Jaccard >= 0.92, and prefer a
+            # candidate over a wrong merge". The bonuses still order the candidates.
+            if top.title_sim >= AUTO_MERGE_JACCARD:
                 existing = self.load(top.other_id)
                 if existing is not None:
                     added = self._absorb(existing, incoming)
@@ -869,9 +899,14 @@ class Library:
         }
 
     def pending_merges(self) -> list[dict[str, Any]]:
-        """Merge candidates previously flagged, surfaced for explicit decision."""
+        """Merge candidates previously flagged, surfaced for explicit decision.
+
+        Read from the live ledger *and* its archive: candidates are recorded once, at
+        creation, and a compaction must not make a decision the design promised to route
+        to `ccb merge` quietly unobtainable.
+        """
         out: list[dict[str, Any]] = []
-        for ev in self.ledger(event="work_created"):
+        for ev in self._ledger.events(event="work_created"):
             for c in ev.get("merge_candidates", []) or []:
                 out.append({"work_id": ev.get("work_id", ""), **c})
         return out

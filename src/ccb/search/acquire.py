@@ -529,22 +529,27 @@ class Resolver:
             if res.error:
                 result.errors[chan.name] = res.error
             result.warnings.extend(f"{chan.name}: {w}" for w in res.warnings)
-            for rec in res.records:
-                if not ingest:
-                    result.fetched.append(_unattached(rec))
-                    continue
-                upsert = self.library.upsert_record(rec)
-                for cand in upsert.merge_candidates:
-                    result.merge_candidates.append({"work_id": upsert.work_id, **cand})
-                result.ingested += 1
-                if upsert.work_id in seen_keys:
-                    continue
-                seen_keys.add(upsert.work_id)
-                w = self.library.load(upsert.work_id)
-                if w is not None:
-                    entry = w.summary()
-                    entry["found_via"] = rec.channel
-                    result.fetched.append(entry)
+            # One lock, one corpus-state write for the whole channel: `upsert_record` is
+            # itself serialised, so without this outer hold each record ended its own
+            # outermost mutation and the library re-scanned itself once per record — the
+            # network call stays outside the lock, only the ingest is inside it.
+            with self.library.locked():
+                for rec in res.records:
+                    if not ingest:
+                        result.fetched.append(_unattached(rec))
+                        continue
+                    upsert = self.library.upsert_record(rec)
+                    for cand in upsert.merge_candidates:
+                        result.merge_candidates.append({"work_id": upsert.work_id, **cand})
+                    result.ingested += 1
+                    if upsert.work_id in seen_keys:
+                        continue
+                    seen_keys.add(upsert.work_id)
+                    w = self.library.load(upsert.work_id)
+                    if w is not None:
+                        entry = w.summary()
+                        entry["found_via"] = rec.channel
+                        result.fetched.append(entry)
             if len(result.fetched) > before:
                 productive += 1
                 if stop_after and productive >= stop_after:
@@ -610,8 +615,17 @@ class Resolver:
                 ("doi", "arxiv", "openreview", "pmid", "dblp", "acl", "pmlr")]
         if not keys:
             return {"status": "unverifiable", "reason": "record has no resolvable identifier"}
+        # The strongest key, not whichever the record happened to list first: `work.keys`
+        # puts the work_id itself at the front, so taking keys[0] re-checked a dblp- or
+        # acl-keyed work against dblp (gated) and reported it unverifiable while Crossref
+        # was available the whole time.
+        from ..core.ids import work_id_from_keys
+
+        key, _ = work_id_from_keys(keys)
+        if not key:
+            return {"status": "unverifiable", "reason": "record has no resolvable identifier"}
         before = work.summary()
-        fan = self._fan_out_lookup(keys[0], channels="", conditional=True)
+        fan = self._fan_out_lookup(key, channels="", conditional=True)
         if not fan["records"] and fan.get("not_modified_all"):
             return {
                 "status": "unchanged",
@@ -650,8 +664,17 @@ class Resolver:
             if old and str(old).strip().casefold() != str(val).strip().casefold():
                 changed_fields.append({"field": fname, "was": old, "now": val})
         after_work.check_status = "changed" if changed_fields else "ok"
+        # Attribute the difference to the channels that *supplied* the new value. The
+        # note used to name `fan['errors'].keys()` — the channels that failed, which is
+        # the opposite of what a reader of the provenance needs.
+        sources: list[str] = []
+        for rec in fan["records"]:
+            ch = str(getattr(rec, "channel", "") or "")
+            if ch and ch not in sources:
+                sources.append(ch)
         after_work.check_notes = (
-            f"{len(changed_fields)} field difference(s) vs {', '.join(fan['errors'].keys()) or 'channels'}"
+            f"{len(changed_fields)} field difference(s) vs "
+            f"{', '.join(sources) or 'the sources checked'}"
             if changed_fields
             else "consistent with the sources checked"
         )
