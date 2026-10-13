@@ -433,6 +433,132 @@ def mcp_names(module: str) -> list[str]:
     return [op.mcp for op in OPERATIONS if op.module == module and op.mcp]
 
 
+@dataclass(frozen=True)
+class Prompt:
+    """One MCP prompt template: a named, reusable agent workflow.
+
+    Prompts are the third MCP surface (beside tools and resources): a client can offer
+    them as one-click starting points. The templates here are the canonical sequences
+    from SKILL.md, written so an agent that follows them cannot skip the rules — each
+    step names its command, and the wording rules are baked into the text.
+    """
+
+    name: str
+    description: str
+    arguments: tuple[Param, ...] = ()
+    template: str = ""
+
+
+PROMPTS: tuple[Prompt, ...] = (
+    Prompt(
+        name="ccb-literature-review",
+        description=(
+            "Run the canonical literature flow for one topic: find, acquire, read and "
+            "report with page anchors. Six steps, each naming its command."
+        ),
+        arguments=(
+            Param(name="topic", required=True,
+                  help="the research direction, e.g. 'NIC offloading on SmartNICs'"),
+            Param(name="limit", kind="int", default=10,
+                  help="papers per search"),
+        ),
+        template=(
+            "Build a short literature review on: {topic}\n\n"
+            "Follow this exact order and say which step you are on:\n"
+            "1. `ccb find \"{topic}\" -n {limit}` - the local library is consulted "
+            "first; only a miss goes to the network.\n"
+            "2. For the 3-5 most relevant works: `ccb get <work_id> --with-pdf` "
+            "(idempotent - re-running a complete record costs nothing).\n"
+            "3. `ccb ask \"<question>\"` to pull page-anchored passages instead of "
+            "re-reading whole PDFs.\n"
+            "4. Compose the review ONLY from returned passages, citing work_id + page "
+            "for every claim. If `outcome` is \"not-covered\" for a sub-question, say "
+            "the corpus does not cover it - never fill the gap from memory.\n"
+            "5. `ccb export --format bibtex` for the works you cited.\n\n"
+            "Exit code 4 means partial: some channels failed. Report which, by name, "
+            "and do not retry them in a loop."
+        ),
+    ),
+    Prompt(
+        name="ccb-compare-papers",
+        description=(
+            "Compare two stored papers along problem, method, data, findings and "
+            "limitations, with an anchor for every comparative statement."
+        ),
+        arguments=(
+            Param(name="work_id_a", required=True, help="first work_id"),
+            Param(name="work_id_b", required=True, help="second work_id"),
+        ),
+        template=(
+            "Compare two papers from the local library: {work_id_a} and {work_id_b}.\n\n"
+            "1. `ccb open {work_id_a} --head 20000` and the same for {work_id_b} - "
+            "reading locally never touches the network.\n"
+            "2. `ccb show {work_id_a}` and `{work_id_b}` - check `conflicts` and "
+            "`field_sources`; report where sources disagree instead of picking one.\n"
+            "3. Compare along: problem, method, data, findings, limitations.\n"
+            "4. Every comparative statement needs an anchor (work_id + page), either "
+            "from the full text or from `ccb ask`.\n"
+            "5. If either paper is not in the library, `ccb get <identifier> "
+            "--with-pdf` first; if there is no legal full text, say so and compare the "
+            "metadata honestly."
+        ),
+    ),
+    Prompt(
+        name="ccb-verify-claims",
+        description=(
+            "Check a written claim against the local corpus, part by part, with "
+            "page-anchored passages."
+        ),
+        arguments=(
+            Param(name="claim", required=True,
+                  help="the claim to verify, one sentence"),
+        ),
+        template=(
+            "Verify this claim against the local corpus: \"{claim}\"\n\n"
+            "1. Break the claim into its checkable parts.\n"
+            "2. `ccb ask \"<part>\"` for each part; use `--section` to narrow (a "
+            "limitations statement lives in the discussion, a benchmark description in "
+            "the methods).\n"
+            "3. For each part report one of: SUPPORTED (cite work_id + page), "
+            "CONTRADICTED (cite), NOT-COVERED.\n"
+            "4. NOT-COVERED means the corpus does not cover it - never answer that "
+            "part from memory.\n"
+            "5. End with an overall verdict and the exact anchors a reader should check."
+        ),
+    ),
+)
+
+
+def prompt_definitions() -> list[dict[str, Any]]:
+    """The MCP `prompts/list` payload, derived from the declaration."""
+    return [
+        {
+            "name": p.name,
+            "description": p.description,
+            "arguments": [
+                {
+                    "name": a.name,
+                    "description": a.help,
+                    "required": a.required,
+                }
+                for a in p.arguments
+            ],
+        }
+        for p in PROMPTS
+    ]
+
+
+def render_prompt(name: str, args: dict[str, Any]) -> str:
+    """Fill one prompt template. Raises KeyError for an unknown name."""
+    for p in PROMPTS:
+        if p.name == name:
+            text = p.template
+            for a in p.arguments:
+                text = text.replace("{" + a.name + "}", str((args or {}).get(a.name, "")))
+            return text
+    raise KeyError(name)
+
+
 # Long-form tool descriptions, shown to MCP clients. Kept here so a tool's name,
 # its parameters and its description are declared together.
 MCP_DESCRIPTIONS: dict[str, str] = {

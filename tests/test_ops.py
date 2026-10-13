@@ -180,5 +180,75 @@ class TestRecordsKeys(unittest.TestCase):
         self.assertEqual(cli._record_keys_for(args), ())
 
 
+class TestPromptFace(unittest.TestCase):
+    """The MCP prompts surface: the canonical sequences as one-click templates.
+
+    A prompt that cannot say what it used to be called, or that forgets the
+    never-answer-from-memory rule, would steer agents around the very invariants the
+    tools enforce - so the templates are pinned here, not just their names.
+    """
+
+    def _protocol(self, method: str, params=None, mid: int = 1):
+        import tempfile
+
+        from ccb.mcp_server import _handle_protocol
+
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        server = McpServer(Path(tmp.name) / "lib")
+        self.addCleanup(server.close)
+        msg = {"jsonrpc": "2.0", "id": mid, "method": method}
+        if params is not None:
+            msg["params"] = params
+        return _handle_protocol(msg, server)
+
+    def test_initialize_advertises_the_prompts_capability(self):
+        import json
+
+        result = json.loads(
+            json.dumps(self._protocol("initialize", {})["result"])
+        )
+        self.assertIn("prompts", result["capabilities"])
+
+    def test_prompts_list_matches_the_declaration(self):
+
+        prompts = self._protocol("prompts/list", {})["result"]["prompts"]
+        self.assertEqual(
+            [p["name"] for p in prompts], [p.name for p in ops.PROMPTS]
+        )
+        for entry, declared in zip(prompts, ops.PROMPTS):
+            self.assertEqual(
+                [a["name"] for a in entry["arguments"]],
+                [a.name for a in declared.arguments],
+            )
+
+    def test_prompts_get_renders_every_placeholder(self):
+
+        result = self._protocol(
+            "prompts/get",
+            {"name": "ccb-literature-review",
+             "arguments": {"topic": "SmartNIC offload", "limit": "5"}},
+        )["result"]
+        text = result["messages"][0]["content"]["text"]
+        self.assertIn("SmartNIC offload", text)
+        self.assertNotIn("{", text, "a placeholder left behind is a broken template")
+
+    def test_an_unknown_prompt_is_an_invalid_params_error(self):
+
+        response = self._protocol("prompts/get", {"name": "no-such-prompt"})
+        self.assertEqual(response["error"]["code"], -32602)  # INVALID_PARAMS
+
+    def test_templates_carry_the_wording_rules(self):
+        for prompt in ops.PROMPTS:
+            with self.subTest(prompt=prompt.name):
+                self.assertIn(
+                    "anchor", prompt.template,
+                    "every workflow must demand work_id + page anchors",
+                )
+        review = next(p for p in ops.PROMPTS if p.name == "ccb-literature-review")
+        self.assertIn("not-covered", review.template)
+        self.assertIn("never fill the gap from memory", review.template)
+
+
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()

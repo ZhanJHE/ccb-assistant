@@ -391,7 +391,10 @@ def _handle_protocol(msg: dict[str, Any], server: McpServer) -> dict[str, Any] |
     if method == "initialize":
         result = {
             "protocolVersion": PROTOCOL_VERSION,
-            "capabilities": {"tools": {"listChanged": False}},
+            "capabilities": {
+                "tools": {"listChanged": False},
+                "prompts": {"listChanged": False},
+            },
             "serverInfo": {"name": SERVER_NAME, "version": SERVER_VERSION},
         }
         return None if is_notification else _result(msg_id, result)
@@ -401,6 +404,46 @@ def _handle_protocol(msg: dict[str, Any], server: McpServer) -> dict[str, Any] |
 
     if method == "tools/list":
         return None if is_notification else _result(msg_id, {"tools": tool_definitions()})
+
+    if method == "prompts/list":
+        return None if is_notification else _result(msg_id, {"prompts": ops.prompt_definitions()})
+
+    if method == "prompts/get":
+        params = msg.get("params") or {}
+        name = str(params.get("name", ""))
+        try:
+            rendered = ops.render_prompt(name, params.get("arguments") or {})
+        except KeyError:
+            return (
+                None
+                if is_notification
+                else _error_response(msg_id, INVALID_PARAMS, f"unknown prompt {name!r}")
+            )
+        known = {a.name for p in ops.PROMPTS if p.name == name for a in p.arguments}
+        unknown = [k for k in (params.get("arguments") or {}) if k not in known]
+        if unknown:
+            return (
+                None
+                if is_notification
+                else _error_response(
+                    msg_id, INVALID_PARAMS, f"unknown argument(s): {', '.join(unknown)}"
+                )
+            )
+        return (
+            None
+            if is_notification
+            else _result(
+                msg_id,
+                {
+                    "description": next(
+                        p.description for p in ops.PROMPTS if p.name == name
+                    ),
+                    "messages": [
+                        {"role": "user", "content": {"type": "text", "text": rendered}}
+                    ],
+                },
+            )
+        )
 
     if method == "tools/call":
         params = msg.get("params") or {}
@@ -507,7 +550,12 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
     if args.list_tools:
-        json.dump({"tools": tool_definitions()}, sys.stdout, ensure_ascii=False, indent=2)
+        json.dump(
+            {"tools": tool_definitions(), "prompts": ops.prompt_definitions()},
+            sys.stdout,
+            ensure_ascii=False,
+            indent=2,
+        )
         sys.stdout.write("\n")
         return 0
     return serve(library_root=args.library, verbose=args.verbose)
