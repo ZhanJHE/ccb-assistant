@@ -787,5 +787,64 @@ class TestFindFanOut(unittest.TestCase):
         self.assertLessEqual(len(calls), 2, "one corpus-state write per channel")
 
 
+class TestEuropePmcFullTextHonesty(unittest.TestCase):
+    """The channel must not claim a PDF it cannot fetch.
+
+    The item below is a real `resultType=core` record (trimmed). The URL that used to be
+    constructed here (`fulltextRepo?pprId=PMC…`) answers 403 for every article, as does
+    `pmcid=` and the API's own `?pdf=render` link: europepmc.org sits behind a browser gate
+    that returned 403 even to a browser User-Agent. What the API declares is kept.
+    """
+
+    ITEM = {
+        "id": "42803314",
+        "source": "MED",
+        "pmid": "42803314",
+        "pmcid": "PMC13617625",
+        "isOpenAccess": "Y",
+        "inEPMC": "Y",
+        "hasPDF": "Y",
+        "title": "Deep learning for plant phenotyping.",
+        "authorString": "Doe J, Roe R.",
+        "pubYear": "2026",
+        "doi": "10.1002/tpg2.70307",
+        "journalInfo": None,
+        "fullTextUrlList": {
+            "fullTextUrl": [
+                {"availability": "Subscription required", "availabilityCode": "S",
+                 "documentStyle": "doi", "site": "DOI",
+                 "url": "https://doi.org/10.1002/tpg2.70307"},
+                {"availability": "Open access", "availabilityCode": "OA",
+                 "documentStyle": "pdf", "site": "Europe_PMC",
+                 "url": "https://europepmc.org/articles/PMC13617625?pdf=render"},
+            ]
+        },
+    }
+
+    def _parse(self, item):
+        from ccb.search.channels.europepmc import EuropePmcChannel
+
+        return EuropePmcChannel(http=mock.Mock(), evidence=None)._parse(item, "ev_1")
+
+    def test_no_fetchable_pdf_is_claimed(self):
+        rec = self._parse(self.ITEM)
+        self.assertEqual(rec.pdf_url, "", "a pdf_url that always 403s is a false claim")
+        self.assertEqual(rec.pmid, "42803314")
+
+    def test_the_declared_links_are_kept_as_information(self):
+        rec = self._parse(self.ITEM)
+        declared = rec.extras["fulltext_urls"]
+        self.assertEqual([d["availability"] for d in declared], ["S", "OA"])
+        self.assertTrue(
+            any(d["url"].endswith("?pdf=render") for d in declared),
+            "a human with a browser can still follow what the API declared",
+        )
+
+    def test_a_null_journal_block_does_not_lose_the_page(self):
+        """`journalInfo: null` used to raise mid-page and drop every later result."""
+        rec = self._parse(self.ITEM)
+        self.assertEqual((rec.volume, rec.issue), ("", ""))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

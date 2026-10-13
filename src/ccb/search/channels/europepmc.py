@@ -42,7 +42,11 @@ class EuropePmcChannel(Channel):
         hosts=("www.ebi.ac.uk", "europepmc.org"),
         notes=(
             "No key and no email required, so it is a dependable fallback. Use it for "
-            "biomedical/clinical CS work; it also indexes preprints via SRC:\"PPR\"."
+            "biomedical/clinical work; it also indexes preprints via SRC:\"PPR\". The API "
+            "host (www.ebi.ac.uk) is open; the europepmc.org full-text pages are behind a "
+            "browser gate that answers 403 to this client even with a browser User-Agent, "
+            "so no fetchable pdf_url is claimed — the links the API declares are carried in "
+            "each record's extras.fulltext_urls instead."
         ),
     )
 
@@ -130,9 +134,30 @@ class EuropePmcChannel(Channel):
         doi = normalize_doi(str(item.get("doi") or ""))
         pmcid = str(item.get("pmcid") or "")
         is_oa = str(item.get("isOpenAccess") or "").upper() == "Y"
+        # No `pdf_url` is constructed for this channel. The form that used to be built here
+        # (`fulltextRepo?pprId=PMC…`) answers HTTP 403 for every article, old and new, and
+        # so does `pmcid=` and the API's own `?pdf=render` link: europepmc.org sits behind a
+        # browser gate that returned 403 even to a browser User-Agent in testing. Claiming a
+        # machine-fetchable PDF would be false and would make `_fetch_pdf` spend a candidate
+        # proving it. The links the API *declares* are kept as information instead, so a
+        # human or browser-capable tooling can follow them — "report the gate, do not fight
+        # it", which is this project's rule for challenged sources.
         pdf_url = ""
-        if pmcid and is_oa:
-            pdf_url = f"https://europepmc.org/api/fulltextRepo?pprId={pmcid}&type=FILE&fileName={pmcid}.pdf"
+        declared: list[dict[str, str]] = []
+        for entry in (item.get("fullTextUrlList") or {}).get("fullTextUrl") or []:
+            if not isinstance(entry, dict):
+                continue
+            url = str(entry.get("url") or "")
+            if not url:
+                continue
+            declared.append(
+                {
+                    "availability": str(entry.get("availabilityCode") or ""),
+                    "style": str(entry.get("documentStyle") or ""),
+                    "site": str(entry.get("site") or ""),
+                    "url": url,
+                }
+            )
         return ChannelRecord(
             channel=self.name,
             title=title,
@@ -164,5 +189,7 @@ class EuropePmcChannel(Channel):
                 "has_full_text": str(item.get("hasTextMinedTerms") or "") == "Y"
                 or str(item.get("inEPMC") or "") == "Y",
                 "cited_by_count": item.get("citedByCount"),
+                # Declared, not fetched: see the note above about the browser gate.
+                "fulltext_urls": declared[:6],
             },
         )
