@@ -40,21 +40,16 @@ from ..core.model import (
     merge_identifiers,
 )
 from .index import WORK_FILE_GLOB, WorkIndex
+from ..core.files import append_jsonl, read_json, read_jsonl, write_json_atomic, write_text_atomic
 from ..core.util import (
-    append_jsonl,
     jaccard,
     json_dumps,
-    normalize_doi,
-    read_json,
-    read_jsonl,
     normalize_arxiv_id,
     normalize_doi,
     sha256_bytes,
     sha256_text,
     title_tokens,
     utc_now,
-    write_json_atomic,
-    write_text_atomic,
 )
 
 LIBRARY_SCHEMA = 1

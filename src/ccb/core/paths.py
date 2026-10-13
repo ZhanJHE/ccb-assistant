@@ -18,12 +18,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
-# What a checkout looks like from the inside. Both markers are required: `ccb.py`
-# is the no-install entry point the repository ships, and `src/ccb/cli.py` is the
-# package itself. A site-packages install has the second but never the first, and
-# no ancestor of one has either — which is what keeps the cwd fallback honest
-# rather than surprising.
-CHECKOUT_MARKERS = ("ccb.py", "src/ccb/cli.py")
+# What a checkout looks like from the inside. Both markers are required: `ccb.py` is
+# the no-install entry point the repository ships, and `src/ccb/cli` is the CLI package.
+# The second is checked without a suffix on purpose — it is a directory today and was a
+# module once, and a marker that names the file form silently stopped matching when the
+# package split happened (the library root fell back to the working directory, which no
+# test outside tests/test_paths.py would have noticed). A site-packages install has the
+# package but never the entry point, and no ancestor of one has either — which is what
+# keeps the cwd fallback honest rather than surprising.
+CHECKOUT_MARKERS = ("ccb.py", "src/ccb/cli")
 
 
 def looks_like_checkout(path: Path) -> bool:

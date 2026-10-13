@@ -8,7 +8,7 @@ flag that does not exist (both happened; see tests/test_contract.py and tests/te
 
 So the list lives here and the faces are derived from it:
 
-* ``cli.py``      builds its argparse subparsers from these params,
+* ``cli/_parser.py`` builds its argparse subparsers from these params,
 * ``mcp_server.py`` builds its ``inputSchema`` from the same params,
 * ``contract.py``  derives its per-module ``cli``/``mcp`` name lists.
 
@@ -52,7 +52,7 @@ class Operation:
 
     name: str                      # CLI subcommand name (last segment for grouped ops)
     summary: str = ""
-    handler: str = ""              # CLI handler function name in cli.py
+    handler: str = ""              # CLI handler function name in cli/_handlers.py
     params: tuple[Param, ...] = ()
     group: str = ""                # "" = top level; otherwise a parent subcommand
     module: str = ""               # core | library | search | topics | "" (entry layer)

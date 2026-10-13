@@ -21,7 +21,8 @@ import sqlite3
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from ..core.util import read_json, utc_now, write_json_atomic
+from ..core.files import read_json, write_json_atomic
+from ..core.util import utc_now
 
 if TYPE_CHECKING:  # avoid a hard import cycle; Library owns the records
     from ..core.model import WorkRecord

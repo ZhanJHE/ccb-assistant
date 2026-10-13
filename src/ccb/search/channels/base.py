@@ -27,7 +27,8 @@ from typing import Any, Iterable
 from ...library.evidence import EvidenceStore
 from ...core.model import ChannelRecord
 from ..net import Http, Response, credential, mailto
-from ...core.util import utc_now, write_json_atomic
+from ...core.files import write_json_atomic
+from ...core.util import utc_now
 
 # Capability flags.
 CAP_SEARCH = "search"

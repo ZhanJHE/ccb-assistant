@@ -13,8 +13,8 @@
 - **包名是 `ccb`，没有旧名兼容层**：不要新增 `lit` 别名、shim 文件或 `LIT_*` 环境变量；
   `tests/test_naming.py` 会失败。
 - **三个面共用一张操作表**（`src/ccb/ops.py`）：新增一个操作只需在表里声明一次，
-  CLI / MCP / 契约三面自动派生并互相校验（`tests/test_ops.py`）。不要往 `cli.py` 或
-  `mcp_server.py` 里手写第三份。
+  CLI / MCP / 契约三面自动派生并互相校验（`tests/test_ops.py`）。不要往 `cli/_handlers.py`
+  或 `mcp_server.py` 里手写第三份。
 - **契约是可执行的**：`contract.py` 里 `kind: command` 的每条命令都会被测试实际解析
   （`tests/test_contract.py`）。改了 flag 就要改契约。
-- 提交前：`python -m unittest discover -s tests`（当前 257 用例，无网络）。
+- 提交前：`python -m unittest discover -s tests`（当前 261 用例，无网络）。

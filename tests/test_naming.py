@@ -60,7 +60,8 @@ class TestNoOldNameRemains(unittest.TestCase):
 
     def test_the_source_tree_is_renamed(self):
         self.assertFalse((ROOT / "src" / OLD).exists(), "src/ still holds the old package")
-        self.assertTrue((ROOT / "src" / "ccb" / "cli.py").exists())
+        self.assertTrue((ROOT / "src" / "ccb" / "cli" / "__init__.py").exists(),
+                        "the CLI entry package was not renamed")
         self.assertTrue((ROOT / "ccb.py").exists(), "the entry point was not renamed")
         self.assertTrue((ROOT / "ccb-mcp.py").exists())
 

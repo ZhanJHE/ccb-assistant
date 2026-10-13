@@ -21,7 +21,8 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable
 
-from ..core.util import read_json, utc_now, write_json_atomic, write_text_atomic
+from ..core.files import read_json, write_json_atomic, write_text_atomic
+from ..core.util import utc_now
 
 if TYPE_CHECKING:  # pragma: no cover - import cycle guard
     from ..library.store import Library

@@ -20,7 +20,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from ..core.util import json_dumps, read_json, sha256_text, utc_now, write_json_atomic, write_text_atomic
+from ..core.files import read_json, write_json_atomic, write_text_atomic
+from ..core.util import json_dumps, sha256_text, utc_now
 
 # Bodies larger than this are stored as a sidecar file and referenced by hash,
 # so a single huge response cannot bloat one JSON document past usefulness.

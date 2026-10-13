@@ -37,7 +37,9 @@ def _candidate_roots() -> list[Path]:
 def _find_src() -> Path | None:
     for root in _candidate_roots():
         src = root / "src"
-        if (src / "ccb" / "cli.py").exists():
+        # No suffix: `ccb/cli` is a package today and was a module once, and a marker
+        # that named the file form stopped matching when the split happened.
+        if (src / "ccb" / "cli").exists():
             return src
     # The package may also be installed normally.
     try:

@@ -1,129 +1,37 @@
-"""The CLI — the only supported way to touch the library.
+"""The command handlers: one function per operation, all thin.
 
-Design rules, all of them there because an agent is the primary caller:
-
-* **JSON on stdout, always.** Prose goes to stderr. `--pretty` is for humans; the
-  default is compact machine-readable output.
-* **Exit codes are meaningful and few.** 0 success, 2 usage error, 3 not found,
-  4 partial (some channels failed but the operation produced something), 5 hard
-  failure. A caller can branch on them without parsing text.
-* **Failures are never silent.** A gated, rate-limited or key-less channel appears in
-  an `errors` map by name with a reason. "Nothing found" and "could not look" are
-  different outcomes and are reported differently.
-* **Idempotent.** Re-running any command converges; nothing depends on the caller
-  having run a previous command.
+A handler parses nothing but its arguments, delegates to a module, and returns
+``ctx.emit(payload, code)``. Business logic belongs in ``library`` / ``search`` /
+``topics``; if a handler grows beyond delegation, that is the signal to move it.
 """
 
 from __future__ import annotations
 
-import argparse
 import json
 import os
 import sys
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
-from . import __version__
-from .contract import contract, contract_text
-from .core.extract import available_engines, extract_text
-from .core.paths import checkout_root
-from .core.util import read_json, utc_now
-from . import ops
-from .library import Library, default_library_root
-from .search import Registry, Resolver
-from .topics import commands as topics_commands
-
-EXIT_OK = 0
-EXIT_USAGE = 2
-EXIT_NOT_FOUND = 3
-EXIT_PARTIAL = 4
-EXIT_FAILED = 5
-
-
-class CommandError(Exception):
-    """A failure with an exit code attached."""
-
-    def __init__(self, message: str, code: int = EXIT_FAILED, **extra: Any):
-        super().__init__(message)
-        self.message = message
-        self.code = code
-        self.extra = extra
-
-
-# --------------------------------------------------------------------------- #
-# Context
-# --------------------------------------------------------------------------- #
-
-
-class Context:
-    def __init__(self, args: argparse.Namespace):
-        self.args = args
-        root = Path(args.library).expanduser() if args.library else default_library_root()
-        self.library = Library(root)
-        self.library.ensure()
-        self.registry = Registry(
-            evidence=self.library.evidence,
-            verbose=bool(getattr(args, "verbose", False)),
-            config_paths=_config_paths(self.library),
-            enabled=_split(args.channel) if getattr(args, "channel", "") else None,
-            disabled=_split(getattr(args, "disable_channel", "")),
-        )
-        self.resolver = Resolver(
-            self.library,
-            self.registry,
-            offline=bool(getattr(args, "offline", False)),
-            verbose=bool(getattr(args, "verbose", False)),
-        )
-
-    def emit(self, payload: dict[str, Any], code: int = EXIT_OK) -> int:
-        if getattr(self.args, "pretty", False):
-            sys.stdout.write(
-                _render_pretty(payload, _record_keys_for(self.args)) + "\n"
-            )
-        else:
-            sys.stdout.write(json.dumps(payload, ensure_ascii=False, sort_keys=True) + "\n")
-        return code
-
-
-def _config_paths(library: Library) -> list[Path]:
-    paths: list[Path] = []
-    env = os.environ.get("CCB_CHANNELS", "").strip()
-    if env:
-        paths.extend(Path(p) for p in env.split(os.pathsep) if p)
-    paths.append(library.root / "channels.yaml")
-    # The checkout is a first-class location now that the library lives inside it:
-    # a channel declaration committed next to the code travels with the clone. The
-    # cwd entry stays for callers that carry a config with them.
-    checkout = checkout_root()
-    cwd = Path.cwd()
-    if checkout is not None and checkout != cwd:
-        paths.append(checkout / "ccb-channels.yaml")
-    paths.append(cwd / "ccb-channels.yaml")
-    return paths
-
-
-def _split(value: str) -> list[str]:
-    return [v.strip() for v in (value or "").split(",") if v.strip()]
-
-
-def _not_found(ctx: Context, identifier: str) -> CommandError:
-    """A not-found error that says what to do next.
-
-    An empty library and a missing paper are different facts; a caller that cannot
-    tell them apart retries the wrong thing. A fresh clone starts empty by design —
-    the corpus is local data, never shipped in the repository — so the empty case is
-    the *first* thing a new user hits, not an edge case.
-    """
-    if ctx.library.count() == 0:
-        return CommandError(
-            f"{identifier!r} is not in the library, and the library is empty. Acquire "
-            f'something first: `ccb find "<topic>"` then `ccb get <id> --with-pdf`',
-            EXIT_NOT_FOUND,
-        )
-    return CommandError(
-        f"{identifier!r} not found in the local library; run `ccb find`/`ccb get` for it",
-        EXIT_NOT_FOUND,
-    )
+from ..contract import contract, contract_text
+from ..core.extract import available_engines, extract_text
+from ..core.paths import checkout_root
+from ..core.util import sha256_bytes, sha256_text, utc_now
+from ..library import Library
+from ..search import Registry, Resolver
+from ..topics import commands as topics_commands
+from ._context import (
+    EXIT_FAILED,
+    EXIT_NOT_FOUND,
+    EXIT_OK,
+    EXIT_PARTIAL,
+    EXIT_USAGE,
+    CommandError,
+    Context,
+    _config_paths,
+    _not_found,
+    _split,
+)
 
 
 # --------------------------------------------------------------------------- #
@@ -307,7 +215,7 @@ def cmd_index(ctx: Context) -> int:
     `get --with-pdf` already indexes on extraction; this exists for a corpus that was
     populated before the index did, or after a full-text file was replaced.
     """
-    from .library.passages import chunk_text
+    from ..library.passages import chunk_text
 
     args = ctx.args
     targets: list[str]
@@ -349,7 +257,7 @@ def cmd_cite(ctx: Context) -> int:
     *why* a field has the value it does — and notice when a field is missing because no
     source supplied it, rather than because the tool dropped it.
     """
-    from .library.cite import to_bibtex, to_csl_json, to_ris
+    from ..library.cite import to_bibtex, to_csl_json, to_ris
 
     args = ctx.args
     work = ctx.library.resolve(args.identifier)
@@ -363,7 +271,7 @@ def cmd_cite(ctx: Context) -> int:
     elif fmt in ("csl", "csl-json", "json"):
         rendered = json.dumps(to_csl_json(work), ensure_ascii=False, indent=2)
     elif fmt in ("text", "plain"):
-        from .library.cite import _plain
+        from ..library.cite import _plain
 
         rendered = _plain(work)
     else:
@@ -505,7 +413,7 @@ def cmd_check(ctx: Context) -> int:
 
 def cmd_check_files(ctx: Context) -> int:
     """Verify stored files: hash on disk must match the recorded hash."""
-    from .core.util import sha256_bytes
+    from ..core.util import sha256_bytes
 
     args = ctx.args
     report: dict[str, Any] = {"checked": 0, "ok": 0, "mismatch": [], "missing": [], "orphans": []}
@@ -539,7 +447,7 @@ def cmd_check_files(ctx: Context) -> int:
 
 
 def cmd_export(ctx: Context) -> int:
-    from .library.cite import export
+    from ..library.cite import export
 
     args = ctx.args
     if args.ids:
@@ -598,7 +506,7 @@ def cmd_add_file(ctx: Context) -> int:
             EXIT_USAGE,
         )
     title = args.title or src.stem
-    from .core.model import ChannelRecord
+    from ..core.model import ChannelRecord
 
     rec = ChannelRecord(
         channel="manual",
@@ -671,8 +579,8 @@ def _extract_into(library: Library, work_id: str, *, engine: str = "") -> dict[s
     left `ccb ask` searching stale passages. Delegating to the resolver keeps a single
     path, and the resolver applies the same invalidation rule as `get --with-pdf`.
     """
-    from .search import Registry
-    from .search import Resolver
+    from ..search import Registry
+    from ..search import Resolver
 
     resolver = Resolver(library, Registry(evidence=library.evidence), offline=True)
     if engine:
@@ -683,8 +591,8 @@ def _extract_into(library: Library, work_id: str, *, engine: str = "") -> dict[s
 
 def _extract_with_engine(library: Library, work_id: str, *, engine: str) -> dict[str, Any]:
     """Extract with one named engine, then store text and passages together."""
-    from .library.passages import chunk_text
-    from .core.util import sha256_text
+    from ..library.passages import chunk_text
+    from ..core.util import sha256_text
 
     work = library.load(work_id)
     if work is None:
@@ -776,212 +684,6 @@ def cmd_topics(ctx: Context) -> int:
     return ctx.emit(payload)
 
 
-# --------------------------------------------------------------------------- #
-# Operations -> argparse
-# --------------------------------------------------------------------------- #
-
-
-def _add_params(sp: argparse.ArgumentParser, op: ops.Operation) -> None:
-    """Declare one operation's parameters on its subparser.
-
-    Derived from the same declarations the MCP schema and the contract use, so a new
-    parameter cannot exist on one face and be missing on another. ``mcp_only`` params are
-    skipped: the CLI reaches those through a global flag instead.
-    """
-    for param in op.params:
-        if param.mcp_only:
-            continue
-        kwargs: dict[str, Any] = {}
-        if param.help:
-            kwargs["help"] = param.help
-        if param.choices:
-            kwargs["choices"] = list(param.choices)
-        if param.kind == "flag":
-            sp.add_argument(*param.cli.split("|"), action="store_true",
-                            dest=param.argparse_dest, default=param.default, **kwargs)
-        elif param.cli:
-            sp.add_argument(*param.cli.split("|"), dest=param.argparse_dest,
-                            type=int if param.kind == "int" else str,
-                            default=param.default, **kwargs)
-        elif param.required:
-            sp.add_argument(param.name, **kwargs)
-        else:
-            sp.add_argument(param.name, nargs="?", default=param.default, **kwargs)
-
-
-def _add_operations(sub: Any, common: argparse.ArgumentParser) -> None:
-    """Build every subparser from ``ccb.ops``.
-
-    Grouped operations (``library``, ``topics``) get a parent subcommand whose nested
-    subparsers carry the actions, and each parent declares the ``dest`` its handler
-    already reads, so ``args.action`` and ``args.topics_action`` keep working.
-    """
-    handlers = {name: obj for name, obj in globals().items() if name.startswith("cmd_")}
-    nesting: dict[str, Any] = {}
-    for op in ops.OPERATIONS:
-        if op.group:
-            target = nesting.get(op.group)
-            if target is None:
-                info = ops.GROUP_INFO[op.group]
-                parent = sub.add_parser(op.group, parents=[common], help=info["help"],
-                                        description=info.get("description"))
-                target = parent.add_subparsers(dest=info["dest"], required=True)
-                nesting[op.group] = target
-        else:
-            target = sub
-        sp = target.add_parser(op.name, parents=[common], help=op.summary)
-        _add_params(sp, op)
-        sp.set_defaults(func=handlers[op.handler])
-
-
-
-def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(
-        prog="ccb",
-        description=(
-            "Aggregate every paper search/download channel behind one entry point, and "
-            "keep a durable local library so nothing is fetched or parsed twice."
-        ),
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=(
-            "Run `ccb contract` for the operating rules and the exact step order.\n"
-            "Exit codes: 0 ok, 2 usage, 3 not found, 4 partial (some channels failed), "
-            "5 failed."
-        ),
-    )
-    p.add_argument("--version", action="version", version=f"ccb {__version__}")
-    p.add_argument("--library", help="library root (default: $CCB_HOME, else <checkout>/papers)")
-    p.add_argument("--pretty", action="store_true", help="human-readable output instead of JSON")
-    p.add_argument("--offline", action="store_true", help="never touch the network")
-    p.add_argument("--verbose", action="store_true")
-    p.add_argument("--channel", help="comma-separated channel allow-list")
-    p.add_argument("--disable-channel", help="comma-separated channels to disable")
-
-    # The same global flags are attached to every subparser so they may appear *after*
-    # the subcommand as well. argparse only accepts them before it, which trips everyone
-    # who appends `--pretty` to the command they just typed — including the probe script
-    # written for this repository. Each copy defaults to SUPPRESS so an absent occurrence
-    # leaves the value parsed at the top level untouched.
-    common = argparse.ArgumentParser(add_help=False)
-    common.add_argument("--library", default=argparse.SUPPRESS,
-                        help="library root (default: $CCB_HOME, else <checkout>/papers)")
-    common.add_argument("--pretty", action="store_true", default=argparse.SUPPRESS,
-                        help="human-readable output instead of JSON")
-    common.add_argument("--offline", action="store_true", default=argparse.SUPPRESS,
-                        help="never touch the network")
-    common.add_argument("--verbose", action="store_true", default=argparse.SUPPRESS)
-    common.add_argument("--channel", default=argparse.SUPPRESS,
-                        help="comma-separated channel allow-list")
-    common.add_argument("--disable-channel", default=argparse.SUPPRESS,
-                        help="comma-separated channels to disable")
-
-    sub = p.add_subparsers(dest="command", required=True)
-    _add_operations(sub, common)
-
-    return p
-
-
-# --------------------------------------------------------------------------- #
-# Entry point
-# --------------------------------------------------------------------------- #
-
-
-def _record_keys_for(args: argparse.Namespace) -> tuple[str, ...]:
-    """Which payload keys hold record lists, for the operation that just ran.
-
-    Declared by the operation in ``ccb.ops``, never inferred from the payload: `works`
-    is a count in ``library stats`` and a list in ``library list``, and the renderer used
-    to guess between them and crash.
-    """
-    command = getattr(args, "command", "") or ""
-    action = getattr(args, "action", "") or getattr(args, "topics_action", "") or ""
-    op = ops.BY_PATH.get(f"{command} {action}" if action else command)
-    return op.records_key if op else ()
-
-
-def _render_pretty(payload: dict[str, Any], record_keys: tuple[str, ...] = ()) -> str:
-    """Readable rendering for humans; never used by machine callers.
-
-    Which payload keys hold record lists is *declared by the command that produced the
-    payload*, not inferred here. The previous version guessed with
-    ``local_hits or fetched or works`` and crashed on ``library stats``, where ``works``
-    is a count — the same key means different things in different commands, so a renderer
-    that sniffs shapes will eventually meet a payload that breaks it. The type is still
-    checked before iterating, because a declared key can legitimately hold a scalar.
-    """
-    lines: list[str] = []
-    for key in ("message", "note", "error"):
-        if payload.get(key):
-            lines.append(f"{key}: {payload[key]}")
-    for chan, err in (payload.get("errors") or {}).items():
-        lines.append(f"  ! {chan}: {err}")
-    for warn in payload.get("warnings") or []:
-        lines.append(f"  ~ {warn}")
-    for key in record_keys:
-        rows = payload.get(key)
-        if not isinstance(rows, list) or not rows:
-            continue
-        lines.append("")
-        if len(record_keys) > 1:
-            lines.append(f"  {key}:")
-        for r in rows:
-            if not isinstance(r, dict):
-                lines.append(f"  {r}")
-                continue
-            year = r.get("year") or "----"
-            venue = r.get("venue") or ""
-            flags = []
-            if r.get("has_pdf"):
-                flags.append("PDF")
-            if r.get("has_fulltext"):
-                flags.append("text")
-            if r.get("local"):
-                flags.append("local")
-            flag_str = f" [{' '.join(flags)}]" if flags else ""
-            lines.append(f"  {r.get('work_id', '?')}")
-            lines.append(f"    {year}  {str(r.get('title', ''))[:110]}")
-            if venue:
-                lines.append(f"    {venue[:110]}")
-            if flag_str:
-                lines.append(f"    {flag_str.strip()}")
-    if not lines:
-        lines.append(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-    return "\n".join(lines)
-
-
-def main(argv: Sequence[str] | None = None) -> int:
-    parser = build_parser()
-    args = parser.parse_args(argv)
-    try:
-        ctx = Context(args)
-    except Exception as exc:
-        sys.stderr.write(json.dumps({"error": f"could not open the library: {exc}"}) + "\n")
-        return EXIT_FAILED
-    try:
-        return args.func(ctx)
-    except CommandError as exc:
-        payload = {"error": exc.message, **exc.extra}
-        if args.pretty:
-            sys.stderr.write(f"error: {exc.message}\n")
-        else:
-            sys.stderr.write(json.dumps(payload, ensure_ascii=False, sort_keys=True) + "\n")
-        return exc.code
-    except BrokenPipeError:
-        return EXIT_OK
-    except KeyboardInterrupt:
-        sys.stderr.write(json.dumps({"error": "interrupted"}) + "\n")
-        return EXIT_FAILED
-    except Exception as exc:
-        payload = {"error": f"{type(exc).__name__}: {exc}"}
-        if args.pretty:
-            import traceback
-
-            sys.stderr.write(traceback.format_exc())
-        else:
-            sys.stderr.write(json.dumps(payload, ensure_ascii=False, sort_keys=True) + "\n")
-        return EXIT_FAILED
-
-
 def _compact(record: dict[str, Any]) -> dict[str, Any]:
     keep = (
         "work_id", "title", "year", "venue", "doi", "arxiv_id", "openreview_id",
@@ -991,7 +693,3 @@ def _compact(record: dict[str, Any]) -> dict[str, Any]:
     if isinstance(out.get("authors"), list) and len(out["authors"]) > 4:
         out["authors"] = out["authors"][:4] + ["et al."]
     return out
-
-
-if __name__ == "__main__":  # pragma: no cover
-    raise SystemExit(main())

@@ -1,18 +1,20 @@
-"""Shared low-level helpers: text normalization, hashing, atomic JSON I/O.
+"""Shared low-level helpers: text normalisation, hashing, deterministic serialisation.
 
 Standard library only — this is a deliberate design constraint so the tool can be
 dropped into any AI harness without a dependency-resolution step.
+
+This module is **pure**: it computes values from the arguments it is given and touches
+no file. The disk half of the old util lives in ``core.files`` (atomic writes, the two
+on-disk formats), and ``tests/test_purity.py`` holds this module to that line — a rule
+in a docstring is not a boundary.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
-import os
 import re
-import tempfile
 import unicodedata
-from pathlib import Path
 from typing import Any, Iterable
 
 # --------------------------------------------------------------------------- #
@@ -255,82 +257,13 @@ def normalize_arxiv_id(value: str) -> str:
 
 
 # --------------------------------------------------------------------------- #
-# JSON I/O
+# JSON (serialisation only — the file writes live in core.files)
 # --------------------------------------------------------------------------- #
 
 
 def json_dumps(obj: Any) -> str:
     """Stable JSON: sorted keys, UTF-8 preserved, no ASCII escaping of CJK."""
     return json.dumps(obj, ensure_ascii=False, indent=2, sort_keys=True)
-
-
-def write_json_atomic(path: Path, obj: Any) -> None:
-    """Write JSON via a temp file + replace so readers never see a partial file."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    payload = json_dumps(obj)
-    fd, tmp = tempfile.mkstemp(dir=str(path.parent), prefix=".tmp-", suffix=".json")
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
-            fh.write(payload)
-            fh.flush()
-            os.fsync(fh.fileno())
-        os.replace(tmp, path)
-    except BaseException:
-        try:
-            os.unlink(tmp)
-        except OSError:
-            pass
-        raise
-
-
-def read_json(path: Path, default: Any = None) -> Any:
-    if not path.exists():
-        return default
-    with path.open("r", encoding="utf-8") as fh:
-        return json.load(fh)
-
-
-def write_text_atomic(path: Path, text: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp = tempfile.mkstemp(dir=str(path.parent), prefix=".tmp-", suffix=".txt")
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
-            fh.write(text)
-            fh.flush()
-            os.fsync(fh.fileno())
-        os.replace(tmp, path)
-    except BaseException:
-        try:
-            os.unlink(tmp)
-        except OSError:
-            pass
-        raise
-
-
-def append_jsonl(path: Path, obj: Any) -> None:
-    """Append one event. Opens in text mode with explicit UTF-8 and '\\n'."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    line = json.dumps(obj, ensure_ascii=False, sort_keys=True)
-    with path.open("a", encoding="utf-8", newline="\n") as fh:
-        fh.write(line + "\n")
-
-
-def read_jsonl(path: Path) -> list[dict]:
-    if not path.exists():
-        return []
-    out: list[dict] = []
-    with path.open("r", encoding="utf-8") as fh:
-        for lineno, line in enumerate(fh, 1):
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                out.append(json.loads(line))
-            except json.JSONDecodeError:
-                # A torn final line (crash mid-append) must not make the ledger
-                # unreadable; skip it and keep going.
-                continue
-    return out
 
 
 def utc_now() -> str:
