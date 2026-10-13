@@ -703,7 +703,28 @@ def cmd_topics(ctx: Context) -> int:
     """
     args = ctx.args
     action = str(getattr(args, "topics_action", ""))
-    payload = topics_commands.run(action, ctx.library, ctx.resolver, args)
+    params = topics_commands.TopicParams(
+        query=str(getattr(args, "query", "") or ""),
+        survey_id=str(getattr(args, "survey_id", "") or ""),
+        candidate_id=str(getattr(args, "candidate_id", "") or ""),
+        topic_id=str(getattr(args, "topic_id", "") or ""),
+        limit=getattr(args, "limit", None),
+        min_works=getattr(args, "min_works", None),
+        min_fulltext=getattr(args, "min_fulltext", None),
+        year_from=getattr(args, "year_from", None),
+        year_to=getattr(args, "year_to", None),
+        top_terms=getattr(args, "top_terms", None),
+        max_n=getattr(args, "max_n", None),
+        max_per_work=getattr(args, "max_per_work", None),
+        per_kind=getattr(args, "per_kind", None),
+        include_mined=bool(getattr(args, "include_mined", False)),
+        no_self_check=bool(getattr(args, "no_self_check", False)),
+        offline=bool(getattr(args, "offline", False)),
+        venue=str(getattr(args, "venue", "") or ""),
+        verify=bool(getattr(args, "verify", False)),
+        markdown=bool(getattr(args, "markdown", False)),
+    )
+    payload = topics_commands.run(action, ctx.library, ctx.resolver, params)
     error = payload.get("error")
     if error:
         code = (

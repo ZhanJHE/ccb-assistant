@@ -30,7 +30,6 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from types import SimpleNamespace
 from typing import Any, Callable
 
 from . import __version__
@@ -40,6 +39,7 @@ from .library import Library, default_library_root
 from .library.cite import export as cite_export
 from .library.cite import to_bibtex, to_csl_json, to_ris
 from .search import Registry, Resolver
+from .topics.commands import TopicParams
 from .topics import commands as topics_commands
 
 PROTOCOL_VERSION = "2024-11-05"
@@ -267,7 +267,7 @@ class McpServer:
             "survey",
             self.library,
             None if args.get("offline") else self.resolver,
-            SimpleNamespace(
+            TopicParams(
                 query=_require_str(args, "query"),
                 min_works=_opt_int(args.get("min_works")),
                 min_fulltext=_opt_int(args.get("min_fulltext")),
@@ -285,7 +285,7 @@ class McpServer:
             "gaps",
             self.library,
             self.resolver,
-            SimpleNamespace(
+            TopicParams(
                 survey_id=_require_str(args, "survey_id"),
                 limit=_opt_int(args.get("limit")),
                 max_per_work=_opt_int(args.get("max_per_work")),
@@ -297,7 +297,7 @@ class McpServer:
             "candidates",
             self.library,
             self.resolver,
-            SimpleNamespace(
+            TopicParams(
                 survey_id=_require_str(args, "survey_id"),
                 limit=_opt_int(args.get("limit")),
                 per_kind=_opt_int(args.get("per_kind")),
@@ -311,7 +311,7 @@ class McpServer:
             "draft",
             self.library,
             self.resolver,
-            SimpleNamespace(candidate_id=_require_str(args, "candidate_id")),
+            TopicParams(candidate_id=_require_str(args, "candidate_id")),
         )
 
     def _tool_topics_rate(self, args: dict[str, Any]) -> dict[str, Any]:
@@ -319,7 +319,7 @@ class McpServer:
             "rate",
             self.library,
             self.resolver,
-            SimpleNamespace(
+            TopicParams(
                 topic_id=_require_str(args, "topic_id"),
                 venue=str(args.get("venue") or ""),
             ),
@@ -330,7 +330,7 @@ class McpServer:
             "save",
             self.library,
             self.resolver,
-            SimpleNamespace(topic_id=_require_str(args, "topic_id")),
+            TopicParams(topic_id=_require_str(args, "topic_id")),
         )
 
     def _tool_topics_list(self, args: dict[str, Any]) -> dict[str, Any]:
@@ -338,7 +338,7 @@ class McpServer:
             "list",
             self.library,
             self.resolver,
-            SimpleNamespace(limit=_opt_int(args.get("limit"))),
+            TopicParams(limit=_opt_int(args.get("limit"))),
         )
 
     def call_tool(self, name: str, args: dict[str, Any] | None) -> dict[str, Any]:
