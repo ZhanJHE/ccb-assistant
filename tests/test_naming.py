@@ -28,7 +28,7 @@ SKIP_DIRS = {".git", "papers", "__pycache__", ".mypy_cache", ".pytest_cache",
              ".ruff_cache", ".venv", "venv",
              # User research data: these files naturally contain "lit" (literature,
              # URLs, paper content). They are data, not source code.
-             "调研", "实验项目", "notes"}
+             "用户文档", "notes"}
 TEXT_SUFFIXES = {".py", ".md", ".html", ".toml", ".txt", ".yaml", ".yml", ".csv"}
 
 # A line may name the old token in order to forbid it or to *describe the rename* —
