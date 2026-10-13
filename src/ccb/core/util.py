@@ -111,8 +111,16 @@ def normalize_title(title: str) -> str:
 
 
 def title_tokens(title: str) -> frozenset[str]:
-    """Token set for Jaccard similarity (drops very short tokens)."""
-    return frozenset(t for t in normalize_title(title).split() if len(t) > 1)
+    """Token set for Jaccard similarity (drops very short alphabetic tokens).
+
+    Tokens containing a digit are kept even when short: "task 2" and "task 3" are
+    different works, and dropping the digit made the two titles token-identical, which
+    auto-merged them into one record — a silent loss found by the concurrency test.
+    """
+    return frozenset(
+        t for t in normalize_title(title).split()
+        if len(t) > 1 or any(c.isdigit() for c in t)
+    )
 
 
 def jaccard(a: Iterable[str], b: Iterable[str]) -> float:

@@ -341,6 +341,45 @@ class TestLibrary(unittest.TestCase):
         self.assertIn("unreadable_work_files", kinds)
         self.assertTrue(target.exists(), "repair must never delete a work file")
 
+    def test_titles_differing_only_by_a_number_are_distinct_works(self):
+        """`title_tokens` used to drop single digits: two numbered reports tokenised
+        identically and auto-merged into one — a silent loss of a distinct record."""
+        a = self.lib.upsert_record(self._rec(doi="10.1000/n.1", title="Task 2 results"))
+        b = self.lib.upsert_record(self._rec(doi="10.1000/n.2", title="Task 3 results"))
+        self.assertNotEqual(a.work_id, b.work_id, "different works, not variants")
+        self.assertEqual(self.lib.count(), 2)
+
+    def test_ledger_compaction_keeps_the_integrity_invariant(self):
+        """Archived events still happened; the self-check must keep counting them."""
+        self.lib.upsert_record(self._rec())
+        for i in range(20):
+            self.lib.log(f"noise{i}")
+        report = self.lib.compact_ledger(keep=5)
+        self.assertTrue(report["compacted"])
+        # The invariant: every work_created event is still counted, live or archived.
+        live = len(self.lib.ledger(event="work_created"))
+        archived = self.lib._archived_event_count(lambda r: r.get("event") == "work_created")
+        self.assertGreater(archived, 0, "compaction must have archived something")
+        self.assertEqual(self.lib.count_events("work_created"), live + archived)
+        self.assertGreaterEqual(self.lib.count_events("work_created"), 1)
+        check = self.lib.self_check(repair=False)
+        kinds = [p["kind"] for p in check["problems"]]
+        self.assertNotIn("ledger_shorter_than_library", kinds)
+        # The compaction itself is now an event in the live file.
+        self.assertEqual(self.lib.count_events("ledger_compacted"), 1)
+
+    def test_ledger_compaction_below_threshold_is_a_no_op(self):
+        self.lib.ensure()
+        self.assertFalse(self.lib.compact_ledger(keep=100)["compacted"])
+
+    def test_stats_reports_the_archive(self):
+        self.lib.ensure()
+        for i in range(6):
+            self.lib.log(f"noise{i}")
+        self.lib.compact_ledger(keep=2)
+        stats = self.lib.stats()
+        self.assertGreater(stats.get("ledger_archived", 0), 0)
+
     def test_content_addressed_storage_dedupes_bytes(self):
         d1, p1, n1 = self.lib.store_file(b"%PDF-1.4 same", ext="pdf")
         d2, p2, n2 = self.lib.store_file(b"%PDF-1.4 same", ext="pdf")

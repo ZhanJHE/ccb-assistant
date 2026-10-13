@@ -236,7 +236,9 @@ class Resolver:
             message=message,
         )
 
-    def _fan_out_lookup(self, identifier: str, *, channels: str) -> dict[str, Any]:
+    def _fan_out_lookup(
+        self, identifier: str, *, channels: str, conditional: bool = False
+    ) -> dict[str, Any]:
         if self.offline:
             return {"records": [], "errors": {"offline": "network access disabled"}, "warnings": []}
         from ..core.ids import parse_identifier
@@ -268,11 +270,21 @@ class Resolver:
         records: list[ChannelRecord] = []
         errors: dict[str, str] = {}
         successes = 0
+        not_modified: list[str] = []
         for chan in usable:
             try:
-                res = chan.lookup(identifier)
+                # A conditional re-check asks the source "changed?" first; channels that
+                # cannot answer conditionally fall back to a full lookup.
+                res = (
+                    chan.lookup_conditional(identifier)
+                    if conditional
+                    else chan.lookup(identifier)
+                )
             except Exception as exc:
                 errors[chan.name] = f"{type(exc).__name__}: {exc}"
+                continue
+            if res.not_modified:
+                not_modified.append(chan.name)
                 continue
             if res.error:
                 errors[chan.name] = res.error
@@ -306,7 +318,15 @@ class Resolver:
             ok, reason = chan.available()
             if not ok and chan.has(CAP_LOOKUP) and chan.supports_identifier(scheme):
                 errors.setdefault(chan.name, reason)
-        return {"records": records, "errors": errors, "warnings": warnings}
+        return {
+            "records": records,
+            "errors": errors,
+            "warnings": warnings,
+            # Every channel that answered did so with a 304: the sources vouch the work
+            # is unchanged, and `check` reports that without a diff.
+            "not_modified_all": bool(not_modified) and not records and not errors,
+            "not_modified": not_modified,
+        }
 
     def _extract_text(self, work: WorkRecord) -> dict[str, Any]:
         """Extract and store full text for a work that already has a local PDF.
@@ -563,7 +583,15 @@ class Resolver:
         if not keys:
             return {"status": "unverifiable", "reason": "record has no resolvable identifier"}
         before = work.summary()
-        fan = self._fan_out_lookup(keys[0], channels="")
+        fan = self._fan_out_lookup(keys[0], channels="", conditional=True)
+        if not fan["records"] and fan.get("not_modified_all"):
+            return {
+                "status": "unchanged",
+                "note": (
+                    "every applicable source answered HTTP 304 (not modified since the "
+                    f"last check): {', '.join(fan['not_modified'])}"
+                ),
+            }
         # Only compare fields that should be stable across sources.
         fresh_fields: dict[str, Any] = {}
         for rec in fan["records"]:

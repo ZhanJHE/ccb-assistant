@@ -182,7 +182,7 @@ class WorkIndex:
         else:
             library._save_meta(works_fingerprint=fingerprint)
 
-        creations = len(library.ledger(event="work_created"))
+        creations = library.count_events("work_created")
         if n_works and creations < n_works:
             report["problems"].append(
                 {

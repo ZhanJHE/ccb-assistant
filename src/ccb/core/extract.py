@@ -17,12 +17,18 @@ extraction returning a hundred characters of nothing is worse than an explicit
 from __future__ import annotations
 
 import importlib
+import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
 
 # Below this many characters for a whole document, assume there is no text layer.
 MIN_PLAUSIBLE_CHARS = 200
+
+# Refuse to extract above this size (default 20 MB): the bytes are downloaded and stored
+# either way, but running per-page strategies over a huge scan can stall a command for
+# minutes. Override with CCB_MAX_EXTRACT_BYTES.
+MAX_EXTRACT_BYTES = 20 * 1024 * 1024
 
 
 @dataclass
@@ -154,6 +160,23 @@ def extract_text(
     p = Path(path)
     if not p.exists():
         return Extraction("", engine or "none", error=f"file not found: {p}")
+    # A size guard before any engine touches the file: a 500-page scanned report would
+    # otherwise stall `get --with-pdf` for minutes. The PDF is still stored (the record
+    # is truthful about what exists); only the *extraction* declines, with the way out
+    # named. The limit is an environment variable so one unusual paper does not force a
+    # code change.
+    size = p.stat().st_size
+    limit = int(os.environ.get("CCB_MAX_EXTRACT_BYTES", str(MAX_EXTRACT_BYTES)))
+    if size > limit:
+        return Extraction(
+            "",
+            engine or "none",
+            error=(
+                f"pdf is {size // (1024 * 1024)} MB, above the "
+                f"{limit // (1024 * 1024)} MB extraction guard (CCB_MAX_EXTRACT_BYTES); "
+                "it is stored, but was not read"
+            ),
+        )
     engines = [engine] if engine else available_engines()
     if not engines:
         return Extraction(

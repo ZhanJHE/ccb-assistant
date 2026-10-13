@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -92,8 +93,72 @@ def read_jsonl(path: Path) -> list[dict]:
 
 __all__ = [
     "append_jsonl",
+    "exclusive_lock",
     "read_json",
     "read_jsonl",
     "write_json_atomic",
     "write_text_atomic",
 ]
+
+
+# --------------------------------------------------------------------------- #
+# Cross-process mutation lock
+# --------------------------------------------------------------------------- #
+
+# Re-entrancy depth per resolved lock path. Mutation methods nest (an upsert takes the
+# lock, then logs inside it), and two Library objects pointed at the same root in one
+# process must not deadlock each other. Not thread-safe — the tool is single-threaded
+# per process; add a threading lock here if that ever changes.
+_LOCK_HELD: dict[str, int] = {}
+
+
+@contextmanager
+def exclusive_lock(path: Path):
+    """Hold a cross-process exclusive lock on ``path`` (created as needed).
+
+    Windows locks one byte through ``msvcrt.locking``; POSIX uses ``flock``.
+    Acquisition blocks (msvcrt gives up after ~10 s and raises — hold times here are
+    milliseconds, so both are comfortable). The file is never deleted: an empty lock
+    file sitting next to the data it guards is the normal steady state.
+    """
+    try:
+        key = str(path.resolve())
+    except OSError:
+        key = str(path)
+    if _LOCK_HELD.get(key, 0) > 0:
+        _LOCK_HELD[key] += 1
+        try:
+            yield
+        finally:
+            _LOCK_HELD[key] -= 1
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd = os.open(str(path), os.O_CREAT | os.O_RDWR)
+    _LOCK_HELD[key] = 1
+    try:
+        if os.name == "nt":
+            import msvcrt
+
+            os.lseek(fd, 0, os.SEEK_SET)
+            msvcrt.locking(fd, msvcrt.LK_LOCK, 1)
+        else:
+            import fcntl
+
+            fcntl.flock(fd, fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            if os.name == "nt":
+                import msvcrt
+
+                os.lseek(fd, 0, os.SEEK_SET)
+                msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
+            else:
+                import fcntl
+
+                fcntl.flock(fd, fcntl.LOCK_UN)
+    finally:
+        _LOCK_HELD[key] -= 1
+        if _LOCK_HELD[key] <= 0:
+            del _LOCK_HELD[key]
+        os.close(fd)

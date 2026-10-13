@@ -161,8 +161,45 @@ class OpenAlexChannel(Channel):
             ),
         )
 
-    def _single(self, url: str, *, label: str) -> ChannelResult:
-        data, resp, ev_id = self.request_json(url, params=self.polite_params(), notes=f"openalex {label}")
+    def lookup_conditional(self, identifier: str) -> ChannelResult:
+        """Same four precise routes as `lookup`, as conditional GETs.
+
+        Every lookup URL here is stable (filter by DOI/PMID, or the OpenAlex id itself),
+        and OpenAlex answers with ETags — so a re-check of an unchanged work transfers
+        no body.
+        """
+        from ...core.ids import parse_identifier
+
+        parsed = parse_identifier(identifier)
+        if parsed is None:
+            return self.lookup(identifier)
+        if parsed.scheme == "doi":
+            return self._fetch(
+                self.polite_params({"filter": f"doi:{parsed.value}", "select": SELECT}),
+                label="lookup-doi", conditional=True,
+            )
+        if parsed.scheme == "pmid":
+            return self._fetch(
+                self.polite_params({"filter": f"pmid:{parsed.value}", "select": SELECT}),
+                label="lookup-pmid", conditional=True,
+            )
+        if parsed.scheme == "openalex":
+            return self._single(f"{API}/{parsed.value}", label="lookup-id", conditional=True)
+        if parsed.scheme == "arxiv":
+            arxiv_doi = f"10.48550/arxiv.{parsed.value}".casefold()
+            return self._fetch(
+                self.polite_params({"filter": f"doi:{arxiv_doi}", "select": SELECT}),
+                label="lookup-arxiv-via-doi", conditional=True,
+            )
+        return self.lookup(identifier)
+
+    def _single(self, url: str, *, label: str, conditional: bool = False) -> ChannelResult:
+        data, resp, ev_id = self.request_json(
+            url, params=self.polite_params(), notes=f"openalex {label}",
+            conditional=conditional,
+        )
+        if conditional and resp.status == 304:
+            return ChannelResult(self.name, not_modified=True, queries=[{"url": url}])
         res = ChannelResult(self.name, ev_id=ev_id, queries=[{"url": url}])
         if data is None:
             res.error = resp.error or f"HTTP {resp.status}"
@@ -172,8 +209,13 @@ class OpenAlexChannel(Channel):
             res.records.append(rec)
         return res
 
-    def _fetch(self, params: dict[str, Any], *, label: str) -> ChannelResult:
-        data, resp, ev_id = self.request_json(API, params=params, notes=f"openalex {label}")
+    def _fetch(self, params: dict[str, Any], *, label: str,
+               conditional: bool = False) -> ChannelResult:
+        data, resp, ev_id = self.request_json(
+            API, params=params, notes=f"openalex {label}", conditional=conditional,
+        )
+        if conditional and resp.status == 304:
+            return ChannelResult(self.name, not_modified=True, queries=[{"url": API}])
         res = ChannelResult(self.name, ev_id=ev_id, queries=[{"url": API, "params": params}])
         if data is None:
             res.error = resp.error or f"HTTP {resp.status}"

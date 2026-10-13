@@ -677,6 +677,10 @@ def cmd_evidence(ctx: Context) -> int:
 
 def cmd_ledger(ctx: Context) -> int:
     args = ctx.args
+    if getattr(args, "compact", 0):
+        # A maintenance step, deliberately on the command that owns the file: the
+        # archive is append-only and counted by the self-check, so nothing is lost.
+        return ctx.emit(ctx.library.compact_ledger(keep=int(args.compact or 2000)))
     rows = ctx.library.ledger(limit=args.limit or 0, event=args.event or "")
     return ctx.emit({"count": len(rows), "events": rows})
 

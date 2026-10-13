@@ -68,6 +68,7 @@ class Registry:
         config_paths: Iterable[Path] | None = None,
         enabled: Iterable[str] | None = None,
         disabled: Iterable[str] | None = None,
+        validators_path: Path | None = None,
     ):
         self.verbose = verbose
         # One shared transport, with per-host rate limits taken from each channel's
@@ -87,7 +88,11 @@ class Registry:
                     retry |= set(getattr(cls, "extra_retry_codes", ()) or ())
                 except Exception:
                     continue
-            http = Http(host_rates=rates, extra_retry_on=tuple(sorted(retry)))
+            http = Http(
+                host_rates=rates,
+                extra_retry_on=tuple(sorted(retry)),
+                validators_path=validators_path,
+            )
         self.http = http
         self.evidence = evidence
         self._channels: dict[str, Channel] = {}

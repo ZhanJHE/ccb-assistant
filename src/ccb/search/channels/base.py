@@ -117,6 +117,9 @@ class ChannelResult:
     queries: list[dict[str, Any]] = field(default_factory=list)
     ev_id: str = ""
     elapsed_ms: int = 0
+    # True when the channel answered HTTP 304 to a conditional request: the sources
+    # vouch that nothing changed, so `check` reports "unchanged" without a re-parse.
+    not_modified: bool = False
 
     @property
     def ok(self) -> bool:
@@ -136,6 +139,8 @@ class ChannelResult:
             out["warnings"] = self.warnings
         if self.ev_id:
             out["ev"] = self.ev_id
+        if self.not_modified:
+            out["not_modified"] = True
         if with_records:
             out["records"] = [r.__dict__ for r in self.records]
         return out
@@ -316,6 +321,16 @@ class Channel:
     def lookup(self, identifier: str, **kw: Any) -> ChannelResult:
         return ChannelResult(self.name, error="this channel does not support lookup")
 
+    def lookup_conditional(self, identifier: str) -> ChannelResult:
+        """Re-ask for one identifier with stored validators, when the channel can.
+
+        The default is a full lookup: correct, just less polite. Channels whose lookup
+        URL is stable and whose responses carry validators override this — `check` then
+        skips the body transfer and the re-parse for works the source vouches are
+        unchanged.
+        """
+        return self.lookup(identifier)
+
     def download_pdf(self, rec: ChannelRecord, **kw: Any) -> tuple[bytes, str, str]:
         """Fetch a PDF. Returns (bytes, final_pdf_url, error). Default: use pdf_url."""
         if not rec.pdf_url:
@@ -381,9 +396,20 @@ class Channel:
         method: str = "GET",
         data: bytes | None = None,
         notes: str = "",
+        conditional: bool = False,
     ) -> tuple[Any | None, Response, str]:
-        """GET+parse JSON and snapshot the raw body. Returns (parsed, response, ev_id)."""
-        resp = self.http.request(url, method=method, params=params, headers=headers, data=data)
+        """GET+parse JSON and snapshot the raw body. Returns (parsed, response, ev_id).
+
+        `conditional` sends the stored validators and treats a 304 as an answer: the
+        response is **not snapshotted** (nothing was transferred to prove) and the
+        caller is expected to check `resp.status == 304` before parsing.
+        """
+        resp = self.http.request(
+            url, method=method, params=params, headers=headers, data=data,
+            conditional=conditional,
+        )
+        if conditional and resp.status == 304:
+            return None, resp, ""
         ev_id = self.snapshot(
             url=resp.url or url,
             params=params,

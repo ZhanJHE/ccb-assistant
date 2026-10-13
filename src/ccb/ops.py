@@ -291,6 +291,8 @@ OPERATIONS: tuple[Operation, ...] = (
               params=(
         Param(name="limit", kind="int", cli="-n|--limit", default=50),
         Param(name="event", kind="str", cli="--event"),
+        Param(name="compact", kind="int", cli="--compact", default=0, cli_only=True,
+              help='maintenance: keep only the newest N events, archiving the rest'),
               ),
               ),
     Operation("reindex", group="", module="library", mcp="",

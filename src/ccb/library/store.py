@@ -20,11 +20,14 @@ Design commitments:
 
 from __future__ import annotations
 
+import functools
+import json
 import os
 import sqlite3
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Iterator
 
 from .evidence import EvidenceStore
 from ..core.ids import work_path_shard
@@ -39,7 +42,14 @@ from ..core.model import (
     merge_identifiers,
 )
 from .index import WORK_FILE_GLOB, WorkIndex
-from ..core.files import append_jsonl, read_json, read_jsonl, write_json_atomic, write_text_atomic
+from ..core.files import (
+    append_jsonl,
+    exclusive_lock,
+    read_json,
+    read_jsonl,
+    write_json_atomic,
+    write_text_atomic,
+)
 from ..core.util import (
     jaccard,
     normalize_arxiv_id,
@@ -52,6 +62,10 @@ from ..core.util import (
 
 LIBRARY_SCHEMA = 1
 
+# Archived ledger events (see `Library.compact_ledger`). Append-only, never rewritten,
+# and counted by `count_events` so the self-check invariant survives a compaction.
+LEDGER_ARCHIVE_NAME = "library.jsonl.archive"
+
 # --- dedup thresholds ------------------------------------------------------- #
 # Auto-merge demands near-identity. `MERGE_CANDIDATE` catches the plausible-but-
 # uncertain band and hands it to a human/agent decision.
@@ -59,6 +73,24 @@ AUTO_MERGE_JACCARD = 0.92
 MERGE_CANDIDATE_JACCARD = 0.60
 
 DEFAULT_LIBRARY_DIRNAME = "papers"
+
+
+def _serialized(fn):
+    """Run a mutation while holding the library's cross-process lock.
+
+    The lock is re-entrant (see `core.files.exclusive_lock`), so a decorated method may
+    call other decorated methods without deadlocking. Every method that writes a work
+    file, the meta, the ledger or a blob takes it; reads never do — one agent session
+    working while another mutates the same papers/ directory is exactly the situation
+    the lock exists for, and read-modify-write races lose updates silently.
+    """
+
+    @functools.wraps(fn)
+    def wrapper(self, *args: Any, **kwargs: Any):
+        with self.locked():
+            return fn(self, *args, **kwargs)
+
+    return wrapper
 
 @dataclass
 class UpsertResult:
@@ -127,7 +159,12 @@ def default_library_root(cwd: Path | None = None) -> Path:
 
 
 class Library:
-    """The local corpus. No method here performs network I/O."""
+    """The local corpus. No method here performs network I/O.
+
+    Every mutation runs under a cross-process lock (see `_serialized` / `locked`):
+    agent sessions overlap, and a read-modify-write on the meta or a work file racing
+    another session loses updates silently.
+    """
 
     def __init__(self, root: Path | str, *, trust: Iterable[str] | None = None):
         self.root = Path(root)
@@ -135,6 +172,7 @@ class Library:
         self.files_dir = self.root / "files"
         self.blobs_dir = self.root / "blobs"
         self.ledger_path = self.root / "library.jsonl"
+        self.lock_path = self.root / ".lock"
         self.meta_path = self.root / "library.json"
         self.index_path = self.root / "index.sqlite"
         self.evidence = EvidenceStore(self.root / "evidence")
@@ -152,6 +190,7 @@ class Library:
     def exists(self) -> bool:
         return self.meta_path.exists()
 
+    @_serialized
     def init(self, *, force: bool = False) -> dict[str, Any]:
         """Create the library skeleton. Idempotent unless ``force``."""
         if self.exists and not force:
@@ -173,9 +212,20 @@ class Library:
         if not self.exists:
             self.init()
 
+    @contextmanager
+    def locked(self) -> Iterator["Library"]:
+        """Hold the library's cross-process mutation lock (re-entrant).
+
+        Prefer the `_serialized` decorator on mutation methods; this context manager is
+        for callers outside the class (topics writes) and for tests.
+        """
+        with exclusive_lock(self.lock_path):
+            yield self
+
     def meta(self) -> dict[str, Any]:
         return read_json(self.meta_path, default={}) or {}
 
+    @_serialized
     def _save_meta(self, **changes: Any) -> None:
         meta = self.meta()
         meta.update(changes)
@@ -186,6 +236,7 @@ class Library:
     # Ledger — append-only audit trail
     # ------------------------------------------------------------------ #
 
+    @_serialized
     def log(self, event: str, payload: dict[str, Any] | None = None) -> None:
         append_jsonl(
             self.ledger_path,
@@ -197,6 +248,58 @@ class Library:
         if event:
             rows = [r for r in rows if r.get("event") == event]
         return rows[-limit:] if limit else rows
+
+    def count_events(self, event: str) -> int:
+        """Count an event across the live ledger **and** any archive.
+
+        `check`'s integrity invariant — one `work_created` event per work — must survive
+        a compaction: archived events still happened, so they are still counted.
+        """
+        n = sum(1 for r in read_jsonl(self.ledger_path) if r.get("event") == event)
+        n += self._archived_event_count(lambda r: r.get("event") == event)
+        return n
+
+    def _archived_event_count(self, predicate=None) -> int:
+        """Rows in the ledger archive, optionally filtered. 0 when never compacted."""
+        archive = self.root / LEDGER_ARCHIVE_NAME
+        if not archive.exists():
+            return 0
+        rows = read_jsonl(archive)
+        if predicate is not None:
+            return sum(1 for r in rows if predicate(r))
+        return len(rows)
+
+    @_serialized
+    def compact_ledger(self, keep: int = 2000) -> dict[str, Any]:
+        """Move all but the newest `keep` events into an append-only archive.
+
+        The live file stays the audit trail for everything recent; the archive is
+        appended to and never rewritten, so nothing is lost — and `count_events` reads
+        both, which is what keeps the self-check invariant true across a compaction.
+        """
+        rows = read_jsonl(self.ledger_path)
+        if len(rows) <= keep:
+            return {
+                "compacted": False,
+                "events": len(rows),
+                "reason": f"at or below the {keep}-event threshold",
+            }
+        head, tail = rows[:-keep], rows[-keep:]
+        archive = self.root / LEDGER_ARCHIVE_NAME
+        with archive.open("a", encoding="utf-8", newline="\n") as fh:
+            for row in head:
+                fh.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
+        write_text_atomic(
+            self.ledger_path,
+            "".join(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n" for row in tail),
+        )
+        self.log("ledger_compacted", {"archived": len(head), "kept": len(tail)})
+        return {
+            "compacted": True,
+            "archived": len(head),
+            "kept": len(tail) + 1,  # the ledger_compacted event just appended
+            "archive": str(archive),
+        }
 
     # ------------------------------------------------------------------ #
     # Work storage
@@ -216,6 +319,7 @@ class Library:
             self._work_cache[work_id] = w
         return w
 
+    @_serialized
     def save(self, work: WorkRecord, *, log_event: str = "work_saved") -> None:
         """The single write path for the whole library.
 
@@ -366,6 +470,7 @@ class Library:
     # Ingestion
     # ------------------------------------------------------------------ #
 
+    @_serialized
     def upsert_record(
         self,
         rec: ChannelRecord,
@@ -377,6 +482,7 @@ class Library:
         work = rec.to_work()
         return self.upsert_work(work, auto_merge=auto_merge, record_event=record_event)
 
+    @_serialized
     def upsert_work(
         self,
         incoming: WorkRecord,
@@ -488,6 +594,7 @@ class Library:
                 added.append(f)
         return sorted(set(added))
 
+    @_serialized
     def add_manifestation(
         self,
         work_id: str,
@@ -502,6 +609,7 @@ class Library:
         self.save(work, log_event=log_event)
         return work
 
+    @_serialized
     def attach_file(
         self,
         work_id: str,
@@ -552,6 +660,7 @@ class Library:
         self.save(work, log_event="file_attached")
         return work
 
+    @_serialized
     def attach_fulltext(self, work_id: str, *, rel_path: str, chars: int, mid: str = "") -> None:
         work = self.load(work_id)
         if work is None:
@@ -643,6 +752,7 @@ class Library:
                         seen[wid] = w
         return list(seen.values())
 
+    @_serialized
     def merge(self, keep_id: str, drop_id: str, *, reason: str = "manual") -> dict[str, Any]:
         """Explicitly merge two works. `drop_id` becomes an alias of `keep_id`."""
         keep = self.load(keep_id) or self.resolve(keep_id)
@@ -777,6 +887,7 @@ class Library:
             "pdf_mb": round(bytes_on_disk / (1024 * 1024), 2),
             "evidence_snapshots": self.evidence.count(),
             "ledger_events": len(read_jsonl(self.ledger_path)),
+            "ledger_archived": self._archived_event_count(),
             "works_with_conflicts": conflicts,
             "year_range": [min(years), max(years)] if years else None,
             "top_venues": sorted(venues.items(), key=lambda kv: -kv[1])[:10],
@@ -808,6 +919,7 @@ class Library:
         entries = [to_bibtex(w, key_style=key_style) for w in works if w is not None]
         return "\n\n".join(e for e in entries if e) + ("\n" if entries else "")
 
+    @_serialized
     def store_file(self, data: bytes, *, ext: str = "pdf") -> tuple[str, str, int]:
         """Content-address bytes into `files/`. Identical bytes are stored once.
 
@@ -823,6 +935,7 @@ class Library:
             os.replace(tmp, abs_path)
         return digest, str(rel).replace("\\", "/"), len(data)
 
+    @_serialized
     def store_fulltext(self, work_id: str, text: str) -> tuple[str, int]:
         rel = Path("blobs") / _fs_safe(work_id) / "fulltext.txt"
         abs_path = self.root / rel
@@ -838,6 +951,7 @@ class Library:
         """
         return self.root / Path("blobs") / _fs_safe(work_id) / "passages.json"
 
+    @_serialized
     def store_passages(
         self, work_id: str, passages: list[Any], *, source_sha256: str = ""
     ) -> tuple[str, int]:

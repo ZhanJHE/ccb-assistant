@@ -28,8 +28,10 @@ import urllib.parse
 import urllib.request
 import zlib
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
+from ..core.files import read_json, write_json_atomic
 from ..core.util import utc_now
 
 # A descriptive UA gets better behaviour from several scholarly APIs and is basic
@@ -190,6 +192,7 @@ class Http:
         host_rates: dict[str, float] | None = None,
         extra_retry_on: tuple[int, ...] = (),
         verbose: bool = False,
+        validators_path: Path | None = None,
     ):
         self.default_rps = default_rps
         self.timeout = timeout
@@ -201,8 +204,43 @@ class Http:
         # "this DOI does not exist" is not retried three times.
         self.extra_retry_on = tuple(extra_retry_on)
         self.verbose = verbose
+        # ETag / Last-Modified validators per full URL, persisted so a *later* process
+        # (e.g. `check` re-verifying last week's corpus) can ask "changed?" without
+        # transferring the body. Bounded: a cache that grows forever is its own defect.
+        self._validators_path = validators_path
+        self._validators: dict[str, dict[str, str]] | None = None
         self._buckets: dict[str, _Bucket] = {}
-        self.stats: dict[str, int] = {"requests": 0, "retries": 0, "throttled": 0, "errors": 0}
+        self.stats: dict[str, int] = {
+            "requests": 0, "retries": 0, "throttled": 0, "errors": 0, "not_modified": 0,
+        }
+
+    # ---------------- validators ---------------- #
+
+    _MAX_VALIDATORS = 4096
+
+    def _validators_for(self, url: str) -> dict[str, str] | None:
+        if self._validators is None:
+            self._validators = (
+                read_json(self._validators_path, default={}) or {}
+                if self._validators_path
+                else {}
+            )
+        v = self._validators.get(url)
+        return v if v else None
+
+    def _remember_validator(self, url: str, v: dict[str, str]) -> None:
+        if self._validators is None:
+            self._validators = (
+                read_json(self._validators_path, default={}) or {}
+                if self._validators_path
+                else {}
+            )
+        self._validators[url] = v
+        if len(self._validators) > self._MAX_VALIDATORS:
+            for key in list(self._validators)[: len(self._validators) - self._MAX_VALIDATORS]:
+                del self._validators[key]
+        if self._validators_path:
+            write_json_atomic(self._validators_path, self._validators)
 
     # ---------------- internals ---------------- #
 
@@ -247,8 +285,14 @@ class Http:
         data: bytes | None = None,
         accept: str = "application/json",
         retry_on: tuple[int, ...] = (429, 500, 502, 503, 504),
+        conditional: bool = False,
     ) -> Response:
-        """Perform one request with retries. Never raises on HTTP failure."""
+        """Perform one request with retries. Never raises on HTTP failure.
+
+        `conditional` sends the stored ETag / Last-Modified validators for this URL and
+        handles a 304 as an answer ("unchanged"), not as an error. It only ever applies
+        to GETs — a POST has no meaningful validators.
+        """
         retry_on = tuple(set(retry_on) | set(self.extra_retry_on))
         query = urllib.parse.urlencode(
             {k: v for k, v in (params or {}).items() if v is not None}, doseq=True
@@ -260,6 +304,12 @@ class Http:
                 "Accept-Encoding": "gzip, deflate"}
         if headers:
             hdrs.update(headers)
+        validator = self._validators_for(full) if (conditional and method == "GET") else None
+        if validator:
+            if validator.get("etag"):
+                hdrs["If-None-Match"] = validator["etag"]
+            if validator.get("last_modified"):
+                hdrs["If-Modified-Since"] = validator["last_modified"]
 
         started = time.monotonic()
         last = Response(status=0, body="", url=full, error="not attempted")
@@ -273,22 +323,40 @@ class Http:
                     status = resp.status
                     ctype = resp.headers.get("Content-Type", "")
                     enc = (resp.headers.get("Content-Encoding", "") or "").casefold()
+                    validators = {
+                        "etag": resp.headers.get("ETag", ""),
+                        "last_modified": resp.headers.get("Last-Modified", ""),
+                    }
                 body = self._decode_body(raw, enc)
                 last = Response(
                     status=status,
                     body=body,
                     content_type=ctype,
                     url=full,
-                    headers={},
+                    headers={k: v for k, v in validators.items() if v},
                     attempts=attempt,
                     elapsed_ms=int((time.monotonic() - started) * 1000),
                 )
+                if conditional and status == 200 and any(validators.values()):
+                    self._remember_validator(full, validators)
                 if status in retry_on and attempt < self.max_retries:
                     self.stats["retries"] += 1
                     time.sleep(self._backoff(attempt))
                     continue
                 return last
             except urllib.error.HTTPError as exc:
+                if conditional and exc.code == 304:
+                    # The validators did their job: the source vouches that nothing
+                    # changed. No body travels, nothing is snapshotted, and this is an
+                    # *answer* — not an error.
+                    self.stats["not_modified"] += 1
+                    return Response(
+                        status=304,
+                        body="",
+                        url=full,
+                        attempts=attempt,
+                        elapsed_ms=int((time.monotonic() - started) * 1000),
+                    )
                 try:
                     raw = exc.read()
                     body = self._decode_body(raw, "")

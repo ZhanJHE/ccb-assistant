@@ -107,10 +107,23 @@ class CrossrefChannel(Channel):
             )
         return self._single(f"{API}/{parsed.value}")
 
-    def _single(self, url: str) -> ChannelResult:
+    def lookup_conditional(self, identifier: str) -> ChannelResult:
+        from ...core.ids import parse_identifier
+
+        parsed = parse_identifier(identifier)
+        # The lookup URL is the DOI itself — stable across calls — so a conditional GET
+        # works. Anything else falls back to a full lookup, which is merely less polite.
+        if parsed is not None and parsed.scheme == "doi":
+            return self._single(f"{API}/{parsed.value}", conditional=True)
+        return self.lookup(identifier)
+
+    def _single(self, url: str, *, conditional: bool = False) -> ChannelResult:
         data, resp, ev_id = self.request_json(
-            url, params=self.polite_params(), notes="crossref lookup-doi"
+            url, params=self.polite_params(), notes="crossref lookup-doi",
+            conditional=conditional,
         )
+        if resp.status == 304:
+            return ChannelResult(self.name, not_modified=True, queries=[{"url": url}])
         res = ChannelResult(self.name, ev_id=ev_id, queries=[{"url": url}])
         if data is None:
             res.error = resp.error or f"HTTP {resp.status}"

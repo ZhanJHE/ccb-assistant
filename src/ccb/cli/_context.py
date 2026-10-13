@@ -49,6 +49,7 @@ class Context:
             config_paths=_config_paths(self.library),
             enabled=_split(args.channel) if getattr(args, "channel", "") else None,
             disabled=_split(getattr(args, "disable_channel", "")),
+            validators_path=self.library.root / "http-validators.json",
         )
         self.resolver = Resolver(
             self.library,

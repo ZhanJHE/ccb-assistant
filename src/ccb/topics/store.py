@@ -55,9 +55,10 @@ def artefact_path(library: "Library", kind: str, key: str, *, suffix: str = ".js
 
 def save_json(library: "Library", kind: str, key: str, payload: dict[str, Any]) -> Path:
     path = artefact_path(library, kind, key)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    write_json_atomic(path, payload)
-    library.log(f"topics_{kind[:-1]}_saved", {"key": key, "path": str(path)})
+    with library.locked():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        write_json_atomic(path, payload)
+        library.log(f"topics_{kind[:-1]}_saved", {"key": key, "path": str(path)})
     return path
 
 
@@ -85,9 +86,10 @@ def list_json(library: "Library", kind: str) -> list[dict[str, Any]]:
 
 def save_text(library: "Library", kind: str, key: str, text: str) -> Path:
     path = artefact_path(library, kind, key, suffix=".md")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    write_text_atomic(path, text)
-    library.log(f"topics_{kind[:-1]}_written", {"key": key, "path": str(path)})
+    with library.locked():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        write_text_atomic(path, text)
+        library.log(f"topics_{kind[:-1]}_written", {"key": key, "path": str(path)})
     return path
 
 

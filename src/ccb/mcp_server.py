@@ -110,7 +110,11 @@ class McpServer:
         root = Path(library_root) if library_root else default_library_root()
         self.library = Library(root)
         self.library.ensure()
-        self.registry = Registry(evidence=self.library.evidence, verbose=verbose)
+        self.registry = Registry(
+            evidence=self.library.evidence,
+            verbose=verbose,
+            validators_path=self.library.root / "http-validators.json",
+        )
         self.resolver = Resolver(self.library, self.registry, verbose=verbose)
 
     # ---------------- tool implementations ---------------- #
