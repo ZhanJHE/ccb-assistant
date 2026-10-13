@@ -27,6 +27,9 @@ Declare which mode you chose at the start (one line is enough). A wrong call is 
 1. The module DAG is not negotiable: `core ← library ← search ← topics`; `tests/test_modules.py` will fail otherwise.
 2. Never change an on-disk format without a migration; `works/*.json` is the source of truth, the index is disposable.
 3. `python -m unittest discover -s tests` must pass after every change.
+4. Close every development session by appending to the development work log
+   (`开发文档/开发工作日志.md`): development work only — commits, fixes, decisions,
+   known issues — never usage data, user behaviour, or research content.
 
 ### Tool arbitration (when other literature tools exist on this machine)
 
@@ -83,6 +86,8 @@ Place a new document by what it *is*, not by who is talking. User research mater
 1. 模块 DAG 不可破：`core ← library ← search ← topics`；`tests/test_modules.py` 会 fail。
 2. 不改磁盘格式而不写迁移；`works/*.json` 是真相源，索引可弃。
 3. 改完必须 `python -m unittest discover -s tests` 全绿。
+4. 开发会话收尾必须追加开发工作日志（`开发文档/开发工作日志.md`）：只记开发
+   （提交 / 修复 / 决策 / 已知问题），不记使用数据、用户行为与课题内容。
 
 ### 能力裁决（本机存在同类工具时）
 
