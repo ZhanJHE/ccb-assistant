@@ -149,9 +149,15 @@ class TestContractFace(unittest.TestCase):
     def test_every_cli_command_is_claimed_by_a_module(self):
         claimed = {name for m in ("core", "library", "search", "topics")
                    for name in ops.cli_names(m)}
-        # `contract` is the contract itself: it belongs to no module and says so.
-        unclaimed = {op.path for op in ops.OPERATIONS if not op.group} - claimed - {"contract"}
-        self.assertEqual(unclaimed, set(), "a command no module claims is invisible")
+        # `contract` and `install-skill` are entry-layer utilities: they serve the tool
+        # as a whole rather than any one module, and say so in the table.
+        entry_utilities = {op.name for op in ops.OPERATIONS
+                           if not op.group and not op.module}
+        unclaimed = {op.path for op in ops.OPERATIONS if not op.group} - claimed
+        self.assertEqual(unclaimed, entry_utilities,
+                         "a command no module claims is invisible — unless it is an "
+                         "entry-layer utility, and there are only those two")
+        self.assertEqual(entry_utilities, {"contract", "install-skill"})
 
 
 class TestRecordsKeys(unittest.TestCase):

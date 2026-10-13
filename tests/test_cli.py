@@ -21,6 +21,7 @@ import argparse
 import contextlib
 import io
 import json
+import os
 import shutil
 import sys
 import tempfile
@@ -196,6 +197,63 @@ class TestLibraryStatsRendering(_LibraryFixture):
                               "--pretty"])
         self.assertEqual(code, 0, err)
         self.assertIn("works", out)
+
+
+class TestInstallSkill(unittest.TestCase):
+    """`install-skill` is how ccb teaches another project's agents to use it."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp(prefix="ccb-inst-"))
+        self.project = self.tmp / "proj"
+        self.project.mkdir()
+        self._old_cwd = os.getcwd()
+
+    def tearDown(self):
+        os.chdir(self._old_cwd)
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _chdir(self, path: Path):
+        os.chdir(path)
+
+    def test_installs_into_the_current_project(self):
+        self._chdir(self.project)
+        code, out, err = run(["install-skill"])
+        self.assertEqual(code, 0, err)
+        installed = self.project / ".dsh" / "skills" / "ccb"
+        self.assertTrue((installed / "SKILL.md").exists())
+        self.assertTrue((installed / "ccb.py").exists())
+        self.assertTrue((installed / "references" / "commands.md").exists())
+        payload = json.loads(out)
+        self.assertEqual(payload["files"], sorted(payload["files"]))
+
+    def test_refuses_to_overwrite_without_force(self):
+        self._chdir(self.project)
+        self.assertEqual(run(["install-skill"])[0], 0)
+        code, out, err = run(["install-skill"])
+        self.assertEqual(code, 2, "an existing install must not be silently replaced")
+        self.assertIn("--force", err)
+        code, _, err = run(["install-skill", "--force"])
+        self.assertEqual(code, 0, err)
+
+    def test_global_goes_to_the_home_skills_directory(self):
+        from unittest import mock
+        from pathlib import Path as _Path
+
+        home = self.tmp / "home"
+        home.mkdir()
+        self._chdir(self.project)
+        with mock.patch.object(_Path, "home", classmethod(lambda cls: home)):
+            code, _, err = run(["install-skill", "--global"])
+        self.assertEqual(code, 0, err)
+        self.assertTrue((home / ".dsh" / "skills" / "ccb" / "SKILL.md").exists())
+        self.assertFalse((self.project / ".dsh").exists(), "--global must not touch cwd")
+
+    def test_the_source_directory_is_rejected_as_a_destination(self):
+        """Running it inside the ccb checkout itself must be a clean refusal."""
+        self._chdir(ROOT)
+        code, out, err = run(["install-skill"])
+        self.assertEqual(code, 2, err)
+        self.assertIn("same directory", err)
 
 
 class TestAskOutcome(_LibraryFixture):

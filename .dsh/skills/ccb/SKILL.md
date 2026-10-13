@@ -178,8 +178,8 @@ gating live in `references/channels.md`.
 
 ## Full detail
 
-- The MCP face: 16 `ccb_*` tools over the same core — registration in
-  `references/commands.md`, tool names via `ccb --pretty contract`
+- `docs/for-agents.md` — written for agents: faces, context cost, rules
+- MCP face: 16 `ccb_*` tools — registration in `references/commands.md`
 - `references/commands.md` — every command and flag, with examples
 - `references/topics.md` — the operators, the scoring, the CCF estimate
 - `references/architecture.md` — the three modules, on-disk layout, local-first

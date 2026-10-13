@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import sys
 from pathlib import Path
 from typing import Any
@@ -78,6 +79,44 @@ def cmd_contract(ctx: Context) -> int:
         sys.stdout.write(contract_text() + "\n")
         return EXIT_OK
     return ctx.emit(contract())
+
+
+def cmd_install_skill(ctx: Context) -> int:
+    """Copy the bundled Agent Skill so agents in another project can use ccb.
+
+    The skill is the piece that makes an agent use this tool without the rules being
+    re-explained, so installing it into the project the agent works in is how ccb
+    travels. Requires a checkout: an installed package does not ship the skill files.
+    """
+    checkout = checkout_root()
+    if checkout is None:
+        raise CommandError(
+            "install-skill needs a checkout of ccb-assistant (the skill files are not "
+            "part of the installed package)", EXIT_FAILED,
+        )
+    source = checkout / ".dsh" / "skills" / "ccb"
+    if not source.is_dir():
+        raise CommandError(f"skill source not found: {source}", EXIT_FAILED)
+    if ctx.args.global_skill:
+        base = Path.home() / ".dsh" / "skills"
+    else:
+        base = Path.cwd() / ".dsh" / "skills"
+    dest = base / "ccb"
+    if source.resolve() == dest.resolve():
+        raise CommandError(
+            f"source and destination are the same directory ({dest})", EXIT_USAGE,
+        )
+    if dest.exists() and not ctx.args.force:
+        raise CommandError(
+            f"{dest} already exists; pass --force to overwrite it", EXIT_USAGE,
+        )
+    shutil.copytree(source, dest, dirs_exist_ok=bool(ctx.args.force))
+    files = sorted(str(p.relative_to(dest)) for p in dest.rglob("*") if p.is_file())
+    return ctx.emit({
+        "installed": str(dest),
+        "files": files,
+        "note": "agents working in that directory now discover the skill automatically",
+    })
 
 
 def _legacy_libraries(library: Library) -> list[dict[str, Any]]:

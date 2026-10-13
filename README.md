@@ -20,6 +20,9 @@ Existing tools cover *finding* papers extremely well — several mature aggregat
 20+ sources — but they all discard the identity map after each query, so the same paper
 rediscovered next week is a new record and the same PDF is fetched and parsed again.
 
+> **Agents:** start with [docs/for-agents.md](docs/for-agents.md) — the two ways to drive
+> ccb, what each costs in context, and the three rules that keep answers checkable.
+
 ## The three modules
 
 ```
