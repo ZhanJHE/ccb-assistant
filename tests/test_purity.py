@@ -23,7 +23,7 @@ SRC = ROOT / "src"
 sys.path.insert(0, str(SRC))
 
 # The modules that must stay pure, and the ones allowed to touch the world.
-PURE = ("ids", "model", "util")
+PURE = ("ids", "model", "util", "sections")
 IMPURE = ("files", "extract", "paths")
 
 FORBIDDEN_ROOTS = {"os", "pathlib", "io", "tempfile", "subprocess", "shutil", "socket",

@@ -327,6 +327,7 @@ class Resolver:
         work_ids: Iterable[str] | None = None,
         max_per_work: int = 2,
         passages_around: int = 0,
+        section: str = "",
     ) -> dict[str, Any]:
         """Retrieve the passages that answer a query, with checkable citations.
 
@@ -341,6 +342,7 @@ class Resolver:
             work_ids=work_ids,
             max_per_work=max_per_work,
             passages_around=passages_around,
+            section=section,
         )
 
     def _fetch_pdf(self, work: WorkRecord) -> dict[str, Any]:

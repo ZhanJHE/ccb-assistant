@@ -31,8 +31,14 @@ def ask(
     work_ids: Iterable[str] | None = None,
     max_per_work: int = 2,
     passages_around: int = 0,
+    section: str = "",
 ) -> dict[str, Any]:
-    """Retrieve the passages that answer a query, with checkable citations."""
+    """Retrieve the passages that answer a query, with checkable citations.
+
+    `section` narrows retrieval to passages under a matching chapter heading
+    (case-insensitive substring, e.g. "methods"). Sections are detected when the full
+    text is chunked and self-heal with the rest of the passage index.
+    """
     works: list[WorkRecord] = []
     if work_ids:
         for wid in work_ids:
@@ -56,6 +62,15 @@ def ask(
             )
             continue
         all_passages.extend(ps)
+
+    # A section filter is a narrowing of the question, applied before ranking so the
+    # limit is spent on in-section passages rather than filtering away ranked ones.
+    wanted = (section or "").strip().casefold()
+    if wanted:
+        all_passages = [
+            p for p in all_passages
+            if wanted in (getattr(p, "section", "") or "").casefold()
+        ]
 
     index = PassageIndex(all_passages)
     for w in works:
@@ -85,12 +100,19 @@ def ask(
     }
     if skipped:
         result["skipped"] = skipped
+    if wanted:
+        result["section"] = wanted
     if not hits:
         result["message"] = (
             "No stored passage matches this query. Either add papers to the corpus "
             "(`ccb find` then `ccb get --with-pdf`) or rephrase using terms that "
             "appear in the source text."
         )
+        if wanted:
+            result["message"] += (
+                f" The section filter '{section.strip()}' narrowed the corpus to zero "
+                "passages; drop it to search the whole text."
+            )
     return result
 
 

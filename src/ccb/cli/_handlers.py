@@ -229,6 +229,7 @@ def cmd_ask(ctx: Context) -> int:
         limit=args.limit,
         work_ids=ids,
         max_per_work=args.max_per_work,
+        section=getattr(args, "section", "") or "",
     )
     if args.quotes_only:
         payload["hits"] = [

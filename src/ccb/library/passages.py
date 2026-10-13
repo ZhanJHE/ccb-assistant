@@ -154,6 +154,7 @@ class Passage:
     end: int
     text: str
     token_count: int = 0
+    section: str = ""  # chapter heading this passage sits under; "" when undetected
 
     def as_dict(self, *, with_text: bool = True) -> dict[str, Any]:
         out: dict[str, Any] = {
@@ -164,6 +165,8 @@ class Passage:
             "end": self.end,
             "chars": len(self.text),
         }
+        if self.section:
+            out["section"] = self.section
         if with_text:
             out["text"] = self.text
         return out
@@ -179,6 +182,7 @@ class Passage:
             text=d.get("text", "") or "",
         )
         p.token_count = int(d.get("token_count", 0) or 0)
+        p.section = str(d.get("section", "") or "")
         return p
 
 
@@ -197,12 +201,17 @@ def chunk_text(
     """
     passages: list[Passage] = []
     counter = 0
+    from ..core.sections import detect_sections
+
+    current_section = ""
     for page_no, page_text in split_pages(text):
         stripped = page_text.strip()
         if not stripped:
             continue
         # Work in offsets of the stripped page so `start` is meaningful within the page.
         base = page_text.find(stripped)
+        headings = detect_sections(page_text)
+        head_at = 0
         pos = 0
         length = len(stripped)
         while pos < length:
@@ -214,6 +223,13 @@ def chunk_text(
                     end = pos + cut
             chunk = stripped[pos:end].strip()
             is_final = end >= length
+            # A chunk sits under the last heading at or before its *end* — a heading in
+            # the middle of a chunk names the new chapter, whose content dominates the
+            # chunk's tail. A page with no heading inherits the previous page's section:
+            # sections run across page breaks the same way they do for a reader.
+            while head_at < len(headings) and headings[head_at][0] <= base + end:
+                current_section = headings[head_at][1]
+                head_at += 1
             # The minimum-length guard suppresses *intermediate* fragments created by
             # boundary snapping, but never the last chunk of a page: a short closing
             # paragraph (a conclusion, an abstract's final sentence, a caption's tail) is
@@ -230,6 +246,7 @@ def chunk_text(
                         start=base + pos,
                         end=base + end,
                         text=chunk,
+                        section=current_section,
                     )
                 )
             if is_final:

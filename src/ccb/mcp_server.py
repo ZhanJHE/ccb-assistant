@@ -163,6 +163,7 @@ class McpServer:
             _require_str(args, "query"),
             limit=int(args.get("limit") or 5),
             work_ids=[str(i) for i in ids] if isinstance(ids, list) and ids else None,
+            section=str(args.get("section") or ""),
         )
 
     def _tool_open(self, args: dict[str, Any]) -> dict[str, Any]:

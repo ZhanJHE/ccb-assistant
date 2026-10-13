@@ -137,6 +137,8 @@ OPERATIONS: tuple[Operation, ...] = (
         Param(name="query", kind="str", cli="", required=True),
         Param(name="limit", kind="int", cli="-n|--limit", default=5, help='passages to return'),
         Param(name="work_ids", dest="ids", kind="csv", cli="--ids", help='comma-separated work ids to search (default: whole library)'),
+        Param(name="section", kind="str", cli="--section",
+              help='only passages under a matching section heading (e.g. methods)'),
         Param(name="max_per_work", kind="int", cli="--max-per-work", default=2, help='diversity guard so one long paper cannot fill the results', cli_only=True),
         Param(name="quotes_only", kind="flag", cli="--quotes-only", default=False, help='omit the passage text, keep the anchors and scores', cli_only=True),
               ),
