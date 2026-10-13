@@ -34,6 +34,22 @@ sys.path.insert(0, str(ROOT / "src"))
 from ccb.cli import build_parser, main  # noqa: E402
 from ccb.core.model import ChannelRecord  # noqa: E402
 from ccb.library import Library  # noqa: E402
+from ccb import ops  # noqa: E402
+
+
+# A minimal one-page PDF with a real text layer: enough for the extraction pipeline
+# to produce passages without any third-party fixture file.
+MINIMAL_PDF = b"""%PDF-1.4
+1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj
+2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj
+3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R/Resources<</Font<</F1 5 0 R>>>>>>endobj
+4 0 obj<</Length 90>>stream
+BT /F1 12 Tf 72 720 Td (Hello Planter in-network machine learning) Tj ET
+endstream
+endobj
+5 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj
+trailer<</Root 1 0 R/Size 6>>
+"""
 
 
 # --------------------------------------------------------------------------- #
@@ -279,6 +295,121 @@ class TestAskOutcome(_LibraryFixture):
         payload = json.loads(out)
         self.assertIn(payload["outcome"], ("answered", "not-covered"))
         self.assertEqual(payload["grounded"], payload["outcome"] == "answered")
+
+
+class TestPayloadShapes(_LibraryFixture):
+    """Lock every command's declared stdout shape.
+
+    The keys are declared in `ops.PAYLOAD_KEYS`, exposed through `ccb contract`, and
+    pinned here: a renamed key must fail a test and force a contract update instead of
+    silently breaking every consumer. (This file's own docstring records the era when
+    payload shapes were guessed — the renderer crash came from exactly that.)
+
+    Rule: a run may never emit a key outside its declaration. For the ops whose payload
+    legitimately varies by outcome (partial exits carry `errors`/`warnings`), the
+    canonical fixture run is additionally asserted to match the declaration exactly —
+    those ops are listed in `VARIABLE`.
+    """
+
+    # Ops whose shape varies between clean and partial/error outcomes; the fixture run
+    # asserts the subset rule only.
+    VARIABLE = {("get",), ("topics", "survey")}
+
+    ARGS: dict[tuple[str, ...], list[str]] = {
+        ("find",): ["planter"],
+        ("ask",): ["planter offload"],
+        ("get",): ["doi:10.1000/cli.1"],
+        ("cite",): ["doi:10.1000/cli.1"],
+        ("show",): ["doi:10.1000/cli.1"],
+        ("index",): ["--ids", "doi:10.1000/cli.1"],
+        ("search-local",): ["planter"],
+        ("open",): ["doi:10.1000/tiny.1", "--head", "200"],
+        ("extract",): ["doi:10.1000/tiny.1"],
+        ("add-file",): None,  # filled in setUp: needs the crafted PDF path
+        ("merge",): ["doi:10.1000/cli.1", "doi:10.1000/net.2"],
+        ("check",): ["--all"],
+        ("topics", "survey"): ["smartnic offload", "--min-works", "1",
+                               "--min-fulltext", "0"],
+        ("topics", "gaps"): ["no-such-survey"],
+        ("topics", "candidates"): ["no-such-survey"],
+        ("topics", "draft"): ["no-such-candidate"],
+        ("topics", "rate"): ["no-such-topic"],
+        ("topics", "save"): ["no-such-topic"],
+        ("topics", "show"): ["no-such-topic"],
+    }
+
+    def setUp(self):
+        super().setUp()
+        from ccb.library import Library as L
+
+        # A small networking cluster with full text, so `topics survey` has evidence
+        # and `ask` can answer grounded.
+        lib = L(self.root)
+        abst = ("We offload machine learning inference to programmable switches and "
+                "SmartNICs; evaluation shows line-rate throughput but the switch has "
+                "limited memory for KV caches.")
+        for i in range(2, 8):
+            wid = lib.upsert_record(ChannelRecord(
+                channel="manual", title=f"SmartNIC offload study {i}",
+                authors=[f"Author {i}"], year=2022 + i % 3, venue="NSDI",
+                doi=f"10.1000/net.{i}", abstract=abst,
+            )).work_id
+            lib.store_fulltext(wid, abst + f" Study {i} reports caching results. ")
+        lib.close()
+
+        pdf = self.tmp / "tiny.pdf"
+        pdf.write_bytes(MINIMAL_PDF)
+        self.ARGS[("add-file",)] = [
+            str(pdf), "--title", "Tiny Planter", "--authors", "A", "--year", "2020",
+            "--doi", "10.1000/tiny.1", "--extract",
+        ]
+
+    def test_every_payload_matches_its_declaration(self):
+        # longest-prefix match: leaf_commands yields placeholder args after the path
+        # (e.g. ("find", "x")), and the placeholders are *replaced* by ARGS tails.
+        paths = sorted(ops.PAYLOAD_KEYS, key=len, reverse=True)
+        for leaf in leaf_commands(build_parser()):
+            joined = " ".join(leaf)
+            path = next((p for p in paths if joined == p or joined.startswith(p + " ")),
+                        None)
+            with self.subTest(command=joined):
+                self.assertTrue(path, f"{joined}: no declared shape matches")
+                declared = set(ops.payload_keys(path))
+                self.assertTrue(declared, f"{path} has no declared shape")
+                tail = list(self.ARGS.get(tuple(path.split()), []))
+                if leaf == ("install-skill",):
+                    # writes into the *current project*; keep it out of the repo
+                    d = Path(tempfile.mkdtemp(prefix="ccb-shape-"))
+                    old = os.getcwd()
+                    os.chdir(d)
+                    try:
+                        code, out, err = self.run_cli(list(leaf))
+                    finally:
+                        os.chdir(old)
+                        shutil.rmtree(d, ignore_errors=True)
+                else:
+                    code, out, err = self.run_cli(["--offline", *path.split(), *tail])
+                self.assertNotIn("Traceback", err)
+                if not out.strip():
+                    # error reported on stderr only — nothing to lock on stdout
+                    self.assertIn(code, (2, 3, 5))
+                    continue
+                actual = set(json.loads(out).keys())
+                if code in (0, 4):
+                    self.assertTrue(
+                        actual <= declared,
+                        f"{path}: undeclared keys {sorted(actual - declared)}",
+                    )
+                    if tuple(path.split()) not in self.VARIABLE:
+                        self.assertEqual(
+                            actual, declared,
+                            f"{path}: shape drifted from the declaration",
+                        )
+                else:
+                    self.assertTrue(
+                        actual <= declared,
+                        f"{path}: undeclared keys {sorted(actual - declared)}",
+                    )
 
 
 if __name__ == "__main__":  # pragma: no cover

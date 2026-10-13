@@ -270,5 +270,30 @@ class TestPromptFace(unittest.TestCase):
         self.assertIn("contribution type", stitch.template)
 
 
+class TestPayloadDeclarations(unittest.TestCase):
+    """Every command's output shape is declared once, in the ops table, and exposed
+    through `contract` — consumers must never have to guess (or read handlers)."""
+
+    def test_every_operation_declares_its_payload_keys(self):
+        for op in ops.OPERATIONS:
+            with self.subTest(op=op.path or op.name):
+                keys = ops.payload_keys(op.path or op.name)
+                self.assertTrue(keys, f"{op.path or op.name}: undeclared output shape")
+                self.assertEqual(len(keys), len(set(keys)), "duplicate keys")
+                self.assertEqual(list(keys), sorted(keys), "keep declarations sorted")
+
+    def test_no_orphan_declarations(self):
+        paths = {op.path or op.name for op in ops.OPERATIONS}
+        self.assertEqual(set(ops.PAYLOAD_KEYS), paths)
+
+    def test_contract_exposes_the_shapes(self):
+        from ccb.contract import contract
+
+        shapes = contract()["payload_shapes"]
+        self.assertEqual(set(shapes), {op.path or op.name for op in ops.OPERATIONS})
+        self.assertIn("work_id", shapes["get"])
+        self.assertIn("hits", shapes["ask"])
+
+
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()

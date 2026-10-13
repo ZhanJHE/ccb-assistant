@@ -629,6 +629,100 @@ PROMPTS: tuple[Prompt, ...] = (
 )
 
 
+# --------------------------------------------------------------------------- #
+# Output payload shapes
+# --------------------------------------------------------------------------- #
+
+# The top-level keys each command's stdout JSON carries, keyed by the operation's CLI
+# path (`op.path or op.name`). Declared here, derived into `ccb contract`, and pinned
+# by tests/test_cli.py — because the alternative is every consumer discovering the keys
+# by trial and error, which is exactly what happened before this table existed.
+#
+# Where a payload varies by outcome (a partial exit carries `errors`/`warnings` that a
+# clean run omits), the declaration is the union; the test asserts that a run never
+# emits a key outside the declaration, and never misses one on success.
+PAYLOAD_KEYS: dict[str, tuple[str, ...]] = {
+    # -- library ------------------------------------------------------------ #
+    "channels": ("channels", "credential_guidance", "credentials_missing",
+                 "credentials_present", "note", "unavailable", "usable"),
+    "contract": ("invariants", "modules", "output", "payload_shapes", "purpose",
+                 "routing", "tool", "workflows"),
+    "doctor": ("channels_unavailable", "channels_usable", "checked_at", "extractors",
+               "index_ok", "library_root", "meta", "problems", "repaired",
+               "works_on_disk"),
+    "repair": ("checked_at", "index_ok", "library_root", "problems", "repaired",
+               "works_indexed", "works_on_disk"),
+    "find": ("channels_queried", "fetched", "ingested", "local_answered",
+             "local_hits", "message", "query"),
+    "get": ("actions", "errors", "message", "ok", "record", "source", "warnings",
+            "work_id"),
+    "ask": ("corpus", "grounded", "hits", "message", "note", "outcome", "query",
+            "skipped"),
+    "index": ("count", "indexed", "skipped"),
+    "cite": ("citation", "format", "note", "provenance", "unavailable_fields",
+             "work_id"),
+    "open": ("chars", "text", "title", "total_chars", "truncated", "work_id"),
+    "show": ("arxiv_id", "authors", "check_status", "claim_conflicts", "conflicts",
+             "doi", "field_sources", "has_fulltext", "has_pdf", "ids",
+             "manifestations", "manifestations_detail", "openreview_id", "pdf_path",
+             "title", "venue", "work_id", "year"),
+    "search-local": ("count", "hits", "query"),
+    "library stats": ("evidence_snapshots", "index_present", "ledger_archived",
+                      "ledger_events", "pdf_bytes", "pdf_mb", "pending_merges", "root",
+                      "top_venues", "with_fulltext", "with_pdf", "works",
+                      "works_with_conflicts", "year_range"),
+    "library report": ("evidence_snapshots", "index_present", "ledger_archived",
+                       "ledger_events", "pdf_bytes", "pdf_mb", "pending_merges",
+                       "recent_events", "root", "top_venues", "with_fulltext",
+                       "with_pdf", "works", "works_with_conflicts", "year_range"),
+    "library list": ("count", "works"),
+    "library merges": ("pending",),
+    "check": ("at", "changed", "checked", "errors", "unchanged", "unverifiable"),
+    "check-files": ("checked", "mismatch", "missing", "ok", "orphans"),
+    "export": ("entries", "format", "text"),
+    "add-file": ("action", "bytes", "extraction", "merge_candidates", "sha256",
+                 "stored_path", "work_id"),
+    "extract": ("chars", "engine", "error", "ok", "pages", "pages_indexed",
+                "passages", "stored_path", "warnings", "work_id"),
+    "merge": ("drop", "fields", "keep", "merged"),
+    "evidence": ("count", "ids"),
+    "ledger": ("count", "events"),
+    "reindex": ("works",),
+    "install-skill": ("files", "installed", "note"),
+    # -- topics ------------------------------------------------------------- #
+    "topics survey": ("catalog", "ccf", "corpus", "found_via", "message", "notes",
+                      "query", "sufficient", "survey_id", "terms", "thresholds",
+                      "top_authors", "venues", "window", "works", "years"),
+    "topics gaps": ("coverage", "declared_gaps", "error", "gap_kinds", "message",
+                    "query", "sparse_pairs", "survey_id", "usable"),
+    "topics candidates": ("candidates", "error", "excluded_as_mined", "generated",
+                          "message", "note", "query", "returned", "survey",
+                          "survey_id", "weights"),
+    "topics draft": ("candidate_id", "context", "corpus", "created_at", "dedup_keys",
+                     "error", "evidence", "message", "next_steps", "operator",
+                     "problem", "query", "references", "score", "score_basis",
+                     "sections", "status", "survey_id", "title_hint", "topic_id"),
+    "topics rate": ("basis", "computed_at", "confidence", "disclaimer",
+                    "error", "estimated_ccf", "message", "risks", "steps_down",
+                    "target_venue", "target_venue_ccf", "topic_id", "upper_bound"),
+    "topics save": ("error", "markdown", "markdown_path", "message", "topic_id",
+                    "warnings"),
+    "topics list": ("count", "mined_keys", "note", "topics"),
+    "topics show": ("candidate_id", "context", "corpus", "created_at", "dedup_keys",
+                    "error", "evidence", "markdown_path", "message", "next_steps",
+                    "operator", "problem", "query", "references", "score",
+                    "score_basis", "sections", "status", "survey_id", "title_hint",
+                    "topic_id"),
+    "topics venues": ("catalog", "count", "note", "query", "venues"),
+    "topics operators": ("difficulty_scale", "novelty_types", "operators"),
+}
+
+
+def payload_keys(path: str) -> tuple[str, ...]:
+    """Declared top-level keys for one operation's stdout payload."""
+    return PAYLOAD_KEYS.get(path, ())
+
+
 def prompt_definitions() -> list[dict[str, Any]]:
     """The MCP `prompts/list` payload, derived from the declaration."""
     return [

@@ -337,6 +337,11 @@ def contract() -> dict[str, Any]:
         "workflows": WORKFLOWS,
         "routing": ROUTING_HINTS,
         "output": OUTPUT_CONVENTIONS,
+        # Per-command top-level payload keys, keyed by CLI path. Declared so a consumer
+        # never has to guess the shape of a response (or read the handler to learn it).
+        "payload_shapes": {
+            path: list(keys) for path, keys in sorted(ops.PAYLOAD_KEYS.items())
+        },
     }
 
 
