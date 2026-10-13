@@ -18,9 +18,7 @@ from __future__ import annotations
 
 import json
 import sys
-from typing import Any, Sequence
-
-from .. import __version__
+from typing import Sequence
 
 from ._context import (
     EXIT_FAILED,
@@ -36,8 +34,6 @@ from ._context import (
 )
 from ._handlers import (
     _compact,
-    _extract_into,
-    _extract_with_engine,
     _legacy_libraries,
     cmd_add_file,
     cmd_ask,

@@ -20,7 +20,6 @@ Design commitments:
 
 from __future__ import annotations
 
-import json
 import os
 import sqlite3
 from dataclasses import dataclass
@@ -28,7 +27,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from .evidence import EvidenceStore
-from ..core.ids import compute_work_id, work_id_from_keys, work_path_shard
+from ..core.ids import work_path_shard
 from ..core.paths import checkout_root
 from ..core.model import (
     ChannelRecord,
@@ -43,7 +42,6 @@ from .index import WORK_FILE_GLOB, WorkIndex
 from ..core.files import append_jsonl, read_json, read_jsonl, write_json_atomic, write_text_atomic
 from ..core.util import (
     jaccard,
-    json_dumps,
     normalize_arxiv_id,
     normalize_doi,
     sha256_bytes,
@@ -500,7 +498,7 @@ class Library:
         work = self.load(work_id)
         if work is None:
             return None
-        merged = work.add_manifestation(m)
+        work.add_manifestation(m)
         self.save(work, log_event=log_event)
         return work
 

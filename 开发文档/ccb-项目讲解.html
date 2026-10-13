@@ -805,7 +805,7 @@ python tools/probe_mcp_source.py            <span class="c"># 最小 MCP server�
   <tr><td>C3</td><td><b>全量改名 lit → ccb</b></td><td>产品名（CCB Assistant/查查呗论文）与实现名两套并存；改名后目录/仓库/包/命令/工具前缀/环境变量一致。<b>零兼容层</b>：shim、codemod、旧 <code>.lit/</code> 库全部删除；<code>test_naming</code> 守住</td></tr>
   <tr><td>C4</td><td><b>Agent 控制层 + 凭据</b></td><td>两层 AGENTS.md（根=模式分流，src/ccb=开发细则，按触达注入）；<code>channels</code> 输出 <code>credentials_missing</code>（required/optional + effect + note）与 <code>credential_guidance</code>（key 永不经对话传递）</td></tr>
   <tr><td>C5</td><td><b>core 纯/IO 分离 + cli 拆包</b></td><td>util 自称纯却含原子写盘 → <code>core/files.py</code>；<code>test_purity</code> 双向锁死。cli.py 997 行 → cli 包四模块；checkout 标记因 cli.py 变包而静默失效（<b>测试抓到</b>，已修）</td></tr>
-  <tr><td>C6</td><td><b>工程基建</b></td><td>CI（ruff + unittest，双平台双版本）；版本单一来源（pyproject 动态读取 <code>ccb.__version__</code>）；lint 规则 declared</td></tr>
+  <tr><td>C6</td><td><b>工程基建</b></td><td>CI（ruff + unittest，双平台双版本）；版本单一来源（pyproject 动态读取 <code>ccb.__version__</code>）；ruff 0.17 本地执行清零（43 处：未用导入、死赋值、3 处注解未定义名）</td></tr>
 </table>
 
 <div class="box ok">
@@ -816,9 +816,8 @@ python tools/probe_mcp_source.py            <span class="c"># 最小 MCP server�
 
 <table>
   <tr><th>项</th><th>现状</th><th>影响</th></tr>
-  <tr><td>ruff 未在本机执行</td><td>规则已声明、CI 已接入，但本机未安装 ruff（装依赖需确认）</td><td>首次 CI 运行会报告 lint 结果；本地要跑需 <code>pip install ruff</code></td></tr>
   <tr><td>覆盖率门槛未设</td><td>CI 未接 coverage；基线未测量</td><td>当前以"遍历全部叶子命令"的回归网替代；门槛需先测基线</td></tr>
-  <tr><td>输出 TypedDict 未铺开</td><td>计划中的类型化契约（37 个操作的载荷）尚未落地</td><td>渲染器已不再猜形状（records_key 声明制），风险已压低</td></tr>
+  <tr><td>输出 TypedDict 未铺开</td><td>计划中的类型化契约（37 个操作的载荷）尚未落地</td><td>渲染器已不再猜形状（records_key 声明制）+ F821 静态可查，风险已压低</td></tr>
   <tr><td>README 渠道表 vs 注册表</td><td>README 列了 <code>unpaywall</code>/<code>doaj</code>/<code>core</code>/<code>semantic_scholar</code>，默认注册表未注册它们</td><td>以 <code>ccb doctor</code> 为准；需要时在 <code>channels.yaml</code> 声明</td></tr>
   <tr><td>大目录树上的 <code>topics</code></td><td>按语料规模归一化打分；超大语料时挖掘耗时随全文量线性增长</td><td>先 <code>survey</code> 判断 <code>sufficient</code>，不足则停</td></tr>
   <tr><td>长期项（只留接口）</td><td><code>evidence/</code> 无界增长；<code>doctor</code> 名为报告却写指纹；Windows 下 SQLite 句柄需显式关闭</td><td>均为运维性问题，非正确性问题</td></tr>

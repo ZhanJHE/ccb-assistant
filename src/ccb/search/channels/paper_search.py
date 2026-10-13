@@ -20,7 +20,10 @@ Runtime realities this handles, all observed on this machine:
 from __future__ import annotations
 
 import os
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:  # annotation only; the parser imports the model where it runs
+    from ...core.model import ChannelRecord
 
 from .base import (
     CAP_LOOKUP,

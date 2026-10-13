@@ -27,7 +27,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Iterable
 
-from ..core.util import normalize_text, short_hash
+from ..core.util import short_hash
 from . import gaps as gaps_mod
 from . import operators as operators_mod
 from . import terms as terms_mod

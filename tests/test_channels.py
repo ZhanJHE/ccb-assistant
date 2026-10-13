@@ -20,7 +20,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from ccb.search.channels.base import ChannelSpec  # noqa: E402
 from ccb.search.channels.generic import (  # noqa: E402
     GenericCliChannel,
     GenericHttpChannel,
@@ -31,7 +30,6 @@ from ccb.search.channels.generic import (  # noqa: E402
 from ccb.search.channels.registry import Registry  # noqa: E402
 from ccb.library.evidence import EvidenceStore  # noqa: E402
 from ccb.library import Library  # noqa: E402
-from ccb.search.acquire import Resolver  # noqa: E402
 
 PROBE_MCP = ROOT / "tools" / "probe_mcp_source.py"
 
@@ -130,10 +128,6 @@ class TestDeclarativeChannels(unittest.TestCase):
                 }
             }
         }
-        res = type("R", (), {})()
-        from ccb.search.channels.base import ChannelResult
-
-        res = ChannelResult("declared")
         chan._extract = None  # guard: http channel must use its own mapper
         rec = chan._map_item(payload["result"]["hits"]["hit"][0], decl["map"], "ev_x")
         self.assertIsNotNone(rec)

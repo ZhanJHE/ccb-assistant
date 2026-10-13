@@ -16,12 +16,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from ccb.search.channels.base import Channel, ChannelResult, ChannelSpec  # noqa: E402
+from ccb.search.channels.base import Channel, ChannelSpec  # noqa: E402
 from ccb.search.channels.registry import Registry  # noqa: E402
 from ccb.core.extract import assess_text_quality, _sentence_break_heuristic  # noqa: E402
 from ccb.core.model import ChannelRecord  # noqa: E402
 from ccb.library import Library  # noqa: E402
-from ccb.library.evidence import EvidenceStore  # noqa: E402
 from ccb.library.passages import (  # noqa: E402
     BM25_K1,
     Passage,
@@ -33,7 +32,6 @@ from ccb.library.passages import (  # noqa: E402
 )
 from ccb.search.net import credential, credential_available  # noqa: E402
 from ccb.search.acquire import Resolver  # noqa: E402
-from ccb.core.util import sha256_text  # noqa: E402
 
 
 class TestTokenizer(unittest.TestCase):

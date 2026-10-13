@@ -22,7 +22,7 @@ Standard library only: this module is imported by the entry layer, not by the mo
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 

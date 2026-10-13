@@ -23,13 +23,8 @@ import subprocess
 import sys
 from typing import Any
 
-from ...library.evidence import EvidenceStore
 from ...core.model import ChannelRecord
-from ..net import Http
 from .base import (
-    CAP_LOOKUP,
-    CAP_PDF,
-    CAP_SEARCH,
     Channel,
     ChannelResult,
     ChannelSpec,

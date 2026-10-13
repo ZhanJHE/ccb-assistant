@@ -28,7 +28,6 @@ from ._context import (
     EXIT_USAGE,
     CommandError,
     Context,
-    _config_paths,
     _not_found,
     _split,
 )
@@ -413,9 +412,6 @@ def cmd_check(ctx: Context) -> int:
 
 def cmd_check_files(ctx: Context) -> int:
     """Verify stored files: hash on disk must match the recorded hash."""
-    from ..core.util import sha256_bytes
-
-    args = ctx.args
     report: dict[str, Any] = {"checked": 0, "ok": 0, "mismatch": [], "missing": [], "orphans": []}
     known: set[str] = set()
     for work in ctx.library.iter_works():
@@ -579,8 +575,6 @@ def _extract_into(library: Library, work_id: str, *, engine: str = "") -> dict[s
     left `ccb ask` searching stale passages. Delegating to the resolver keeps a single
     path, and the resolver applies the same invalidation rule as `get --with-pdf`.
     """
-    from ..search import Registry
-    from ..search import Resolver
 
     resolver = Resolver(library, Registry(evidence=library.evidence), offline=True)
     if engine:
@@ -592,7 +586,6 @@ def _extract_into(library: Library, work_id: str, *, engine: str = "") -> dict[s
 def _extract_with_engine(library: Library, work_id: str, *, engine: str) -> dict[str, Any]:
     """Extract with one named engine, then store text and passages together."""
     from ..library.passages import chunk_text
-    from ..core.util import sha256_text
 
     work = library.load(work_id)
     if work is None:

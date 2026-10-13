@@ -11,7 +11,6 @@ from typing import Any
 
 from .. import __version__, ops
 from . import _handlers
-from ._context import CommandError
 
 
 # --------------------------------------------------------------------------- #

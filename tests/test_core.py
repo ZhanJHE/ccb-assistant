@@ -8,7 +8,6 @@ Run without any network access and without third-party dependencies:
 from __future__ import annotations
 
 import json
-import os
 import shutil
 import sys
 import tempfile
@@ -288,7 +287,7 @@ class TestLibrary(unittest.TestCase):
         # surfaced as a candidate, never auto-merged.
         self.lib.upsert_record(self._rec(arxiv_id="", doi="", title="Deep Residual Learning for Image Recognition",
                                          authors=["Kaiming He"], year=2016))
-        res = self.lib.upsert_record(
+        self.lib.upsert_record(
             self._rec(channel="other", arxiv_id="", doi="",
                       title="Deep Residual Learning for Image Recognition",
                       authors=["Kaiming He"], year=2016)
@@ -394,7 +393,7 @@ class TestCitations(unittest.TestCase):
     def test_bibtex_braces_are_balanced(self):
         work = self._work(title="A {weird} title with & and % and a lone {")
         out = to_bibtex(work)
-        title_line = [l for l in out.splitlines() if "title =" in l][0]
+        title_line = [line for line in out.splitlines() if "title =" in line][0]
         self.assertEqual(title_line.count("{"), title_line.count("}"))
 
     def test_ris_and_csl_render(self):

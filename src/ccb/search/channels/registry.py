@@ -18,7 +18,7 @@ from typing import Any, Iterable
 
 from ...library.evidence import EvidenceStore
 from ..net import Http, credential
-from .base import Channel, ChannelResult, ChannelSpec
+from .base import Channel, ChannelResult
 
 # name -> "module:ClassName". Adding a built-in channel is one line here plus the module.
 BUILTIN_CHANNELS: dict[str, str] = {
@@ -261,7 +261,7 @@ class Registry:
         enabled and nothing says otherwise — so it is surfaced as a configuration note
         rather than silently ignored.
         """
-        from ..net import CREDENTIAL_NOTES, KNOWN_CREDENTIALS, credential_provider
+        from ..net import KNOWN_CREDENTIALS, credential_provider
 
         usable = [c.name for c in self.all() if c.available()[0]]
         unusable = {c.name: c.available()[1] for c in self.all() if not c.available()[0]}

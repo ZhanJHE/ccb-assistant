@@ -21,7 +21,6 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from ccb.library import Library  # noqa: E402
 from ccb.mcp_server import (  # noqa: E402
-    INTERNAL_ERROR,
     INVALID_PARAMS,
     METHOD_NOT_FOUND,
     McpServer,
@@ -149,7 +148,7 @@ class TestMcpProtocol(unittest.TestCase):
         inp = io.StringIO("not json\n" + json.dumps({"jsonrpc": "2.0", "id": 9, "method": "ping"}) + "\n")
         out = io.StringIO()
         serve(library_root=self.tmp / "lib3", stdin=inp, stdout=out)
-        lines = [json.loads(l) for l in out.getvalue().strip().splitlines()]
+        lines = [json.loads(line) for line in out.getvalue().strip().splitlines()]
         self.assertEqual(len(lines), 2)
         self.assertIn("error", lines[0])
         self.assertEqual(lines[1]["id"], 9)
