@@ -100,5 +100,32 @@ class TestNoOldNameRemains(unittest.TestCase):
                 self.assertIn(word, corpus)
 
 
+class TestVersionIsDeclaredOnce(unittest.TestCase):
+    """The release number is typed in one place; everywhere else derives from it.
+
+    It used to be typed in three — pyproject, the package, and the skill metadata — and
+    agreed by luck. pyproject now reads the package's value, and this test holds the skill
+    to it, because a skill that advertises the wrong version is documentation drift of the
+    kind this whole test file exists to catch.
+    """
+
+    def test_the_skill_metadata_matches_the_package(self):
+        import ccb
+
+        skill = ROOT / ".dsh" / "skills" / "ccb" / "SKILL.md"
+        # The version lives under `metadata:` in the frontmatter, hence the indent.
+        match = re.search(r'^\s+version:\s*"([^"]+)"', skill.read_text(encoding="utf-8"),
+                          re.M)
+        self.assertIsNotNone(match, "the skill frontmatter declares no version")
+        self.assertEqual(match.group(1), ccb.__version__)
+
+    def test_the_skill_name_matches_the_directory(self):
+        skill = ROOT / ".dsh" / "skills" / "ccb" / "SKILL.md"
+        match = re.search(r'^name:\s*"?([^"\s]+)"?', skill.read_text(encoding="utf-8"), re.M)
+        self.assertIsNotNone(match, "the skill frontmatter declares no name")
+        self.assertEqual(match.group(1), "ccb", "DSH discovers skills by directory name")
+        self.assertEqual(skill.parent.name, "ccb")
+
+
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()

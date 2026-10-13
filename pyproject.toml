@@ -4,7 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ccb-assistant"
-version = "0.3.0"
+# The version lives in ccb/__init__.py and is read from there: a release number typed in
+# two places is a release number that eventually disagrees with itself.
+dynamic = ["version"]
 description = "Three modules over one shared floor: source-agnostic paper search and download, a durable local paper library, and research-topic mining over that corpus. Built for AI harnesses."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -26,6 +28,19 @@ ccb-mcp = "ccb.mcp_server:main"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
+
+[tool.setuptools.dynamic]
+version = { attr = "ccb.__version__" }
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+# The default set: pyflakes plus the pycodestyle *errors*. High signal (unused imports,
+# undefined names, real mistakes), no style debates — the codebase already has a style.
+select = ["E4", "E7", "E9", "F"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
