@@ -44,6 +44,16 @@ Rationale: bypassing the persistence layer silently breaks "the same paper is ne
 - Asking for or echoing any API key's **value** (name the environment variable only; the user sets it).
 - Bypassing paywalls / mirror hunting (see `ccb contract`'s `legal-sources-only`).
 
+### Document destinations (two doc trees, two purposes)
+
+| Content | Directory |
+|---|---|
+| About building this tool (design, walkthrough, borrowing survey, for-agents) | `开发文档/` |
+| The user's own research material (surveys, selection plans, idea pools, experiment projects, venue catalogues) | `用户文档/` |
+| Pre-project research (read-only history) | `notes/` |
+
+Place a new document by what it *is*, not by who is talking. User research material never goes into `开发文档/`, and tool documentation never goes into `用户文档/`.
+
 ---
 
 ## 中文
@@ -90,3 +100,13 @@ Rationale: bypassing the persistence layer silently breaks "the same paper is ne
 - 手工编辑 `papers/` 下任何文件（一切变更走命令）。
 - 索要或回显任何 API key 的**值**（只告知环境变量名，让用户自己设置）。
 - 绕过付费墙 / 镜像狩猎（见 `ccb contract` 的 `legal-sources-only`）。
+
+### 文档去向（两处目录的功能区分）
+
+| 内容 | 目录 |
+|---|---|
+| 关于造这个工具的（设计方案、讲解、借鉴调研、for-agents） | `开发文档/` |
+| 用户的科研资料（调研综述、选题方案、Idea 池、实验项目、场馆目录） | `用户文档/` |
+| 立项前调研（只读历史） | `notes/` |
+
+新文档按**内容归属**放，不按"谁在说话"放：用户的调研材料不进 `开发文档/`，工具文档不进 `用户文档/`。
