@@ -91,6 +91,20 @@ Exit codes: `0` ok, `2` usage, `3` not found, `4` partial, `5` failed.
 
 Add a channel without code: declare it in `papers/channels.yaml` (kind: http / cli / mcp).
 
+### Credentials
+
+Keyed channels read credentials from **`papers/credentials.yaml`** — a flat map of
+credential name to value, never committed (the whole `papers/` directory is ignored):
+
+```yaml
+S2_API_KEY: your-key-here
+OPENALEX_EMAIL: you@example.edu   # joins polite pools; not a secret, same file
+```
+
+Loaded values are registered and scrubbed from every snapshot, cache and report, so a
+key never reaches disk anywhere except this file. `ccb channels` reports exactly which
+credential each channel is missing and what it buys.
+
 ### Development
 
 ```bash
@@ -183,6 +197,13 @@ papers/
 | `dblp` | 被反爬挡住 | CS 书目脊柱 |
 
 不写代码加渠道：在 `papers/channels.yaml` 里声明（kind: http / cli / mcp）。
+
+### 凭据
+
+需要 key 的渠道从 **`papers/credentials.yaml`** 读取——"凭据名: 值"的平面映射，永不进
+版本控制（整个 `papers/` 目录被忽略）。已加载的值会注册并从所有快照、缓存与报告中
+擦除，因此 key 除本文件外不会落到任何磁盘位置。`ccb channels` 会精确报告每个渠道
+缺哪个凭据、以及它能换来什么。
 
 ### 开发
 

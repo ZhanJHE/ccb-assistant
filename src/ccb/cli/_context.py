@@ -43,6 +43,11 @@ class Context:
         root = Path(args.library).expanduser() if args.library else default_library_root()
         self.library = Library(root)
         self.library.ensure()
+        # Credentials come from the library's credentials config, never from the
+        # environment; loaded values register as redaction targets immediately.
+        from ..search.net import load_credentials_file
+
+        load_credentials_file(self.library.root / "credentials.yaml")
         self.registry = Registry(
             evidence=self.library.evidence,
             verbose=bool(getattr(args, "verbose", False)),

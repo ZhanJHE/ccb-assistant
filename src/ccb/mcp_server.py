@@ -110,6 +110,9 @@ class McpServer:
         root = Path(library_root) if library_root else default_library_root()
         self.library = Library(root)
         self.library.ensure()
+        from .search.net import load_credentials_file
+
+        load_credentials_file(self.library.root / "credentials.yaml")
         self.registry = Registry(
             evidence=self.library.evidence,
             verbose=verbose,

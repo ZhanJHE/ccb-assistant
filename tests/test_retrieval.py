@@ -30,7 +30,7 @@ from ccb.library.passages import (  # noqa: E402
     split_pages,
     tokenize,
 )
-from ccb.search.net import credential, credential_available  # noqa: E402
+from ccb.search.net import set_credentials,  credential, credential_available  # noqa: E402
 from ccb.search.acquire import Resolver  # noqa: E402
 
 
@@ -243,32 +243,30 @@ class TestChannelTransparency(unittest.TestCase):
 
     def test_missing_required_credential_reports_the_variable(self):
         chan = Channel()
-        chan.spec = self._spec(auth="env:CCB_TEST_ABSENT_KEY")
+        chan.spec = self._spec(auth="CCB_TEST_ABSENT_KEY")
         usable, reason = chan.available()
         self.assertFalse(usable)
         self.assertIn("CCB_TEST_ABSENT_KEY", reason)
 
     def test_optional_credential_does_not_block(self):
         chan = Channel()
-        chan.spec = self._spec(auth="env:CCB_TEST_ABSENT_KEY?")
+        chan.spec = self._spec(auth="CCB_TEST_ABSENT_KEY?")
         usable, _ = chan.available()
         self.assertTrue(usable)
 
     def test_required_env_lists_only_mandatory_variables(self):
         chan = Channel()
-        chan.spec = self._spec(auth="env:CCB_TEST_ABSENT_KEY")
-        self.assertEqual(chan.spec.required_env(), ["CCB_TEST_ABSENT_KEY"])
-        chan.spec = self._spec(auth="env:CCB_TEST_ABSENT_KEY?")
-        self.assertEqual(chan.spec.required_env(), [])
-        self.assertEqual(chan.spec.optional_env(), ["CCB_TEST_ABSENT_KEY"])
+        chan.spec = self._spec(auth="CCB_TEST_ABSENT_KEY")
+        self.assertEqual(chan.spec.required_credentials(), ["CCB_TEST_ABSENT_KEY"])
+        chan.spec = self._spec(auth="CCB_TEST_ABSENT_KEY?")
+        self.assertEqual(chan.spec.required_credentials(), [])
+        self.assertEqual(chan.spec.optional_credentials(), ["CCB_TEST_ABSENT_KEY"])
 
     def test_credential_value_never_reaches_the_report(self):
-        import os
-
-        os.environ["CCB_TEST_SECRET_KEY"] = "super-secret-value"
+        set_credentials({"CCB_TEST_SECRET_KEY": "super-secret-value"})
         try:
             chan = Channel()
-            chan.spec = self._spec(auth="env:CCB_TEST_SECRET_KEY")
+            chan.spec = self._spec(auth="CCB_TEST_SECRET_KEY")
             import json
 
             rendered = json.dumps(chan.describe(), ensure_ascii=False)
@@ -277,7 +275,7 @@ class TestChannelTransparency(unittest.TestCase):
             self.assertTrue(credential_available("CCB_TEST_SECRET_KEY"))
             self.assertEqual(credential("CCB_TEST_SECRET_KEY"), "super-secret-value")
         finally:
-            os.environ.pop("CCB_TEST_SECRET_KEY", None)
+            set_credentials({})
 
     def test_unknown_credential_maps_to_no_channel(self):
         from ccb.search.net import credential_provider

@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import gzip
 import json
-import os
 import random
 import time
 import urllib.error
@@ -39,11 +38,12 @@ from ..core.util import utc_now
 DEFAULT_UA_TEMPLATE = "ccb/0.3 (+https://github.com/ZhanJHE/ccb-assistant; mailto:{mailto})"
 FALLBACK_UA = "ccb/0.1 (academic literature client)"
 
-# Which channel a credential belongs to, by variable name. This is a *reporting* map, not
-# an access list: what actually decides which variables are read is each channel's own
-# declaration (`auth: env:VAR` / `env:VAR?`), so an undeclared variable is never consulted
-# no matter what the environment holds. Keeping the map complete is what lets `channels`
-# tell the user that a key is set but unused, and what lets a missing key carry a note.
+# Which channel a credential belongs to, by credential name. This is a *reporting* map,
+# not an access list: what actually decides which credentials are read is each channel's
+# own declaration (`auth: NAME` / `NAME?`), so an undeclared name is never consulted no
+# matter what the credentials config holds. Keeping the map complete is what lets
+# `channels` tell the user that a key is set but unused, and what lets a missing key
+# carry a note.
 KNOWN_CREDENTIALS: dict[str, str] = {
     "CORE_API_KEY": "core",
     "DOAJ_API_KEY": "doaj",
@@ -155,7 +155,7 @@ class _Bucket:
 def mailto() -> str:
     """Contact address for polite pools. Never invent one if the user set none."""
     for name in ("CCB_MAILTO", "UNPAYWALL_EMAIL", "OPENALEX_EMAIL", "NCBI_EMAIL"):
-        val = os.environ.get(name, "").strip()
+        val = credential(name)
         if val and "@" in val:
             return val
     return ""
@@ -167,8 +167,65 @@ def user_agent() -> str:
 
 
 def credential(name: str) -> str:
-    """Read a credential from the environment. The value is never logged."""
-    return os.environ.get(name, "").strip()
+    """Read a credential from papers/credentials.yaml. The value is never logged.
+
+    Credentials live in the library's credentials config — never in the environment,
+    never through a conversation. The file maps credential names to values; every
+    loaded value is registered for value-based redaction, so it cannot surface in any
+    output, snapshot or cache.
+    """
+    return _CREDENTIAL_VALUES.get(name, "").strip()
+
+
+# Loaded credential values. Process-wide by design: a CLI run or an MCP session has
+# exactly one library, and channels resolve credentials lazily at request time.
+_CREDENTIAL_VALUES: dict[str, str] = {}
+
+
+def load_credentials_file(path) -> dict[str, str]:
+    """Load ``{credential_name: value}`` from the credentials config, replacing
+    whatever was loaded before. Loaded values become redaction targets."""
+    from ..library.evidence import register_secret_values, reset_secret_values
+
+    p = Path(path)
+    values: dict[str, str] = {}
+    if p.exists():
+        text = p.read_text(encoding="utf-8")
+        data: Any = None
+        try:
+            if p.suffix.casefold() in (".yaml", ".yml"):
+                import yaml  # optional dependency, only for config files
+
+                data = yaml.safe_load(text)
+            else:
+                import json
+
+                data = json.loads(text)
+        except Exception:
+            data = None
+        if isinstance(data, dict):
+            values = {
+                str(k): str(v).strip()
+                for k, v in data.items()
+                if str(v or "").strip()
+            }
+    _CREDENTIAL_VALUES.clear()
+    _CREDENTIAL_VALUES.update(values)
+    reset_secret_values()
+    register_secret_values(_CREDENTIAL_VALUES.values())
+    return dict(_CREDENTIAL_VALUES)
+
+
+def set_credentials(mapping: dict[str, str] | None = None) -> None:
+    """Set credential values directly (tests and programmatic use)."""
+    from ..library.evidence import register_secret_values, reset_secret_values
+
+    _CREDENTIAL_VALUES.clear()
+    _CREDENTIAL_VALUES.update(
+        {k: str(v).strip() for k, v in (mapping or {}).items() if str(v or "").strip()}
+    )
+    reset_secret_values()
+    register_secret_values(_CREDENTIAL_VALUES.values())
 
 
 def credential_available(name: str) -> bool:
@@ -229,6 +286,9 @@ class Http:
         return v if v else None
 
     def _remember_validator(self, url: str, v: dict[str, str]) -> None:
+        from ..library.evidence import scrub_secrets
+
+        url = scrub_secrets(url)
         if self._validators is None:
             self._validators = (
                 read_json(self._validators_path, default={}) or {}

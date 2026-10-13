@@ -261,7 +261,7 @@ class Registry:
     def availability_summary(self) -> dict[str, Any]:
         """Per-channel availability plus credential state, with no secret values.
 
-        Also reports a credential that is set in the environment but whose channel is
+        Also reports a credential that is configured but whose channel is
         not loaded. That case is otherwise invisible — the user believes a source is
         enabled and nothing says otherwise — so it is surfaced as a configuration note
         rather than silently ignored.
@@ -274,7 +274,7 @@ class Registry:
             {
                 var
                 for c in self.all()
-                for var in c.spec.required_env() + c.spec.optional_env()
+                for var in c.spec.required_credentials() + c.spec.optional_credentials()
                 if credential(var)
             }
         )
@@ -285,11 +285,11 @@ class Registry:
         missing: dict[str, list[dict[str, str]]] = {}
         for c in self.all():
             gaps: list[dict[str, str]] = []
-            for var in c.spec.required_env():
+            for var in c.spec.required_credentials():
                 if not credential(var):
                     gaps.append(_gap(var, "required",
                                      "the channel cannot be used without it"))
-            for var in c.spec.optional_env():
+            for var in c.spec.optional_credentials():
                 if not credential(var):
                     gaps.append(_gap(var, "optional", "raises rate limits only"))
             if gaps:

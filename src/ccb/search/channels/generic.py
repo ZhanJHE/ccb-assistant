@@ -18,6 +18,8 @@ from __future__ import annotations
 
 import json
 import os
+
+from ..net import credential
 import shlex
 import subprocess
 import sys
@@ -142,9 +144,8 @@ class GenericHttpChannel(_DeclaredChannel):
         for hname, value in (self.decl.get("headers") or {}).items():
             headers[str(hname)] = self._render(str(value), "")
         auth = self.decl.get("auth", "none")
-        if isinstance(auth, str) and auth.startswith("env:") and not auth.endswith("?"):
-            var = auth[4:]
-            secret = os.environ.get(var, "")
+        if isinstance(auth, str) and auth not in ("none", "") and not auth.endswith("?"):
+            secret = credential(auth)
             if secret:
                 header_name = str(self.decl.get("auth_header", "Authorization"))
                 template = str(self.decl.get("auth_value", "Bearer {key}"))
@@ -154,9 +155,8 @@ class GenericHttpChannel(_DeclaredChannel):
     def _params(self, extra: dict[str, Any]) -> dict[str, Any]:
         params: dict[str, Any] = dict(self.decl.get("params") or {})
         auth = self.decl.get("auth", "none")
-        if isinstance(auth, str) and auth.startswith("env:") and not auth.endswith("?"):
-            var = auth[4:]
-            secret = os.environ.get(var, "")
+        if isinstance(auth, str) and auth not in ("none", "") and not auth.endswith("?"):
+            secret = credential(auth)
             key_param = self.decl.get("auth_param")
             if secret and key_param:
                 params[str(key_param)] = secret

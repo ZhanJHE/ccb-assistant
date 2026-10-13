@@ -73,9 +73,13 @@ INVARIANTS: list[dict[str, str]] = [
     },
     {
         "id": "never-echo-secrets",
-        "rule": "Credentials are read from the environment and redacted at write time. Never "
-                "print, log or pass a key value.",
-        "why": "Some APIs authenticate by query string, so a URL can itself be a secret.",
+        "rule": "Credentials live in the library's credentials config "
+                "(papers/credentials.yaml) and are redacted everywhere else: loaded "
+                "values are registered and scrubbed from every snapshot, cache and "
+                "report at write time. Never print, log or pass a key value.",
+        "why": "Some APIs authenticate by query string, so a URL can itself be a secret. "
+               "Value-based scrubbing catches it wherever it travels, not only in "
+               "obvious parameters.",
     },
     {
         "id": "report-failures",

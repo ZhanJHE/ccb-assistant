@@ -54,8 +54,8 @@ def cmd_channels(ctx: Context) -> int:
         "credential_guidance": summary["credential_guidance"],
         "note": (
             "Credential values are never read into output. 'unavailable' channels are "
-            "skipped automatically; their reason tells you which environment variable "
-            "would enable them."
+            "skipped automatically; their reason tells you which credential to add to "
+            "papers/credentials.yaml to enable them."
         ),
     }
     if summary.get("credentials_without_channel"):

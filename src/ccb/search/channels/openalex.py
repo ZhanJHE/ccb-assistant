@@ -73,7 +73,7 @@ class OpenAlexChannel(Channel):
         kind="http",
         title="OpenAlex (250M+ works, open index)",
         caps=(CAP_SEARCH, CAP_LOOKUP, CAP_OA_RESOLVE, CAP_CITATIONS, CAP_VENUE, CAP_BIBTEX),
-        auth="env:OPENALEX_API_KEY?",
+        auth="OPENALEX_API_KEY?",
         license="CC0 (data)",
         rate_rps=2.0,
         notes=(

@@ -46,7 +46,7 @@ class ChannelSpec:
     kind: str = "http"  # http | cli | mcp | manual
     title: str = ""
     caps: tuple[str, ...] = ()
-    auth: str = "none"  # "none" | "env:VAR" | "env:VAR?" (optional)
+    auth: str = "none"  # "none" | credential name ("NAME") | "NAME?" (optional)
     license: str = ""
     rate_rps: float = 1.0
     cs_authority: bool = False
@@ -61,23 +61,21 @@ class ChannelSpec:
     disabled_reason: str = ""
     config: dict[str, Any] = field(default_factory=dict)
 
-    def required_env(self) -> list[str]:
-        """Environment variables this channel needs, excluding optional ones."""
-        if not self.auth.startswith("env:"):
+    def required_credentials(self) -> list[str]:
+        """Credentials this channel needs, excluding optional ones."""
+        if not self.auth or self.auth == "none":
             return []
-        var = self.auth[4:]
-        if var.endswith("?"):
+        if self.auth.endswith("?"):
             return []
-        return [var]
+        return [self.auth]
 
-    def optional_env(self) -> list[str]:
-        if not self.auth.startswith("env:"):
+    def optional_credentials(self) -> list[str]:
+        if not self.auth or self.auth == "none" or not self.auth.endswith("?"):
             return []
-        var = self.auth[4:]
-        return [var[:-1]] if var.endswith("?") else []
+        return [self.auth[:-1]]
 
     def credential_ok(self) -> bool:
-        return all(bool(credential(v)) for v in self.required_env())
+        return all(bool(credential(v)) for v in self.required_credentials())
 
     def as_dict(self) -> dict[str, Any]:
         out: dict[str, Any] = {
@@ -95,13 +93,13 @@ class ChannelSpec:
             out["cs_authority"] = True
         if self.sensitive_response:
             out["sensitive_response"] = True
-        req = self.required_env()
-        opt = self.optional_env()
+        req = self.required_credentials()
+        opt = self.optional_credentials()
         if req:
-            out["needs_env"] = req
-            out["env_ready"] = all(bool(credential(v)) for v in req)
+            out["needs_credentials"] = req
+            out["credentials_ready"] = all(bool(credential(v)) for v in req)
         if opt:
-            out["optional_env"] = opt
+            out["optional_credentials"] = opt
         return out
 
 
@@ -308,7 +306,7 @@ class Channel:
         if not self.spec.enabled:
             return False, self.spec.disabled_reason or "disabled by configuration"
         if not self.spec.credential_ok():
-            missing = ", ".join(self.spec.required_env())
+            missing = ", ".join(self.spec.required_credentials())
             return False, f"missing credential: {missing}"
         return True, ""
 

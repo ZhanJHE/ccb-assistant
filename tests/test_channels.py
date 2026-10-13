@@ -31,6 +31,7 @@ from ccb.search.channels.generic import (  # noqa: E402
     _unwrap_mcp_content,
 )
 from ccb.search.channels.registry import Registry  # noqa: E402
+from ccb.search.net import set_credentials  # noqa: E402
 from ccb.library.evidence import EvidenceStore  # noqa: E402
 from ccb.library import Library  # noqa: E402
 
@@ -273,7 +274,7 @@ class TestRegistryWithDeclaredChannels(unittest.TestCase):
             "    kind: http\n"
             "    url: 'https://example.invalid/api?q={query}'\n"
             "    caps: [search, lookup]\n"
-            "    auth: env:CCB_TEST_ABSENT?\n",
+            "    auth: CCB_TEST_ABSENT?\n",
             encoding="utf-8",
         )
         reg = Registry(evidence=self.lib.evidence, config_paths=[self.cfg])
@@ -290,7 +291,7 @@ class TestRegistryWithDeclaredChannels(unittest.TestCase):
             "    kind: http\n"
             "    url: 'https://example.invalid/api?q={query}'\n"
             "    caps: [search]\n"
-            "    auth: env:CCB_TEST_ABSENT_KEY\n",
+            "    auth: CCB_TEST_ABSENT_KEY\n",
             encoding="utf-8",
         )
         reg = Registry(evidence=self.lib.evidence, config_paths=[self.cfg])
@@ -303,10 +304,35 @@ class TestRegistryWithDeclaredChannels(unittest.TestCase):
         # Everything else still routes, so one missing key cannot break the fan-out.
         self.assertTrue(summary["usable"])
 
-    def test_orphaned_credential_is_reported(self):
-        import os
 
-        os.environ["S2_API_KEY"] = "orphan-test-value"
+    def test_a_configured_value_is_scrubbed_everywhere(self):
+        """Value-based redaction: a loaded credential must not survive in any output,
+        snapshot or validator cache, no matter how it travelled."""
+        set_credentials({"CCB_TEST_SECRET_KEY": "super-secret-value-12345"})
+        try:
+            # 1. the channels report never contains it
+            reg = Registry(evidence=self.lib.evidence, config_paths=[])
+            rendered = json.dumps(reg.availability_summary(), ensure_ascii=False)
+            self.assertNotIn("super-secret-value-12345", rendered)
+
+            # 2. an evidence snapshot never contains it - even in a URL that hides it
+            #    in a non-obvious place
+            ev_id = self.lib.evidence.record(
+                channel="x",
+                url="https://h/api?token=super-secret-value-12345&page=2",
+                body="response mentioning super-secret-value-12345 inline",
+            )
+            stored = self.lib.evidence.get(ev_id.ev_id).as_dict()
+            self.assertNotIn("super-secret-value-12345", json.dumps(stored))
+
+            # 3. a channel calling with the key in a header/query: the snapshot the
+            #    library writes is what `channels` and `get` leave behind - the same
+            #    scrub covers them all through one entry point.
+        finally:
+            set_credentials({})
+
+    def test_orphaned_credential_is_reported(self):
+        set_credentials({"S2_API_KEY": "orphan-test-value"})
         try:
             reg = Registry(evidence=self.lib.evidence, config_paths=[])
             summary = reg.availability_summary()
@@ -316,7 +342,7 @@ class TestRegistryWithDeclaredChannels(unittest.TestCase):
                 summary["credentials_without_channel"].get("S2_API_KEY"), "semantic_scholar"
             )
         finally:
-            os.environ.pop("S2_API_KEY", None)
+            set_credentials({})
 
 
 class TestMissingCredentialsAreActionable(unittest.TestCase):
@@ -344,12 +370,12 @@ class TestMissingCredentialsAreActionable(unittest.TestCase):
             "    kind: http\n"
             "    url: 'https://example.invalid/api?q={query}'\n"
             "    caps: [search]\n"
-            "    auth: env:CCB_TEST_REQUIRED_KEY\n"
+            "    auth: CCB_TEST_REQUIRED_KEY\n"
             "  better_with_key:\n"
             "    kind: http\n"
             "    url: 'https://example.invalid/api?q={query}'\n"
             "    caps: [search]\n"
-            "    auth: env:CCB_TEST_OPTIONAL_KEY?\n",
+            "    auth: CCB_TEST_OPTIONAL_KEY?\n",
             encoding="utf-8",
         )
         return Registry(evidence=self.lib.evidence, config_paths=[self.cfg]).availability_summary()
@@ -373,16 +399,14 @@ class TestMissingCredentialsAreActionable(unittest.TestCase):
         self.assertIn("environment variable", guidance)
 
     def test_a_configured_value_never_appears_in_the_report(self):
-        import os
-
-        os.environ["CCB_TEST_REQUIRED_KEY"] = "super-secret-value"
+        set_credentials({"CCB_TEST_REQUIRED_KEY": "super-secret-value"})
         try:
             summary = self._summary()
             self.assertNotIn("super-secret-value", json.dumps(summary))
             self.assertIn("CCB_TEST_REQUIRED_KEY", summary["credentials_present"])
             self.assertNotIn("needs_key", summary["credentials_missing"])
         finally:
-            os.environ.pop("CCB_TEST_REQUIRED_KEY", None)
+            set_credentials({})
 
     def test_the_bundled_registry_reports_its_own_optional_keys(self):
         """The default channels declare optional keys; the report must surface them."""
@@ -403,7 +427,7 @@ class TestMissingCredentialsAreActionable(unittest.TestCase):
             "    kind: http\n"
             "    url: 'https://example.invalid/api?q={query}'\n"
             "    caps: [search]\n"
-            "    auth: env:CCB_TEST_REQUIRED_KEY\n"
+            "    auth: CCB_TEST_REQUIRED_KEY\n"
             "    sensitive_response: true\n",
             encoding="utf-8",
         )

@@ -67,6 +67,42 @@ def redact_mapping(values: dict[str, Any] | None) -> dict[str, Any]:
     return out
 
 
+# --------------------------------------------------------------------------- #
+# Value-based redaction: credentials loaded from papers/credentials.yaml
+# --------------------------------------------------------------------------- #
+
+# Pattern-based redaction above only catches secrets that travel in an obvious query
+# parameter. Once a credential VALUE is known — loaded from the credentials config —
+# every writer can scrub it wherever it surfaces: a validator cache keyed by full URL,
+# a report embedding a query string, an error message. Replace-on-sight, because the
+# value must never land on disk anywhere except the config file itself.
+_SECRET_VALUES: set[str] = set()
+
+
+def register_secret_values(values) -> None:
+    """Remember credential values so they can be scrubbed from any output."""
+    for v in values:
+        v = str(v or "").strip()
+        # Very short strings would corrupt normal text when replaced wholesale.
+        if len(v) >= 6:
+            _SECRET_VALUES.add(v)
+
+
+def reset_secret_values() -> None:
+    """Forget registered values (test isolation)."""
+    _SECRET_VALUES.clear()
+
+
+def scrub_secrets(text: str) -> str:
+    """Replace every registered credential value in `text` with ``<redacted>``."""
+    if not text or not _SECRET_VALUES:
+        return text
+    for v in _SECRET_VALUES:
+        if v in text:
+            text = text.replace(v, "<redacted>")
+    return text
+
+
 @dataclass
 class Evidence:
     """Metadata for one stored raw response."""
@@ -166,6 +202,14 @@ class EvidenceStore:
         restricted: bool = False,
     ) -> Evidence:
         """Persist one raw response. Returns the Evidence handle with its id set."""
+        # Value-based scrub first: a configured credential must not survive anywhere,
+        # in any field, no matter how it travelled. Param-key redaction runs after.
+        url = scrub_secrets(url)
+        body = scrub_secrets(body)
+        error = scrub_secrets(error)
+        notes = scrub_secrets(notes)
+        if params:
+            params = {k: scrub_secrets(str(v)) for k, v in params.items()}
         safe_url = redact_url(url)
         if not ev_id:
             disc = safe_url or " ".join(command or []) or body[:200]

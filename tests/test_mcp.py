@@ -213,16 +213,16 @@ class TestMcpProtocol(unittest.TestCase):
         self.assertIn("no-overwrite", ids)
 
     def test_channels_report_never_leaks_credential_values(self):
-        import os
+        from ccb.search.net import set_credentials
 
-        os.environ["S2_API_KEY"] = "mcp-secret-value"
+        set_credentials({"S2_API_KEY": "mcp-secret-value"})
         try:
             out = _call(self.server, 19, "ccb_channels", {})
             rendered = json.dumps(out, ensure_ascii=False)
             self.assertNotIn("mcp-secret-value", rendered)
             self.assertIn("S2_API_KEY", rendered)
         finally:
-            os.environ.pop("S2_API_KEY", None)
+            set_credentials({})
 
 
 class TestCliMcpParity(unittest.TestCase):

@@ -50,7 +50,7 @@ class PaperSearchChannel(Channel):
         kind="cli",
         title="Local paper-search CLI (21 sources)",
         caps=(CAP_SEARCH, CAP_LOOKUP, CAP_PDF),
-        auth="env:PAPER_SEARCH_CORE_API_KEY?",
+        auth="PAPER_SEARCH_CORE_API_KEY?",
         license="MIT (the tool itself); per-source data licences apply",
         rate_rps=0.5,
         notes=(

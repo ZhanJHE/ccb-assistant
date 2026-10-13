@@ -29,9 +29,10 @@ table. The CLI exposes strictly more (per-command flags like `--compact`, `--raw
 
 `channels_unavailable` / `errors` name the channel and the reason. `ccb channels` →
 `credentials_missing[<channel>]` tells you whether the key is `required` (source unusable)
-or `optional` (rate limits only). Tell the user which **environment variable** to set and
-what it buys — never take a key value through the conversation. Then carry on with the
-channels that work and state the coverage gap (exit `4`).
+or `optional` (rate limits only). Tell the user which **credential name** to add to
+`papers/credentials.yaml` and what it buys — never take a key value through the
+conversation. Then carry on with the channels that work and state the coverage gap
+(exit `4`).
 
 ## Teaching this tool to a project
 
