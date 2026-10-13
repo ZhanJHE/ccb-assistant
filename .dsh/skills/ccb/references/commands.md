@@ -10,6 +10,22 @@ One nuance worth knowing before you branch: `ask` exits `0` when the corpus does
 the question, with `"outcome": "not-covered"` and `grounded: false` in the payload. Only
 `3` means "that identifier is not in the library".
 
+## Reading a record
+
+Every stored record carries its provenance. A typical `ccb show` payload:
+
+```json
+{"work_id": "arxiv:1706.03762", "has_pdf": true, "has_fulltext": true,
+ "field_sources": {"title": ["arxiv", "paper_search"], "year": ["arxiv"]},
+ "conflicts": ["venue"]}
+```
+
+- `work_id` is **stable** — hand it back verbatim in later calls.
+- `field_sources` names the channel behind each field; `conflicts` lists fields where
+  sources disagree (report the disagreement, never silently pick one).
+- `errors` maps a channel name to why it produced nothing — **"Nothing found" and
+  "could not look" are different facts.**
+
 ## Credentials — what `channels` tells you
 
 `$CCB channels` reports four credential fields, and never a value:

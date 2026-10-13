@@ -1,6 +1,7 @@
 ---
 name: ccb
 description: "Aggregate every paper search/download channel (free APIs, keyed APIs, MCP servers, local CLI tools) behind one entry point, and maintain a durable local paper library so the same paper is never searched, downloaded and parsed twice. Use for: finding papers, downloading open-access PDFs, reading a paper's full text offline, building a reusable literature corpus, re-verifying stored records, exporting citations, and mining the corpus for a research topic with its evidence. 触发：找论文、搜文献、下载论文、读论文原文、建论文库、整理文献、导出引用、BibTeX、查文献是否撤稿、挖课题、选题、找创新点、课题生成。"
+whenToUse: "Use when the user asks to find, download, read, organize or re-verify academic papers, build a reusable local paper corpus, export citations, or mine a research topic with evidence. Prefer over raw web search for paper discovery."
 license: MIT
 compatibility: "Needs network access for channel queries and corpus top-up (not for local reads). Python 3.10+ standard library only; PDF text extraction uses pdfplumber or pypdf when present. No credentials required — keyed channels degrade and say so. Optional keys raise rate limits only."
 metadata:
@@ -116,27 +117,25 @@ Rules:
 - Datasets and baselines in the draft are **observed mentions with counts**, not
   recommendations. Verify availability before committing to one.
 
-## Also available over MCP
-
-The same core is exposed as 16 `ccb_*` tools — one per operation, identical behaviour to
-the CLI. `ccb --pretty contract` lists them; `references/commands.md` shows how to
-register the server.
-
 ## Reading results
 
-Every record carries its provenance. Trust and quote it:
-
-```json
-{"work_id": "arxiv:1706.03762", "has_pdf": true, "has_fulltext": true,
- "field_sources": {"title": ["arxiv", "paper_search"], "year": ["arxiv"]},
- "conflicts": ["venue"]}
-```
+Every record carries its provenance. Trust and quote it (a sample record with
+`field_sources` and `conflicts` is in `references/commands.md`):
 
 - `work_id` is **stable** — hand it back verbatim in later calls.
 - `conflicts` lists fields where sources disagree. Report the disagreement; do not
   silently pick one.
 - `errors` maps a channel name to why it produced nothing. **"Nothing found" and
   "could not look" are different facts.** Say which one happened.
+
+## How to phrase results
+
+- **Never call an abstract or a metadata record "the full text"** — full-text status is
+  what `has_fulltext` / `outcome` says.
+- **Discover, don't assume** — check `ccb channels` / `ccb contract` for what a source
+  offers and which flags exist, instead of guessing from other tools.
+- **Prefer a targeted query when the field is clear** (`-s arxiv,crossref`); keep
+  multi-source fan-out for genuinely broad questions.
 
 ## When a credential is missing
 
@@ -173,13 +172,14 @@ channel in a loop.
 
 ## Choosing a channel
 
-`-s auto` (the default) already prefers CS authorities and skips channels that cannot
-handle the identifier you gave — override only for a reason. The routing table is the
-`routing` section of `ccb contract` (`ccb --pretty contract` to read it); per-source traps,
-measured behaviour and known gating live in `references/channels.md`.
+`-s auto` already prefers CS authorities and skips channels that cannot handle the
+identifier you gave. The routing table lives in `ccb contract`; per-source traps and
+gating live in `references/channels.md`.
 
 ## Full detail
 
+- The MCP face: 16 `ccb_*` tools over the same core — registration in
+  `references/commands.md`, tool names via `ccb --pretty contract`
 - `references/commands.md` — every command and flag, with examples
 - `references/topics.md` — the operators, the scoring, the CCF estimate
 - `references/architecture.md` — the three modules, on-disk layout, local-first
