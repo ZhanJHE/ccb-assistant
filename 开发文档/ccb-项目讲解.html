@@ -117,7 +117,7 @@
 <nav id="side">
   <div class="brand">
     <h1>ccb — 项目讲解</h1>
-    <p>v0.4.0 · Python ≥3.10 · 零必需依赖 · 305 tests · 曾用名 lit（0.3.0 起全量改名，不留兼容层）</p>
+    <p>v0.4.0 · Python ≥3.10 · 零必需依赖 · 300+ tests · 曾用名 lit（0.3.0 起全量改名，不留兼容层）</p>
   </div>
   <input id="filter" type="search" placeholder="过滤章节…" autocomplete="off">
   <div id="tabs" role="tablist">
@@ -181,7 +181,7 @@
 
   <div class="group" id="g5">
     <h2>质量</h2>
-    <a href="#q-tests">测试矩阵（305）</a>
+    <a href="#q-tests">测试矩阵（300+）</a>
     <a href="#q-refactor">2026-10 大改造</a>
     <a href="#q-inv">不变量（14）</a>
     <a href="#q-no">刻意不做的事</a>
@@ -267,7 +267,7 @@ python ccb.py topics save &lt;topic_id&gt;
 │  ├─ mcp_server.py  contract.py
 │  └─ AGENTS.md          <span class="c">开发模式细则（触及该目录才注入）</span>
 ├─ .dsh/skills/ccb/      <span class="c">Agent Skill：SKILL.md + ccb.py 启动器 + references/</span>
-├─ tests/                <span class="c">12 个测试文件，305 用例，无网络无依赖</span>
+├─ tests/                <span class="c">12 个测试文件，300+ 用例，无网络无依赖</span>
 ├─ tools/                <span class="c">探针脚本（复现渠道行为）</span>
 ├─ .github/workflows/    <span class="c">CI：ruff + unittest，ubuntu/windows × 3.10/3.13</span>
 ├─ 开发文档/              <span class="c">设计定稿 + for-agents + 改造方案 + 本讲解</span>
@@ -739,9 +739,9 @@ manifestation  载体层：arXiv v1/v2、NeurIPS 正式版、OpenReview 投稿�
 <hr>
 
 <!-- ============================ 质量 ============================ -->
-<h2 class="sec" id="q-tests">测试矩阵（305）</h2>
+<h2 class="sec" id="q-tests">测试矩阵（300+）</h2>
 
-<pre>python -m unittest discover -s tests -v     <span class="c"># 305 用例，无网络，无第三方依赖，~11 s</span>
+<pre>python -m unittest discover -s tests -v     <span class="c"># 300+ 用例，无网络，无第三方依赖，~11 s</span>
 python tools/probe_arxiv.py                 <span class="c"># 复现某渠道的真实线上行为</span>
 python tools/probe_mcp_source.py            <span class="c"># 最小 MCP server，作测试夹具</span></pre>
 

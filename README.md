@@ -95,7 +95,7 @@ Add a channel without code: declare it in `papers/channels.yaml` (kind: http / c
 
 ```bash
 ruff check src tests
-python -m unittest discover -s tests -v     # 305 tests, no network, no dependencies
+python -m unittest discover -s tests -v     # 300+ tests, no network, no dependencies
 python ccb.py install-skill                 # teach the agents in THIS project to use ccb
 ```
 
@@ -188,6 +188,6 @@ papers/
 
 ```bash
 ruff check src tests
-python -m unittest discover -s tests -v     # 305 用例，无网络，无第三方依赖
+python -m unittest discover -s tests -v     # 300+ 用例，无网络，无第三方依赖
 python ccb.py install-skill                 # 让本项目的 agent 学会用 ccb
 ```
