@@ -28,10 +28,24 @@ htmlcov/
 #   deletes the entire corpus. Back up by copying the directory, not through Git.
 papers/
 
+# The literature workspace proper: the user's own research material — surveys,
+# selection plans, idea pools, experiment projects, venue catalogues — and the
+# pre-project notes that fed the design. Both are local-only by decision
+# (2026-11-01): this repository is the tool, and cloning it must not hand anyone
+# else's research to whoever clones it.
+#
+# ⚠ Consequence, as with papers/: these directories are ignored *wholesale*, so
+#   `git clean -Xdf` deletes them. Back them up by copying the directory.
+用户文档/
+notes/
+
 # Scratch directories used while developing parsers
 .probe/
 .research/
 *.sample
+
+# MkDocs output (`mkdocs build`, `mkdocs serve`)
+site/
 
 # Editor / OS
 .vscode/
