@@ -1,0 +1,78 @@
+# The documentation site: one source (`开发文档/`), one navigation table, built by
+# `.github/workflows/docs.yml` and served from GitHub Pages.
+#
+# The tree under `开发文档/` is the only source of truth — no copy is kept for the site.
+# `nav` is authoritative: `tests/test_docs.py` fails when a page exists that no nav entry
+# names, or when a nav entry names a page that does not exist.
+
+site_name: ccb 开发文档
+site_description: ccb（查查呗论文）工具开发文档：设计、模块、方案与开发记录
+site_url: https://zhanjhe.github.io/ccb-assistant/
+repo_url: https://github.com/ZhanJHE/ccb-assistant
+repo_name: ZhanJHE/ccb-assistant
+edit_uri: edit/main/开发文档/
+copyright: MIT
+
+docs_dir: 开发文档
+site_dir: site
+
+theme:
+  name: material
+  language: zh
+  # No web fonts: the readers are mostly in mainland China, and a Google Fonts request
+  # costs a round trip there and nothing here.
+  font: false
+  features:
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: 切到深色
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: 切到浅色
+
+plugins:
+  - search:
+      lang: [zh]
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+# `mkdocs build --strict` turns these warnings into failures, so a renamed page that
+# leaves a dead link behind is caught by the build rather than by a reader.
+validation:
+  links:
+    not_found: warn
+    absolute_links: warn
+    anchors: warn
+
+nav:
+  - 首页: index.md
+  - 给 Agent（English）: for-agents.md
+  - 设计:
+      - 设计定稿: design/spec.md
+      - 模块设计: design/modules.md
+  - 决策与方案:
+      - 仓库即工作区改造: decisions/repo-as-workspace.md
+      - Europe PMC 全文通道: decisions/europepmc-fulltext.md
+  - 开发记录:
+      - 开发工作日志: records/log.md
+      - 工程评审（2026-10-13）: records/review-2026-10-13.md
+      - 同类项目借鉴调研: records/borrowing-survey.md
+  - 项目讲解（HTML）: walkthrough/index.html

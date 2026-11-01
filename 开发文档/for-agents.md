@@ -2,7 +2,9 @@
 
 You are an AI agent that has found ccb, probably because a user wants to find, download,
 or organise academic papers. This page is the single place to learn how. It is written
-for you; the [README](../README.md) is written for people.
+for you; the [README](https://github.com/ZhanJHE/ccb-assistant/blob/main/README.md) is
+written for people. (Linked by URL, not path: this page is published as a documentation
+site, and the README lives outside its root.)
 
 ## Two faces, one core
 

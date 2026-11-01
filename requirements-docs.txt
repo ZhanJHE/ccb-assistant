@@ -1,0 +1,9 @@
+# The only dependency the documentation site needs. Installed by
+# `.github/workflows/docs.yml` and by anyone who wants a local preview:
+#
+#   python -m pip install -r requirements-docs.txt && mkdocs serve
+#
+# Kept out of pyproject's optional extras on purpose: the tool itself has no
+# third-party dependencies, and this file is the single place the site's version
+# range is written.
+mkdocs-material>=9.5,<10

@@ -101,14 +101,14 @@ JatsDocument: title, abstract, sections: list[(name, text)], text: str, warnings
   → 不请求或报告原因；`--with-pdf` 单独使用**不**触发；offline 不触发；非分页引用的渲染。
 
 ### C5 文档与版本
-- `开发文档/设计定稿.md`：§2 渠道表补"欧洲 PMC 全文走 JATS（`CAP_FULLTEXT` 名副其实）"、
+- `开发文档/design/spec.md`：§2 渠道表补"欧洲 PMC 全文走 JATS（`CAP_FULLTEXT` 名副其实）"、
   §3 提及 `fulltext_source`、§7 合规补"仅 OA 子集"。
-- `开发文档/模块设计.md`：`core` 表加 `jats.py`；§7 测试地图加 JATS 用例所在文件。
+- `开发文档/design/modules.md`：`core` 表加 `jats.py`；§7 测试地图加 JATS 用例所在文件。
 - `.dsh/skills/ccb/references/channels.md`：写清"europepmc 的 PDF 页面被浏览器门挡（403），
   全文走 `fullTextXML`；非 OA 不抓"。
 - SKILL.md **不改**（当前 8169/8192，,任何新增都要等量删减——本次是内部行为变化，references 足够）。
 - 版本 `0.5.0 → 0.6.0`（`src/ccb/__init__.py` + SKILL.md metadata，`test_naming` 会强制同步）。
-- 收尾追加 `开发文档/开发工作日志.md`（含 5 个提交哈希与遗留）。
+- 收尾追加 `开发文档/records/log.md`（含 5 个提交哈希与遗留）。
 
 ---
 

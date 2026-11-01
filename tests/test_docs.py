@@ -1,9 +1,14 @@
-"""The agent-facing documentation must not drift from the tool it documents.
+"""Documentation must not drift from the tool it documents.
 
-`docs/for-agents.md` tells an agent what the MCP face costs in context. That number is
-measured, not guessed — and because tool schemas change with every parameter, the test
-recomputes it and fails when the page goes stale. A stale number is worse than none: an
-agent that budgets with it budgets with a lie.
+Two things are held here. `开发文档/for-agents.md` tells an agent what the MCP face costs
+in context; that number is measured, not guessed, and because tool schemas change with
+every parameter the test recomputes it and fails when the page goes stale. A stale number
+is worse than none: an agent that budgets with it budgets with a lie.
+
+The other is the documentation site. `mkdocs.yml` names every page in `nav`, and the
+page tree is the only source of truth for the site — so a page that no nav entry names
+is invisible to readers, and a nav entry that no page backs is a 404 waiting for the next
+build. Both directions are checked here rather than discovered on the published site.
 """
 
 from __future__ import annotations
@@ -20,6 +25,32 @@ sys.path.insert(0, str(ROOT / "src"))
 from ccb.mcp_server import tool_definitions  # noqa: E402
 
 DOC = ROOT / "开发文档" / "for-agents.md"
+SITE = ROOT / "mkdocs.yml"
+DOCS = ROOT / "开发文档"
+
+# `- 标题: path/to/page.md` — the only nav form the site uses. Group headings
+# (`- 设计:`) carry no target and are skipped by the pattern.
+NAV_ENTRY = re.compile(r"^\s*-\s+[^:]+:\s*(\S+\.(?:md|html))\s*$")
+
+
+def site_pages() -> set[str]:
+    """Every publishable page, relative to the docs directory, POSIX-style."""
+    return {
+        path.relative_to(DOCS).as_posix()
+        for path in DOCS.rglob("*")
+        if path.is_file() and path.suffix in {".md", ".html"}
+    }
+
+
+def nav_pages() -> set[str]:
+    entries: set[str] = set()
+    for line in SITE.read_text(encoding="utf-8").splitlines():
+        if line.lstrip().startswith("#"):
+            continue
+        match = NAV_ENTRY.match(line)
+        if match:
+            entries.add(match.group(1))
+    return entries
 
 
 class TestForAgentsDoc(unittest.TestCase):
@@ -65,6 +96,39 @@ class TestForAgentsDoc(unittest.TestCase):
             "the skill body is over the 8192-character pruner threshold — move bulk "
             "content into references/",
         )
+
+
+class TestDocSite(unittest.TestCase):
+    """The site's navigation and its page tree describe the same set of pages."""
+
+    def test_the_config_builds_from_the_dev_docs(self):
+        self.assertTrue(SITE.exists(), "mkdocs.yml is what turns 开发文档/ into a site")
+        config = SITE.read_text(encoding="utf-8")
+        self.assertIn("docs_dir: 开发文档", config,
+                      "the site must build from the docs tree itself, not a copy of it")
+        ignored = (ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
+        self.assertIn("site/", ignored, "the build output must never be tracked")
+
+    def test_every_page_is_named_by_the_nav(self):
+        unlisted = sorted(site_pages() - nav_pages())
+        self.assertEqual(
+            unlisted, [],
+            "these pages build but no nav entry names them, so readers cannot reach "
+            "them: " + ", ".join(unlisted),
+        )
+
+    def test_every_nav_entry_has_a_page(self):
+        missing = sorted(nav_pages() - site_pages())
+        self.assertEqual(
+            missing, [],
+            "these nav entries point at pages that do not exist (the build would 404 "
+            "on them): " + ", ".join(missing),
+        )
+
+    def test_the_nav_opens_with_the_home_page(self):
+        entries = [line for line in SITE.read_text(encoding="utf-8").splitlines()
+                   if NAV_ENTRY.match(line)]
+        self.assertIn("index.md", entries[0], "the first nav entry is the site root")
 
 
 if __name__ == "__main__":  # pragma: no cover
