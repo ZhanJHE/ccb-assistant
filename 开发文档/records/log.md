@@ -9,6 +9,39 @@
 
 ---
 
+## 2026-11-01 · 仓库瘦身（清历史）与文档站（GitHub Pages）
+
+- `d6fea8e` **个人材料退出全部历史**：`git filter-repo --invert-paths` 删除三条路径——
+  `用户文档/`（131 个科研文件）、`docs/调研/**`（改名前的同一批）、`notes/`（4 篇立项前调研）。
+  提交数 45 → 44（一个只含被删路径的提交被裁掉），**所有哈希重写**。校验：`git log --all --`
+  这三条路径无输出、`git rev-list --objects --all` 无命中、`git ls-files` 无这两个目录、
+  工作树干净。`docs/design.md` / `docs/for-agents.md` 那段开发文档历史保留。
+  重写前做过仓库外备份并打了 `--all` bundle，**旧哈希只在该 bundle 里可解析**。
+- `.gitignore`：`用户文档/`、`notes/` 整体忽略（与 `papers/` 同一类后果：`git clean -Xdf`
+  会删掉它们，备份靠目录拷贝）；`site/` 忽略 MkDocs 输出。
+- `42d1695` **文档站**：`开发文档/` 由平铺 9 个文件改为四组（`design/` 现行设计、`decisions/`
+  已实施决策、`records/` 时点记录、`walkthrough/` 讲解），文件名改 ASCII 以稳定 URL；
+  `for-agents.md` 保持在根（技能、README、`tests/test_docs.py` 三处都指着它）。
+  新增 `mkdocs.yml`（Material、中文、`font: false`、`validation.links` 全 warn）、
+  `requirements-docs.txt`（唯一的版本源）、`.github/workflows/docs.yml`（每次改动
+  `mkdocs build --strict`，`main` 上部署 Pages）、`开发文档/index.md`（文档地图与阅读顺序）。
+- `tests/test_docs.py`：360 → 364，新增四条——`docs_dir` 指向 `开发文档`、`site/` 被忽略、
+  nav 与页面集合**双向**一致（有页无导航 / 有导航无页都失败）、首页在 nav 首位。
+- `7ffbce9` **规则跟着路径走**：AGENTS.md 的文档去向表加 `Git` 列（哪些入库、哪些只在本机）、
+  开发模式硬规则 4 改路径并新增第 5 条（文档树与 nav 同步动），新增「文档站」小节；README 加
+  文档站地址与本地预览命令；`模块设计` 的测试地图补 nav 校验；`设计定稿`/`模块设计` 互链改新路径；
+  EuropePMC 决策里"收尾要改哪几份文档"改新路径；仓库即工作区方案加**后记（2026-11-01）**
+  说明"科研材料入库"这半条已撤销。
+- 记录类文档不改写路径与哈希（评审报告两处 `lit` 提及加了"历史快照"标记——`test_naming`
+  会扫全树，那不是过期引用）。
+- **遗留**：①本会话没有 GitHub 凭据（`credential.helper=store` 但无凭据文件、`gh` 未登录），
+  force push 未执行，需在有凭据的机器上推；②Pages 需仓库转公开后在 Settings → Pages 选
+  GitHub Actions，在此之前 `deploy` 作业会红、`build` 仍有效；③`mkdocs-material` 未在本机安装，
+  站点只做了离线校验（YAML + nav 路径），首次真实构建由 CI 跑；④GitHub 侧旧对象可能仍可按 SHA
+  访问，零残留要删库重建或找支持清缓存。版本未动（0.5.0）。
+
+---
+
 ## 2026-10-13（续三）· 评审发现修复（四阶段）
 
 - **评审**：全项目复评，得 27 项发现（严重 7 / 中 13 / 轻 7）。四层子代理并行审，结论**逐条自验**：
