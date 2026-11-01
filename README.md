@@ -6,6 +6,8 @@
 
 **Agents:** start with [开发文档/for-agents.md](开发文档/for-agents.md) — the two ways to drive ccb, what each costs in context, and the three rules that keep answers checkable.
 
+**Docs site:** <https://zhanjhe.github.io/ccb-assistant/> — design, module map, decisions and development records. The site publishes `开发文档/` only, built by MkDocs; every page is reachable from the [documentation index](开发文档/index.md). 文档站只发布 `开发文档/`。
+
 ---
 
 ## English
@@ -111,6 +113,7 @@ credential each channel is missing and what it buys.
 ruff check src tests
 python -m unittest discover -s tests -v     # 300+ tests, no network, no dependencies
 python ccb.py install-skill                 # teach the agents in THIS project to use ccb
+python -m pip install -r requirements-docs.txt && mkdocs serve   # docs preview
 ```
 
 ---
@@ -211,4 +214,5 @@ papers/
 ruff check src tests
 python -m unittest discover -s tests -v     # 300+ 用例，无网络，无第三方依赖
 python ccb.py install-skill                 # 让本项目的 agent 学会用 ccb
+python -m pip install -r requirements-docs.txt && mkdocs serve   # 本地预览文档站
 ```
